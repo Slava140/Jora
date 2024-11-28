@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Annotated
 from uuid import UUID
 
-from sqlalchemy import String, text, ForeignKey, DATETIME
+from sqlalchemy import String, text, ForeignKey, DateTime
 from sqlalchemy.engine import create_engine
 from sqlalchemy.orm import DeclarativeBase, registry, mapped_column, sessionmaker
 
@@ -29,8 +29,8 @@ str_255_unique = Annotated[str, mapped_column(String(255), unique=True)]
 pk_int = Annotated[int, mapped_column(primary_key=True, autoincrement=True)]
 pk_uuid = Annotated[UUID, mapped_column(primary_key=True)]
 
-created_at = Annotated[datetime, mapped_column(DATETIME(timezone=True), server_default=sql_utc_now)]
-updated_at = Annotated[datetime, mapped_column(DATETIME(timezone=True), server_default=sql_utc_now, onupdate=sql_utc_now)]
+created_at = Annotated[datetime, mapped_column(DateTime(timezone=True), server_default=sql_utc_now)]
+updated_at = Annotated[datetime, mapped_column(DateTime(timezone=True), server_default=sql_utc_now, onupdate=sql_utc_now)]
 
 
 fk_user_id = Annotated[int, mapped_column(ForeignKey(column='users.id'))]
