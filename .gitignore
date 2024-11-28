@@ -1,0 +1,6 @@
+.env
+migrations/versions/
+pg_data/
+
+__pycache__/
+.idea/
