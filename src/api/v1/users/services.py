@@ -8,9 +8,8 @@ from api.v1.users.schemas import CreateUserS
 class UserService:
     dao = UserDAO()
 
-    def add(self, session: Session, user: CreateUserS):
-
+    def add(self, user: CreateUserS):
         try:
-            self.dao.insert(session, user)
+            self.dao.insert(user)
         except ArgumentError as error:
             print(error.args)
