@@ -14,7 +14,6 @@ class Settings(BaseSettings):
     JWT_SECRET: str
     ACCESS_TOKEN_TTL: int
     REFRESH_TOKEN_TTL: int
-    MAX_ACTIVE_USER_SESSIONS_COUNT: int
 
     @property
     def database_url_psycopg(self):
@@ -38,5 +37,3 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
-
-settings.DB_HOST

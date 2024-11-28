@@ -1,5 +1,7 @@
 import enum
 
+from sqlalchemy.orm import Mapped
+
 from database import Base, pk_int, fk_user_id, str_255, created_at, updated_at
 
 # description
@@ -16,20 +18,10 @@ class Status(enum.Enum):
 class ProjectM(Base):
     __tablename__ = 'projects'
 
-    id:                 pk_int
-    title:              str_255
-    description:        str_255 | None
-    created_at:         created_at
-    updated_at:         updated_at
+    id:                 Mapped[pk_int]
+    title:              Mapped[str_255]
+    description:        Mapped[str_255 | None]
+    created_at:         Mapped[created_at]
+    updated_at:         Mapped[updated_at]
 
-    owner_id:           fk_user_id
-
-
-# class Task(Base):
-#     __tablename__ = 'tasks'
-#
-#     id: pk_int
-#     title: str_255
-#     description: str
-#
-#     project_id: int
+    owner_id:           Mapped[fk_user_id]
