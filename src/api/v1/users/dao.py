@@ -1,34 +1,56 @@
+from typing import Any
+
 from sqlalchemy import insert, select
+from sqlalchemy.orm.attributes import InstrumentedAttribute
+from sqlalchemy.exc import DatabaseError
 from sqlalchemy.orm import Session
 
-from database import engine
+from database import engine, get_db
 
 from api.v1.users.models import UserM
 from api.v1.users.schemas import CreateUserS, ReadUserS
 from api.v1.auth.utils import get_hashed_password
+from errors import AlreadyExistsError
 
 
 class UserDAO:
-    model = UserM
+    @staticmethod
+    def is_exists(field: InstrumentedAttribute, value: Any, session: Session | None = None) -> bool:
+        session = next(get_db()) if session is None else session
+        query = select(1).where(field == value).limit(1)
+        return session.execute(query).scalar_one_or_none() is not None
 
-    def insert(self, user: CreateUserS) -> None:
+    @staticmethod
+    def insert(user: CreateUserS) -> ReadUserS:
+        """
+        :except AlreadyExistsError
+        """
         stmt = insert(
-            self.model
+            UserM
         ).values(
             email=user.email,
             username=user.username,
             hashed_password=get_hashed_password(user.password)
-        )
+        ).returning('*')
 
-        with engine.connect() as session:
-            print(session.execute(stmt).mappings().one_or_none())
+        with next(get_db()) as session:
+            if UserDAO.is_exists(UserM.email, user.email):
+                raise AlreadyExistsError(f'UserM(email={user.email})')
+
+            if UserDAO.is_exists(UserM.username, user.username):
+                raise AlreadyExistsError(f'UserM(username={user.username})')
+
+            result = session.execute(stmt).mappings().one_or_none()
             session.commit()
 
-    def get_one_by_id_or_none(self, user_id: int) -> ReadUserS | None:
+        return ReadUserS(**result)
+
+    @staticmethod
+    def get_one_by_id_or_none(user_id: int) -> ReadUserS | None:
         query = select(
-            self.model
+            UserM
         ).where(
-            self.model.id == user_id
+            UserM.id == user_id
         )
 
         with engine.connect() as session:
