@@ -7,9 +7,9 @@ from sqlalchemy.orm import Session
 from database import engine, get_db
 
 from api.v1.users.models import UserM
-from api.v1.users.schemas import CreateUserS, ReadUserS
+from api.v1.users.schemas import CreateUserS, ReadUserS, BaseUserS
 from api.v1.auth.utils import get_hashed_password
-from errors import AlreadyExistsError
+from errors import AlreadyExistsError, WasNotFoundError
 
 
 class UserDAO:
@@ -65,18 +65,25 @@ class UserDAO:
         return ReadUserS(**result) if result is not None else None
 
     @staticmethod
-    def update_by_id(user_id: int, updated_user: CreateUserS) -> ReadUserS:
+    def update_by_id(user_id: int, updated_user: BaseUserS) -> ReadUserS:
+        """
+        :except AlreadyExistsError
+        :except WasNotFoundError
+        """
         stmt = update(
             UserM
         ).where(
             UserM.id == user_id
         ).values(
-            **updated_user.model_dump(exclude={'password'})
+            **updated_user.model_dump()
         ).returning(
             '*'
         )
 
         with next(get_db()) as session:
+            if not UserDAO.is_exists(UserM.id, user_id):
+                raise WasNotFoundError(f'UserM(id={user_id})')
+
             if UserDAO.is_exists(UserM.email, updated_user.email):
                 raise AlreadyExistsError(f'UserM(email={updated_user.email})')
 
