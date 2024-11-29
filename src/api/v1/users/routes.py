@@ -36,3 +36,10 @@ def get_user_by_id(user_id: int):
         return jsonify(HTTPError(message='User was not found.').model_dump()), 404
 
     return jsonify(user.model_dump()), 200
+
+
+@router.put('/<int:user_id>')
+def update_user_by_id(user_id: int):
+    updated_user = CreateUserS(**request.json)
+    user = UserService.update_by_id(user_id, updated_user)
+    return jsonify(user.model_dump()), 200

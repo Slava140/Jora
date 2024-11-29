@@ -20,3 +20,7 @@ class UserService:
     @staticmethod
     def get_one_by_id_or_none(user_id: int) -> ReadUserS:
         return UserDAO.get_one_by_id_or_none(user_id)
+
+    @staticmethod
+    def update_by_id(user_id: int, updated_user: CreateUserS) -> ReadUserS:
+        return UserDAO.update_by_id(user_id, updated_user)

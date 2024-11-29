@@ -1,0 +1,113 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "API доступа",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/": {
+      "get": {
+        "description": "Возвращает сообщение, показывающее, что приложение запущено",
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "Успешная операция"
+          }
+        }
+      }
+    },
+    "/api/v1/users": {
+      "get": {
+        "description": "Возвращает пользователей",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "default": 10
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "default": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {"type": "integer"},
+                  "username": {"type": "string"},
+                  "email": {"type": "string"},
+                  "created_at": {"type": "string"},
+                  "updated_at": {"type": "string"}
+                }
+              }
+            }
+
+          },
+          "400": {
+            "description": "Неверный запрос",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {"type": "string"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/{user_id}": {
+      "put":  {
+        "description": "Обновляет пользователей",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "type": "integer",
+            "required": true
+          },
+          {
+            "in": "body",
+            "name": "user",
+            "schema": {
+              "type": "object",
+              "required": ["username", "email", "password"],
+              "properties": {
+                "username": {"type": "string"},
+                "email": {"type": "string"},
+                "password": {"type": "string"}
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                  "id": {"type": "integer"},
+                  "username": {"type": "string"},
+                  "email": {"type": "string"},
+                  "created_at": {"type": "string"},
+                  "updated_at": {"type": "string"}
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+

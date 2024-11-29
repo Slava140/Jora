@@ -1,6 +1,6 @@
 from typing import Any
 
-from sqlalchemy import insert, select
+from sqlalchemy import insert, select, update
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.orm import Session
 
@@ -63,3 +63,26 @@ class UserDAO:
             result = session.execute(query).mappings().one_or_none()
 
         return ReadUserS(**result) if result is not None else None
+
+    @staticmethod
+    def update_by_id(user_id: int, updated_user: CreateUserS) -> ReadUserS:
+        stmt = update(
+            UserM
+        ).where(
+            UserM.id == user_id
+        ).values(
+            **updated_user.model_dump(exclude={'password'})
+        ).returning(
+            '*'
+        )
+
+        with next(get_db()) as session:
+            if UserDAO.is_exists(UserM.email, updated_user.email):
+                raise AlreadyExistsError(f'UserM(email={updated_user.email})')
+
+            if UserDAO.is_exists(UserM.username, updated_user.username):
+                raise AlreadyExistsError(f'UserM(username={updated_user.username})')
+
+            result = session.execute(stmt).mappings().one_or_none()
+
+        return ReadUserS(**result)
