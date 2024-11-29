@@ -19,6 +19,7 @@ psycopg2 = "^2.9.10"
 passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 flask = "^3.1.0"
 flask-swagger-ui = "^4.11.1"
+flask-pydantic = "^0.12.0"
 
 
 [build-system]
