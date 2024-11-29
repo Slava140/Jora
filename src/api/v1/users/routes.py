@@ -2,61 +2,56 @@ import pydantic
 from flask import Blueprint, request, jsonify
 
 from api.v1.users.services import UserService
-from api.v1.users.schemas import CreateUserS, BaseUserS
+from api.v1.users.schemas import CreateUserS, BaseUserS, PaginationQS
 from errors import AlreadyExistsError, WasNotFoundError
 from global_schemas import HTTPError
+
+from flask_pydantic import validate
 
 router = Blueprint(name='users', import_name=__name__, url_prefix='/api/v1/users')
 
 
 @router.post('/')
-def add_user():
+@validate()
+def add_user(body: CreateUserS):
     try:
-        user = CreateUserS(**request.json)
-        created_user = UserService.add(user)
-        return jsonify(created_user.model_dump()), 201
-
-    except pydantic.ValidationError as error:
-        return jsonify(error.errors()), 422
+        created_user = UserService.add(body)
+        return created_user, 201
 
     except AlreadyExistsError as error:
-        return jsonify(HTTPError(message=str(error)).model_dump()), 409
+        return HTTPError(message=str(error)), 409
 
 
 @router.get('/')
-def get_users():
-    limit_arg = request.args.get('limit', default=10, type=int)
-    page_arg = request.args.get('page', default=1, type=int)
-
+@validate(response_many=True)
+def get_users(query: PaginationQS):
     try:
-        users = UserService.get_many(limit_arg, page_arg)
-        return jsonify([user.model_dump() for user in users]), 200
+        users = UserService.get_many(query.limit, query.page)
+        return users
 
     except ValueError as error:
-        return jsonify(HTTPError(message=str(error)).model_dump()), 400
+        return HTTPError(message=str(error)), 400
 
 
-@router.get('/<int:user_id>')
+@router.get('/<user_id>')
+@validate()
 def get_user_by_id(user_id: int):
     user = UserService.get_one_by_id_or_none(user_id)
     if user is None:
-        return jsonify(HTTPError(message='User was not found.').model_dump()), 404
+        return HTTPError(message='User was not found.'), 404
 
-    return jsonify(user.model_dump()), 200
+    return user, 200
 
 
-@router.put('/<int:user_id>')
-def update_user_by_id(user_id: int):
+@router.put('/<user_id>')
+@validate()
+def update_user_by_id(user_id: int, body: BaseUserS):
     try:
-        updated_user = BaseUserS(**request.json)
-        user = UserService.update_by_id(user_id, updated_user)
-        return jsonify(user.model_dump()), 200
-
-    except pydantic.ValidationError as error:
-        return jsonify(error.errors()), 422
+        user = UserService.update_by_id(user_id, body)
+        return user, 200
 
     except AlreadyExistsError as error:
-        return jsonify(HTTPError(message=str(error)).model_dump()), 409
+        return HTTPError(message=str(error)), 409
 
     except WasNotFoundError as error:
-        return jsonify(HTTPError(message=str(error)).model_dump()), 404
+        return HTTPError(message=str(error)), 404
