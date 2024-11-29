@@ -1,3 +1,4 @@
+from copy import deepcopy
 from datetime import datetime
 from typing import Annotated
 from uuid import UUID
@@ -45,3 +46,8 @@ class Base(DeclarativeBase):
             str_255: String(255),
         }
     )
+
+    def to_dict(self) -> dict:
+        d = deepcopy(self.__dict__)
+        d.pop('_sa_instance_state')
+        return d
