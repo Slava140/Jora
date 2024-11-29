@@ -2,7 +2,6 @@ from typing import Any
 
 from sqlalchemy import insert, select
 from sqlalchemy.orm.attributes import InstrumentedAttribute
-from sqlalchemy.exc import DatabaseError
 from sqlalchemy.orm import Session
 
 from database import engine, get_db
@@ -21,7 +20,7 @@ class UserDAO:
         return session.execute(query).scalar_one_or_none() is not None
 
     @staticmethod
-    def insert(user: CreateUserS) -> ReadUserS:
+    def add(user: CreateUserS) -> ReadUserS:
         """
         :except AlreadyExistsError
         """
@@ -46,6 +45,13 @@ class UserDAO:
         return ReadUserS(**result)
 
     @staticmethod
+    def get_many(limit: int, page: int) -> tuple[ReadUserS, ...]:
+        query = select(UserM).limit(limit).offset((page - 1) * limit)
+        with next(get_db()) as session:
+            result = session.execute(query).scalars().fetchall()
+        return tuple(ReadUserS(**data.__dict__) for data in result)
+
+    @staticmethod
     def get_one_by_id_or_none(user_id: int) -> ReadUserS | None:
         query = select(
             UserM
@@ -57,5 +63,3 @@ class UserDAO:
             result = session.execute(query).mappings().one_or_none()
 
         return ReadUserS(**result) if result is not None else None
-
-

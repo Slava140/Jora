@@ -16,3 +16,14 @@ def add_user():
         return jsonify(created_user.model_dump()), 201
     except AlreadyExistsError as error:
         return jsonify({'message': str(error)}), 409
+
+
+@router.route(rule='/', methods=['GET'])
+def get_users():
+    limit_arg = request.args.get('limit', default=10, type=int)
+    page_arg = request.args.get('page', default=1, type=int)
+    try:
+        users = UserService.get_many(limit_arg, page_arg)
+        return jsonify([user.model_dump() for user in users]), 200
+    except ValueError as error:
+        return jsonify({'message': str(error)}), 400
