@@ -117,15 +117,9 @@ class UserDAO:
                 where=(UserM.username, updated_user.username), exclude_where=(UserM.id, user_id), session=session
             ) is None
             if not is_username_unique:
-                raise AlreadyExistsError(f'UserM(email={updated_user.username})')
+                raise AlreadyExistsError(f'UserM(username={updated_user.username})')
 
             result = session.execute(stmt).mappings().one_or_none()
             session.commit()
 
         return ReadUserS(**result)
-
-
-# user_id = 4
-# updated_user = BaseUserS(email='user@example.c', username='string')
-# print(UserDAO.get_by(where=(UserM.email, updated_user.email), exclude_where=(UserM.id, user_id)))
-# print(UserDAO.get_by(where=(UserM.email, "user@example.com")))

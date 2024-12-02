@@ -1,8 +1,10 @@
-import pydantic
-from flask import Blueprint, request, jsonify
+from typing import Union
+
+from flask import Blueprint
 
 from api.v1.users.services import UserService
-from api.v1.users.schemas import CreateUserS, BaseUserS, PaginationQS
+from api.v1.users.schemas import CreateUserS, BaseUserS, PaginationQS, ReadUserS
+from project_types import Resp
 from errors import AlreadyExistsError, WasNotFoundError
 from global_schemas import HTTPError
 
@@ -13,7 +15,10 @@ router = Blueprint(name='users', import_name=__name__, url_prefix='/api/v1/users
 
 @router.post('/')
 @validate()
-def add_user(body: CreateUserS):
+def add_user(body: CreateUserS) -> Union[
+    Resp[CreateUserS, 201],
+    Resp[HTTPError, 409]
+]:
     try:
         created_user = UserService.add(body)
         return created_user, 201
@@ -24,7 +29,11 @@ def add_user(body: CreateUserS):
 
 @router.get('/')
 @validate(response_many=True)
-def get_users(query: PaginationQS):
+def get_users(query: PaginationQS) -> Union[
+    Resp[ReadUserS, ...],
+    Resp[HTTPError, 400],
+
+]:
     try:
         users = UserService.get_many(query.limit, query.page)
         return users
@@ -35,7 +44,10 @@ def get_users(query: PaginationQS):
 
 @router.get('/<user_id>')
 @validate()
-def get_user_by_id(user_id: int):
+def get_user_by_id(user_id: int) -> Union[
+    Resp[ReadUserS, 200],
+    Resp[HTTPError, 404]
+]:
     user = UserService.get_one_by_id_or_none(user_id)
     if user is None:
         return HTTPError(message='User was not found.'), 404
@@ -45,7 +57,11 @@ def get_user_by_id(user_id: int):
 
 @router.put('/<user_id>')
 @validate()
-def update_user_by_id(user_id: int, body: BaseUserS):
+def update_user_by_id(user_id: int, body: BaseUserS) -> Union[
+    Resp[ReadUserS, 200],
+    Resp[HTTPError, 404],
+    Resp[HTTPError, 409]
+]:
     try:
         user = UserService.update_by_id(user_id, body)
         return user, 200

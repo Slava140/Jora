@@ -4,22 +4,20 @@ from flask import Flask
 from flask_swagger_ui import get_swaggerui_blueprint
 
 from api.v1.users.routes import router as users_router
+from docs import Docs
 
-app = Flask(__name__, static_folder=Path(__file__).parent.parent / 'static', static_url_path='/static')
+STATIC_DIR = Path(__file__).parent.parent / 'static'
 
-SWAGGER_URL = '/docs'
-API_URL = '/static/swagger.json'
-
-swagger_route = get_swaggerui_blueprint(
-    SWAGGER_URL,
-    API_URL,
-    config={
-       'app_name': 'My App'
-    }
-)
-
-app.register_blueprint(swagger_route)
+app = Flask(__name__, static_folder=STATIC_DIR, static_url_path='/static')
 app.register_blueprint(users_router)
+
+docs = Docs(title='Jora API', version='v1', app=app)
+docs.add_routes()
+docs.save(STATIC_DIR / 'docs.json')
+
+
+swagger_route = get_swaggerui_blueprint(base_url='/docs', api_url='/static/docs.json')
+app.register_blueprint(swagger_route)
 
 
 @app.route('/', methods=['GET'])

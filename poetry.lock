@@ -459,6 +459,20 @@ files = [
 ]
 
 [[package]]
+name = "openapi-pydantic"
+version = "0.5.0"
+description = "Pydantic OpenAPI schema implementation"
+optional = false
+python-versions = "<4.0,>=3.8"
+files = [
+    {file = "openapi_pydantic-0.5.0-py3-none-any.whl", hash = "sha256:06458efd34969446f42d96d51de39cdef4a9b19daf3cc456a2dfa697458ac542"},
+    {file = "openapi_pydantic-0.5.0.tar.gz", hash = "sha256:a48f88e2904a056e1ef6d4728cfb2f36aa3213ce194fb09fc04259b9007165f0"},
+]
+
+[package.dependencies]
+pydantic = ">=1.8"
+
+[[package]]
 name = "passlib"
 version = "1.7.4"
 description = "comprehensive password hashing framework supporting over 30 schemes"
@@ -869,4 +883,4 @@ watchdog = ["watchdog (>=2.3)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "4e86d092f182f9b4499832895f79773b5efec8ee33a99bfc1af88019c7434b16"
+content-hash = "3922276c97b5c7fa044e3b394cbf1fab72cc14c3ee5bd4355d59b03732653667"
