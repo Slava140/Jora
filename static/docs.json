@@ -218,6 +218,23 @@
           }
         },
         "deprecated": false
+      },
+      "delete": {
+        "parameters": [
+          {
+            "required": true,
+            "deprecated": false,
+            "schema": {
+              "type": "integer"
+            },
+            "name": "user_id",
+            "in": "path",
+            "allowEmptyValue": false,
+            "allowReserved": false
+          }
+        ],
+        "responses": {},
+        "deprecated": false
       }
     }
   },

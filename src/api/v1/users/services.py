@@ -31,3 +31,7 @@ class UserService:
         :except WasNotFoundError
         """
         return UserDAO.update_by_id(user_id, updated_user)
+
+    @staticmethod
+    def delete_by_id(user_id: int) -> None:
+        return UserDAO.delete_by_id(user_id)

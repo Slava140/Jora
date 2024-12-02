@@ -1,6 +1,6 @@
 from typing import Any, Self
 
-from sqlalchemy import insert, select, update, and_
+from sqlalchemy import insert, select, update, and_, delete
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.orm import Session
 
@@ -123,3 +123,12 @@ class UserDAO:
             session.commit()
 
         return ReadUserS(**result)
+
+    @staticmethod
+    def delete_by_id(user_id: int) -> None:
+        stmt = delete(UserM).where(UserM.id == user_id)
+        with next(get_db()) as session:
+            session.execute(stmt)
+            session.commit()
+
+        return None

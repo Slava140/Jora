@@ -6,7 +6,7 @@ from api.v1.users.services import UserService
 from api.v1.users.schemas import CreateUserS, BaseUserS, PaginationQS, ReadUserS
 from project_types import Resp
 from errors import AlreadyExistsError, WasNotFoundError
-from global_schemas import HTTPError
+from global_schemas import HTTPError, EmptyResponse
 
 from flask_pydantic import validate
 
@@ -71,3 +71,10 @@ def update_user_by_id(user_id: int, body: BaseUserS) -> Union[
 
     except WasNotFoundError as error:
         return HTTPError(message=str(error)), 404
+
+
+@router.delete('/<user_id>')
+@validate()
+def delete_user_by_id(user_id: int) -> [EmptyResponse, 200]:
+    UserService.delete_by_id(user_id)
+    return EmptyResponse(), 202
