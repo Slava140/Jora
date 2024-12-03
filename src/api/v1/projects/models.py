@@ -2,7 +2,8 @@ import enum
 
 from sqlalchemy.orm import Mapped
 
-from database import Base, pk_int, fk_user_id, str_255, created_at, updated_at
+from database import Base, pk_int, fk_user_id, str_255, created_at, updated_at, str_500
+
 
 # description
 # tasks - project
@@ -20,7 +21,7 @@ class ProjectM(Base):
 
     id:                 Mapped[pk_int]
     title:              Mapped[str_255]
-    description:        Mapped[str_255 | None]
+    description:        Mapped[str_500 | None]
     created_at:         Mapped[created_at]
     updated_at:         Mapped[updated_at]
 

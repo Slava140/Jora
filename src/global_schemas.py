@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, PositiveInt
 
 
 class HTTPError(BaseModel):
@@ -7,3 +7,8 @@ class HTTPError(BaseModel):
 
 class EmptyResponse(BaseModel):
     ...
+
+
+class PaginationQS(BaseModel):
+    page:           PositiveInt = 1
+    limit:          PositiveInt = 10

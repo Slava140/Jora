@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from openapi_pydantic.v3.v3_0 import OpenAPI
 from openapi_pydantic.v3.v3_0.util import PydanticSchema, construct_open_api_with_schema_class
 
-from project_types import Resp
+from _types import Resp
 
 
 class Docs:

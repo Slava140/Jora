@@ -33,6 +33,7 @@ def password_validator(value: str) -> str:
 
 
 StrFrom3To255 = Annotated[str, Field(min_length=3, max_length=255)]
+Str500 = Annotated[str, Field(max_length=500)]
 
 UTCDatetime = Annotated[datetime, AfterValidator(is_utc_datetime_validator)]
 PasswordStr = Annotated[str, BeforeValidator(password_validator)]

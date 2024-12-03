@@ -3,10 +3,10 @@ from typing import Union
 from flask import Blueprint
 
 from api.v1.users.services import UserService
-from api.v1.users.schemas import CreateUserS, BaseUserS, PaginationQS, ReadUserS
-from project_types import Resp
+from api.v1.users.schemas import CreateUserS, BaseUserS, ReadUserS
+from _types import Resp
 from errors import AlreadyExistsError, WasNotFoundError
-from global_schemas import HTTPError, EmptyResponse
+from global_schemas import HTTPError, EmptyResponse, PaginationQS
 
 from flask_pydantic import validate
 
@@ -16,7 +16,7 @@ router = Blueprint(name='users', import_name=__name__, url_prefix='/api/v1/users
 @router.post('/')
 @validate()
 def add_user(body: CreateUserS) -> Union[
-    Resp[CreateUserS, 201],
+    Resp[ReadUserS, 201],
     Resp[HTTPError, 409]
 ]:
     try:
@@ -30,9 +30,8 @@ def add_user(body: CreateUserS) -> Union[
 @router.get('/')
 @validate(response_many=True)
 def get_users(query: PaginationQS) -> Union[
-    Resp[ReadUserS, ...],
-    Resp[HTTPError, 400],
-
+    Resp[ReadUserS, 200],
+    Resp[HTTPError, 400]
 ]:
     try:
         users = UserService.get_many(query.limit, query.page)
@@ -75,6 +74,6 @@ def update_user_by_id(user_id: int, body: BaseUserS) -> Union[
 
 @router.delete('/<user_id>')
 @validate()
-def delete_user_by_id(user_id: int) -> [EmptyResponse, 200]:
+def delete_user_by_id(user_id: int) -> Resp[EmptyResponse, 202]:
     UserService.delete_by_id(user_id)
     return EmptyResponse(), 202

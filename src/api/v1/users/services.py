@@ -1,6 +1,5 @@
 from api.v1.users.dao import UserDAO
 from api.v1.users.schemas import CreateUserS, ReadUserS, BaseUserS
-from errors import AlreadyExistsError
 
 
 class UserService:
@@ -12,7 +11,7 @@ class UserService:
         return UserDAO.add(user)
 
     @staticmethod
-    def get_many(limit: int, page: int) -> tuple[ReadUserS, ...]:
+    def get_many(limit: int, page: int) -> list[ReadUserS]:
         """
         :except ValueError
         """
@@ -21,7 +20,7 @@ class UserService:
         return UserDAO.get_many(limit, page)
 
     @staticmethod
-    def get_one_by_id_or_none(user_id: int) -> ReadUserS:
+    def get_one_by_id_or_none(user_id: int) -> ReadUserS | None:
         return UserDAO.get_one_by_id_or_none(user_id)
 
     @staticmethod

@@ -4,7 +4,7 @@ from sqlalchemy import insert, select, update, and_, delete
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.orm import Session
 
-from database import engine, get_db
+from database import get_db
 
 from api.v1.users.models import UserM
 from api.v1.users.schemas import CreateUserS, ReadUserS, BaseUserS
@@ -18,7 +18,7 @@ class UserDAO:
     #     return get_db()
 
     @staticmethod
-    def get_by(
+    def get_one(
             where: tuple[InstrumentedAttribute, Any],
             exclude_where: tuple[InstrumentedAttribute, Any] | None = None,
             session: Session | None = None) -> UserM | None:
@@ -51,23 +51,23 @@ class UserDAO:
         ).returning('*')
 
         with next(get_db()) as session:
-            if UserDAO.get_by((UserM.email, user.email), session=session) is not None:
+            if UserDAO.get_one((UserM.email, user.email), session=session) is not None:
                 raise AlreadyExistsError(f'UserM(email={user.email})')
 
-            if UserDAO.get_by((UserM.username, user.username), session=session) is not None:
+            if UserDAO.get_one((UserM.username, user.username), session=session) is not None:
                 raise AlreadyExistsError(f'UserM(username={user.username})')
 
-            result = session.execute(stmt).mappings().one_or_none()
+            result = session.execute(stmt).mappings().one()
             session.commit()
 
         return ReadUserS(**result)
 
     @staticmethod
-    def get_many(limit: int, page: int) -> tuple[ReadUserS, ...]:
+    def get_many(limit: int, page: int) -> list[ReadUserS]:
         query = select(UserM).limit(limit).offset((page - 1) * limit)
         with next(get_db()) as session:
             result = session.execute(query).scalars().fetchall()
-        return tuple(ReadUserS(**data.__dict__) for data in result)
+        return [ReadUserS(**data.to_dict()) for data in result]
 
     @staticmethod
     def get_one_by_id_or_none(user_id: int) -> ReadUserS | None:
@@ -77,10 +77,10 @@ class UserDAO:
             UserM.id == user_id
         )
 
-        with engine.connect() as session:
-            result = session.execute(query).mappings().one_or_none()
+        with next(get_db()) as session:
+            result = session.execute(query).scalar_one_or_none()
 
-        return ReadUserS(**result) if result is not None else None
+        return ReadUserS(**result.to_dict()) if result is not None else None
 
     @staticmethod
     def update_by_id(user_id: int, updated_user: BaseUserS) -> ReadUserS:
@@ -94,32 +94,27 @@ class UserDAO:
             UserM.id == user_id
         ).values(
             **updated_user.model_dump()
-        ).returning(
-            '*'
-        )
+        ).returning('*')
 
         with next(get_db()) as session:
-            user = UserDAO.get_by(where=(UserM.id, user_id), session=session)
+            user = UserDAO.get_one(where=(UserM.id, user_id), session=session)
 
             if user is None:
                 raise WasNotFoundError(f'UserM(id={user_id})')
 
-            if user.email == updated_user.email and user.username == updated_user.username:
-                return ReadUserS(**user.to_dict())
-
-            is_email_unique = UserDAO.get_by(
+            is_email_unique = UserDAO.get_one(
                 where=(UserM.email, updated_user.email), exclude_where=(UserM.id, user_id), session=session
             ) is None
             if not is_email_unique:
                 raise AlreadyExistsError(f'UserM(email={updated_user.email})')
 
-            is_username_unique = UserDAO.get_by(
+            is_username_unique = UserDAO.get_one(
                 where=(UserM.username, updated_user.username), exclude_where=(UserM.id, user_id), session=session
             ) is None
             if not is_username_unique:
                 raise AlreadyExistsError(f'UserM(username={updated_user.username})')
 
-            result = session.execute(stmt).mappings().one_or_none()
+            result = session.execute(stmt).mappings().one()
             session.commit()
 
         return ReadUserS(**result)
@@ -127,6 +122,7 @@ class UserDAO:
     @staticmethod
     def delete_by_id(user_id: int) -> None:
         stmt = delete(UserM).where(UserM.id == user_id)
+
         with next(get_db()) as session:
             session.execute(stmt)
             session.commit()

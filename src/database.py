@@ -24,6 +24,7 @@ def get_db():
 sql_utc_now = text("timezone('utc', now())")
 
 str_255 = Annotated[str, 255]
+str_500 = Annotated[str, 500]
 
 str_255_unique = Annotated[str, mapped_column(String(255), unique=True)]
 
@@ -34,7 +35,7 @@ created_at = Annotated[datetime, mapped_column(DateTime(timezone=True), server_d
 updated_at = Annotated[datetime, mapped_column(DateTime(timezone=True), server_default=sql_utc_now, onupdate=sql_utc_now)]
 
 
-fk_user_id = Annotated[int, mapped_column(ForeignKey(column='users.id'))]
+fk_user_id = Annotated[int, mapped_column(ForeignKey(column='users.id', ondelete='CASCADE'))]
 fk_task_id = Annotated[int, mapped_column(ForeignKey(column='tasks.id'))]
 #
 # datetime_utc_tz = Annotated[datetime, mapped_column(DateTime(timezone=True))]
@@ -44,6 +45,7 @@ class Base(DeclarativeBase):
     registry = registry(
         type_annotation_map={
             str_255: String(255),
+            str_500: String(500),
         }
     )
 
