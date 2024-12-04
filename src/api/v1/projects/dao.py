@@ -52,11 +52,11 @@ class ProjectDAO:
         return ReadProjectS(**result)
 
     @staticmethod
-    def get_many(limit: int, page: int) -> list[ReadProjectS]:
+    def get_many(limit: int, page: int) -> tuple[ReadProjectS, ...]:
         query = select(ProjectM).limit(limit).offset((page - 1) * limit)
         with next(get_db()) as session:
             result = session.execute(query).scalars().fetchall()
-        return [ReadProjectS(**data.to_dict()) for data in result]
+        return tuple(ReadProjectS(**data.to_dict()) for data in result)
 
     @staticmethod
     def get_one_by_id_or_none(project_id: int) -> ReadProjectS | None:

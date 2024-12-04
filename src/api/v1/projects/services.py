@@ -11,7 +11,7 @@ class ProjectService:
         return ProjectDAO.add(project)
 
     @staticmethod
-    def get_many(limit: int, page: int) -> list[ReadProjectS]:
+    def get_many(limit: int, page: int) -> tuple[ReadProjectS, ...]:
         """
         :except ValueError
         """

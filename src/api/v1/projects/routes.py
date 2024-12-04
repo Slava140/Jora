@@ -1,10 +1,10 @@
 from typing import Union
 
 from flask import Blueprint
-from flask_pydantic import validate
 
 from api.v1.projects.schemas import CreateProjectS, ReadProjectS
 from _types import Resp
+from validation_decorator import validate
 from api.v1.projects.services import ProjectService
 from errors import WasNotFoundError
 from global_schemas import HTTPError, PaginationQS, EmptyResponse
@@ -27,20 +27,20 @@ def add_project(body: CreateProjectS) -> Union[
 
 
 @router.get('/')
-@validate(response_many=True)
+@validate()
 def get_projects(query: PaginationQS) -> Union[
     Resp[ReadProjectS, 200],
     Resp[HTTPError, 400]
 ]:
     try:
         projects = ProjectService.get_many(query.limit, query.page)
-        return projects
+        return projects, 200
 
     except ValueError as error:
         return HTTPError(message=str(error)), 400
 
 
-@router.get('/<project_id>')
+@router.get('/<int:project_id>')
 @validate()
 def get_project_by_id(project_id: int) -> Union[
     Resp[ReadProjectS, 200],
@@ -53,7 +53,7 @@ def get_project_by_id(project_id: int) -> Union[
     return project, 200
 
 
-@router.put('/<project_id>')
+@router.put('/<int:project_id>')
 @validate()
 def update_project_by_id(project_id: int, body: CreateProjectS) -> Union[
     Resp[ReadProjectS, 200],
@@ -67,7 +67,7 @@ def update_project_by_id(project_id: int, body: CreateProjectS) -> Union[
         return HTTPError(message=str(error)), 404
 
 
-@router.delete('/<project_id>')
+@router.delete('/<int:project_id>')
 @validate()
 def delete_project_by_id(project_id: int) -> Resp[EmptyResponse, 202]:
     ProjectService.delete_by_id(project_id)
