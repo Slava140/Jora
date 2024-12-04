@@ -1,6 +1,6 @@
 from typing import Union
 
-from flask import Blueprint, request
+from flask import Blueprint
 
 from api.v1.users.services import UserService
 from api.v1.users.schemas import CreateUserS, BaseUserS, ReadUserS, LoginS, LoggedInS
