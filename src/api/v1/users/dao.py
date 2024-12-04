@@ -1,4 +1,4 @@
-from typing import Any, Self
+from typing import Any
 
 from sqlalchemy import insert, select, update, and_, delete
 from sqlalchemy.orm.attributes import InstrumentedAttribute
@@ -7,8 +7,8 @@ from sqlalchemy.orm import Session
 from database import get_db
 
 from api.v1.users.models import UserM
-from api.v1.users.schemas import CreateUserS, ReadUserS, BaseUserS
-from api.v1.auth.utils import get_hashed_password
+from api.v1.users.schemas import CreateUserS, ReadUserS, BaseUserS, FullUserS
+from api.v1.users.utils import get_hashed_password
 from errors import AlreadyExistsError, WasNotFoundError
 
 
@@ -18,7 +18,7 @@ class UserDAO:
     #     return get_db()
 
     @staticmethod
-    def get_one(
+    def _get_one_or_none(
             where: tuple[InstrumentedAttribute, Any],
             exclude_where: tuple[InstrumentedAttribute, Any] | None = None,
             session: Session | None = None) -> UserM | None:
@@ -51,10 +51,10 @@ class UserDAO:
         ).returning('*')
 
         with next(get_db()) as session:
-            if UserDAO.get_one((UserM.email, user.email), session=session) is not None:
+            if UserDAO._get_one_or_none((UserM.email, user.email), session=session) is not None:
                 raise AlreadyExistsError(f'UserM(email={user.email})')
 
-            if UserDAO.get_one((UserM.username, user.username), session=session) is not None:
+            if UserDAO._get_one_or_none((UserM.username, user.username), session=session) is not None:
                 raise AlreadyExistsError(f'UserM(username={user.username})')
 
             result = session.execute(stmt).mappings().one()
@@ -83,6 +83,16 @@ class UserDAO:
         return ReadUserS(**result.to_dict()) if result is not None else None
 
     @staticmethod
+    def get_one_by_email_or_none(user_email: str) -> ReadUserS | None:
+        user = UserDAO._get_one_or_none(where=(UserM.email == user_email))
+        return ReadUserS(**user.to_dict()) if user is not None else None
+
+    @staticmethod
+    def get_user_with_password(user_email: str) -> FullUserS:
+        user = UserDAO._get_one_or_none(where=(UserM.email == user_email))
+        return FullUserS(**user.to_dict()) if user is not None else None
+
+    @staticmethod
     def update_by_id(user_id: int, updated_user: BaseUserS) -> ReadUserS:
         """
         :except AlreadyExistsError
@@ -97,18 +107,18 @@ class UserDAO:
         ).returning('*')
 
         with next(get_db()) as session:
-            user = UserDAO.get_one(where=(UserM.id, user_id), session=session)
+            user = UserDAO._get_one_or_none(where=(UserM.id, user_id), session=session)
 
             if user is None:
                 raise WasNotFoundError(f'UserM(id={user_id})')
 
-            is_email_unique = UserDAO.get_one(
+            is_email_unique = UserDAO._get_one_or_none(
                 where=(UserM.email, updated_user.email), exclude_where=(UserM.id, user_id), session=session
             ) is None
             if not is_email_unique:
                 raise AlreadyExistsError(f'UserM(email={updated_user.email})')
 
-            is_username_unique = UserDAO.get_one(
+            is_username_unique = UserDAO._get_one_or_none(
                 where=(UserM.username, updated_user.username), exclude_where=(UserM.id, user_id), session=session
             ) is None
             if not is_username_unique:

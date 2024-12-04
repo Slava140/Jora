@@ -24,6 +24,10 @@ class UserService:
         return UserDAO.get_one_by_id_or_none(user_id)
 
     @staticmethod
+    def get_one_by_email_or_none(user_email: str) -> ReadUserS | None:
+        return UserDAO.get_one_by_email_or_none(user_email)
+
+    @staticmethod
     def update_by_id(user_id: int, updated_user: BaseUserS) -> ReadUserS:
         """
         :except AlreadyExistsError
