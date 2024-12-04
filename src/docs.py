@@ -94,8 +94,8 @@ class Docs:
     def add_routes(self):
         path_func_dict = self.app.view_functions
         for rule in self.app.url_map.iter_rules():
-            path = rule.rule.replace('<', '{').replace('>', '}')
-
+            *_, path = rule.rule.strip('<>').split(':')
+            path = '{' + path + '}'
             methods = [method.lower() for method in rule.methods & set(self.methods_to_show)]
 
             annotations: dict = path_func_dict[rule.endpoint].__annotations__
@@ -107,7 +107,6 @@ class Docs:
                     responses.append(returns)
                 else:
                     responses += [typing.get_args(response) for response in returns]
-
             query_schema = annotations.get('query')
             body_schema = annotations.get('body')
             arguments = {name: annotations.get(name) for name in rule.arguments}

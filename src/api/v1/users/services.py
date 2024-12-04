@@ -14,7 +14,7 @@ class UserService:
         return UserDAO.add(user)
 
     @staticmethod
-    def get_many(limit: int, page: int) -> list[ReadUserS]:
+    def get_many(limit: int, page: int) -> tuple[ReadUserS, ...]:
         """
         :except ValueError
         """

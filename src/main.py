@@ -1,8 +1,9 @@
 from pathlib import Path
 
-from flask import Flask
+from flask import Flask, jsonify
 from flask_swagger_ui import get_swaggerui_blueprint
 from flask_jwt_extended import JWTManager
+from pydantic import ValidationError
 
 from api.v1.users.routes import router as users_router
 from api.v1.projects.routes import router as projects_router
@@ -28,6 +29,17 @@ docs.save(STATIC_DIR / 'docs.json')
 
 swagger_route = get_swaggerui_blueprint(base_url='/docs', api_url='/static/docs.json')
 app.register_blueprint(swagger_route)
+
+
+@app.errorhandler(ValidationError)
+def handle_validation_error(error: ValidationError):
+    return jsonify([
+        {
+            'loc': e['loc'],
+            'input': e['input'],
+            'msg': e['msg']
+        } for e in error.errors()
+    ]), 422
 
 
 @app.route('/', methods=['GET'])

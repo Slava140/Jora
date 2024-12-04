@@ -10,7 +10,7 @@
     }
   ],
   "paths": {
-    "/static/{path:filename}": {
+    "{filename}": {
       "get": {
         "parameters": [
           {
@@ -27,7 +27,7 @@
         "deprecated": false
       }
     },
-    "/api/v1/users/": {
+    "{/api/v1/users/}": {
       "get": {
         "parameters": [
           {
@@ -122,7 +122,7 @@
         "deprecated": false
       }
     },
-    "/api/v1/users/{user_id}": {
+    "{user_id}": {
       "get": {
         "parameters": [
           {
@@ -248,7 +248,7 @@
         "deprecated": false
       }
     },
-    "/api/v1/projects/": {
+    "{/api/v1/projects/}": {
       "get": {
         "parameters": [
           {
@@ -343,7 +343,7 @@
         "deprecated": false
       }
     },
-    "/api/v1/projects/{project_id}": {
+    "{/api/v1/projects/<project_id}": {
       "get": {
         "parameters": [
           {
@@ -459,7 +459,7 @@
         "deprecated": false
       }
     },
-    "/auth/login": {
+    "{/auth/login}": {
       "post": {
         "parameters": [],
         "requestBody": {

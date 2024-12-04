@@ -5,10 +5,9 @@ from flask import Blueprint
 from api.v1.users.services import UserService
 from api.v1.users.schemas import CreateUserS, BaseUserS, ReadUserS, LoginS, LoggedInS
 from _types import Resp
+from validation_decorator import validate
 from errors import AlreadyExistsError, WasNotFoundError, InvalidEmailOrPasswordError
 from global_schemas import HTTPError, EmptyResponse, PaginationQS
-
-from flask_pydantic import validate
 
 
 router = Blueprint(name='users', import_name=__name__, url_prefix='/api/v1/users')
@@ -30,7 +29,7 @@ def add_user(body: CreateUserS) -> Union[
 
 
 @router.get('/')
-@validate(response_many=True)
+@validate()
 def get_users(query: PaginationQS) -> Union[
     Resp[ReadUserS, 200],
     Resp[HTTPError, 400]
@@ -43,7 +42,7 @@ def get_users(query: PaginationQS) -> Union[
         return HTTPError(message=str(error)), 400
 
 
-@router.get('/<user_id>')
+@router.get('/<int:user_id>')
 @validate()
 def get_user_by_id(user_id: int) -> Union[
     Resp[ReadUserS, 200],
@@ -56,7 +55,7 @@ def get_user_by_id(user_id: int) -> Union[
     return user, 200
 
 
-@router.put('/<user_id>')
+@router.put('/<int:user_id>')
 @validate()
 def update_user_by_id(user_id: int, body: BaseUserS) -> Union[
     Resp[ReadUserS, 200],
@@ -64,7 +63,7 @@ def update_user_by_id(user_id: int, body: BaseUserS) -> Union[
     Resp[HTTPError, 409]
 ]:
     try:
-        user = UserService.update_by_id(user_id, body)
+        user = UserService.update_by_id(int(user_id), body)
         return user, 200
 
     except AlreadyExistsError as error:
@@ -74,7 +73,7 @@ def update_user_by_id(user_id: int, body: BaseUserS) -> Union[
         return HTTPError(message=str(error)), 404
 
 
-@router.delete('/<user_id>')
+@router.delete('/<int:user_id>')
 @validate()
 def delete_user_by_id(user_id: int) -> Resp[EmptyResponse, 202]:
     UserService.delete_by_id(user_id)
