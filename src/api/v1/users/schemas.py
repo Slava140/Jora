@@ -19,3 +19,12 @@ class ReadUserS(BaseUserS):
 
 class FullUserS(ReadUserS):
     hashed_password:    str
+
+
+class LoginS(BaseModel):
+    email:      EmailStr
+    password:   str
+
+
+class LoggedInS(ReadUserS):
+    access_token:   str

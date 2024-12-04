@@ -1,16 +1,18 @@
 from typing import Union
 
-from flask import Blueprint
+from flask import Blueprint, request
 
 from api.v1.users.services import UserService
-from api.v1.users.schemas import CreateUserS, BaseUserS, ReadUserS
+from api.v1.users.schemas import CreateUserS, BaseUserS, ReadUserS, LoginS, LoggedInS
 from _types import Resp
-from errors import AlreadyExistsError, WasNotFoundError
+from errors import AlreadyExistsError, WasNotFoundError, InvalidEmailOrPasswordError
 from global_schemas import HTTPError, EmptyResponse, PaginationQS
 
 from flask_pydantic import validate
 
+
 router = Blueprint(name='users', import_name=__name__, url_prefix='/api/v1/users')
+auth_router = Blueprint(name='auth', import_name=__name__, url_prefix='/auth')
 
 
 @router.post('/')
@@ -77,3 +79,16 @@ def update_user_by_id(user_id: int, body: BaseUserS) -> Union[
 def delete_user_by_id(user_id: int) -> Resp[EmptyResponse, 202]:
     UserService.delete_by_id(user_id)
     return EmptyResponse(), 202
+
+
+@auth_router.post('/login')
+@validate()
+def login(body: LoginS) -> Union[
+    Resp[LoggedInS, 200],
+    Resp[HTTPError, 401]
+]:
+    try:
+        logged_in_user = UserService.login(body)
+        return logged_in_user, 200
+    except InvalidEmailOrPasswordError as error:
+        return HTTPError(message=str(error)), 401

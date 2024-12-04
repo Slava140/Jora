@@ -89,7 +89,7 @@ class UserDAO:
 
     @staticmethod
     def get_user_with_password(user_email: str) -> FullUserS:
-        user = UserDAO._get_one_or_none(where=(UserM.email == user_email))
+        user = UserDAO._get_one_or_none(where=(UserM.email, user_email))
         return FullUserS(**user.to_dict()) if user is not None else None
 
     @staticmethod
