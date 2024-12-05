@@ -33,6 +33,20 @@ class Docs:
 
         self.paths: dict[str, dict] = {}
 
+    @staticmethod
+    def __prepare_path(path: str):
+        stripped_path = path.strip('/')
+        result = []
+        for part in stripped_path.split('/'):
+            if part.startswith('<') and part.endswith('>'):
+                part_without_brackets = part.strip('<>')
+                *_, name = part_without_brackets.split(':')
+                result.append('{' + name + '}')
+            else:
+                result.append(part)
+
+        return '/' + '/'.join(result)
+
     def add_route(self,
                   method: Literal['get', 'post', 'put', 'patch', 'delete'],
                   path: str, description: str,
@@ -94,7 +108,7 @@ class Docs:
     def add_routes(self):
         path_func_dict = self.app.view_functions
         for rule in self.app.url_map.iter_rules():
-            path = rule.rule.replace('<', '{').replace('>', '}')
+            path = self.__prepare_path(rule.rule)
             methods = [method.lower() for method in rule.methods & set(self.methods_to_show)]
 
             annotations: dict = path_func_dict[rule.endpoint].__annotations__
