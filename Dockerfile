@@ -12,10 +12,14 @@ RUN curl -sSL https://install.python-poetry.org | python3 -
 
 WORKDIR /jora/
 
-COPY . .
+COPY poetry.lock pyproject.toml ./
 
+RUN poetry config virtualenvs.create false
 RUN poetry install --no-interaction
 
-WORKDIR ./src/
+COPY . .
 
-CMD ["python", "main.py"]
+CMD ["alembic", "revision", "--autogenerate"]
+CMD ["alembic", "upgrade", "head"]
+
+CMD ["python", "src/main.py"]

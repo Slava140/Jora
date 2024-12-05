@@ -1,7 +1,12 @@
+import os
 from datetime import timedelta
 from pathlib import Path
+from os import path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+env_path = Path(__file__).parent.parent / '.env'
 
 
 class Settings(BaseSettings):
@@ -33,7 +38,8 @@ class Settings(BaseSettings):
     def refresh_token_ttl_timedelta(self):
         return timedelta(seconds=self.REFRESH_TOKEN_TTL)
 
-    model_config = SettingsConfigDict(env_file=Path(__file__).parent.parent / '.env')
+    if path.exists(env_path):
+        model_config = SettingsConfigDict(env_file=env_path)
 
 
 settings = Settings()
