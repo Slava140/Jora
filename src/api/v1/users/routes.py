@@ -36,7 +36,7 @@ def get_users(query: PaginationQS) -> Union[
 ]:
     try:
         users = UserService.get_many(query.limit, query.page)
-        return users
+        return users, 200
 
     except ValueError as error:
         return HTTPError(message=str(error)), 400

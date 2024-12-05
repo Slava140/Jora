@@ -1,5 +1,4 @@
 #!/bin/sh
-set -e
 
 echo "Применение миграции"
 alembic upgrade head
