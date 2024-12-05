@@ -19,7 +19,4 @@ RUN poetry install --no-interaction
 
 COPY . .
 
-CMD ["alembic", "revision", "--autogenerate"]
-CMD ["alembic", "upgrade", "head"]
-
-CMD ["python", "src/main.py"]
+CMD ["sh", "entrypoint.sh"]
