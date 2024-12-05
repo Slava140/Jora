@@ -1,6 +1,5 @@
 .env
 pg_data/
-static/*
 
 __pycache__/
 .idea/
