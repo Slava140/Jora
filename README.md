@@ -18,7 +18,7 @@
    docker-compose up -d --build
    ```
 
-4. Выполнить **после первого запуска**. При последующих **не нужно**, данные сохраняются в `pg_data`.
+4. Выполните **после первого запуска**. При последующих **не нужно**, данные сохраняются в `pg_data`.
    - Подключитесь к контейнеру `postgres`.
      ```bash
      docker exec -it postgres psql -U postgres
@@ -31,5 +31,8 @@
      ```bash
      exit
      ```
-5. 
-   
+5. Перезапустите контейнер.
+   ```bash
+   docker-compose down
+   docker-compose up -d --build
+   ```
