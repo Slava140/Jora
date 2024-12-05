@@ -9,5 +9,19 @@ services:
     ports:
       - "5433:5432"
 
+  app:
+    container_name: app
+    build:
+      context: .
+    env_file:
+      - .env
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+
 volumes:
   pg_data:

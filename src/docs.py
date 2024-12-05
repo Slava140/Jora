@@ -94,8 +94,7 @@ class Docs:
     def add_routes(self):
         path_func_dict = self.app.view_functions
         for rule in self.app.url_map.iter_rules():
-            *_, path = rule.rule.strip('<>').split(':')
-            path = '{' + path + '}'
+            path = rule.rule.replace('<', '{').replace('>', '}')
             methods = [method.lower() for method in rule.methods & set(self.methods_to_show)]
 
             annotations: dict = path_func_dict[rule.endpoint].__annotations__

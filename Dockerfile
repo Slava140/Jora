@@ -6,7 +6,7 @@ ENV PYTHONUNBUFFERED=1 \
     POETRY_CACHE_DIR='/var/cache/pypoetry' \
     POETRY_HOME='/usr/local'
 
-RUN apk add curl
+RUN apk add curl postgresql-dev
 
 RUN curl -sSL https://install.python-poetry.org | python3 -
 
@@ -18,4 +18,4 @@ RUN poetry install --no-interaction
 
 WORKDIR ./src/
 
-#CMD ["uvicorn", "main:app"]
+CMD ["python", "main.py"]
