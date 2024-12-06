@@ -1,6 +1,6 @@
 from typing import Union
 
-from flask import Blueprint
+from flask import Blueprint, jsonify
 
 from api.v1.projects.schemas import CreateProjectS, ReadProjectS
 from _types import Resp
@@ -20,10 +20,10 @@ def add_project(body: CreateProjectS) -> Union[
 ]:
     try:
         created_project = ProjectService.add(body)
-        return created_project, 201
+        return jsonify(created_project.model_dump()), 201
 
     except WasNotFoundError as error:
-        return HTTPError(message=str(error)), 404
+        return jsonify(HTTPError(message=str(error)).model_dump()), 404
 
 
 @router.get('/')
@@ -34,10 +34,10 @@ def get_projects(query: PaginationQS) -> Union[
 ]:
     try:
         projects = ProjectService.get_many(query.limit, query.page)
-        return projects, 200
+        return jsonify([project.model_dump() for project in projects]), 200
 
     except ValueError as error:
-        return HTTPError(message=str(error)), 400
+        return jsonify(HTTPError(message=str(error)).model_dump()), 400
 
 
 @router.get('/<int:project_id>')
@@ -48,9 +48,9 @@ def get_project_by_id(project_id: int) -> Union[
 ]:
     project = ProjectService.get_one_by_id_or_none(project_id)
     if project is None:
-        return HTTPError(message=f'Project with id {project_id} was not found.'), 404
+        return jsonify(HTTPError(message=f'Project with id {project_id} was not found.')), 404
 
-    return project, 200
+    return jsonify(project.model_dump()), 200
 
 
 @router.put('/<int:project_id>')
@@ -61,14 +61,14 @@ def update_project_by_id(project_id: int, body: CreateProjectS) -> Union[
 ]:
     try:
         project = ProjectService.update_by_id(project_id, body)
-        return project, 200
+        return jsonify(project.model_dump()), 200
 
     except WasNotFoundError as error:
-        return HTTPError(message=str(error)), 404
+        return jsonify(HTTPError(message=str(error)).model_dump()), 404
 
 
 @router.delete('/<int:project_id>')
 @validate()
 def delete_project_by_id(project_id: int) -> Resp[EmptyResponse, 202]:
     ProjectService.delete_by_id(project_id)
-    return EmptyResponse(), 202
+    return jsonify({}), 202

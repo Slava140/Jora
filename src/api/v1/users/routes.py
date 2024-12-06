@@ -1,6 +1,6 @@
 from typing import Union
 
-from flask import Blueprint
+from flask import Blueprint, jsonify
 
 from api.v1.users.services import UserService
 from api.v1.users.schemas import CreateUserS, BaseUserS, ReadUserS, LoginS, LoggedInS
@@ -22,10 +22,10 @@ def add_user(body: CreateUserS) -> Union[
 ]:
     try:
         created_user = UserService.add(body)
-        return created_user, 201
+        return jsonify(created_user.model_dump()), 201
 
     except AlreadyExistsError as error:
-        return HTTPError(message=str(error)), 409
+        return jsonify(HTTPError(message=str(error)).model_dump()), 409
 
 
 @router.get('/')
@@ -36,10 +36,10 @@ def get_users(query: PaginationQS) -> Union[
 ]:
     try:
         users = UserService.get_many(query.limit, query.page)
-        return users, 200
+        return jsonify([user.model_dump() for user in users]), 200
 
     except ValueError as error:
-        return HTTPError(message=str(error)), 400
+        return jsonify(HTTPError(message=str(error)).model_dump()), 400
 
 
 @router.get('/<int:user_id>')
@@ -50,9 +50,9 @@ def get_user_by_id(user_id: int) -> Union[
 ]:
     user = UserService.get_one_by_id_or_none(user_id)
     if user is None:
-        return HTTPError(message='User was not found.'), 404
+        return jsonify(HTTPError(message='User was not found.').model_dump()), 404
 
-    return user, 200
+    return jsonify(user.model_dump()), 200
 
 
 @router.put('/<int:user_id>')
@@ -64,20 +64,20 @@ def update_user_by_id(user_id: int, body: BaseUserS) -> Union[
 ]:
     try:
         user = UserService.update_by_id(int(user_id), body)
-        return user, 200
+        return jsonify(user.model_dump()), 200
 
     except AlreadyExistsError as error:
-        return HTTPError(message=str(error)), 409
+        return jsonify(HTTPError(message=str(error)).model_dump()), 409
 
     except WasNotFoundError as error:
-        return HTTPError(message=str(error)), 404
+        return jsonify(HTTPError(message=str(error)).model_dump()), 404
 
 
 @router.delete('/<int:user_id>')
 @validate()
 def delete_user_by_id(user_id: int) -> Resp[EmptyResponse, 202]:
     UserService.delete_by_id(user_id)
-    return EmptyResponse(), 202
+    return jsonify({}), 202
 
 
 @auth_router.post('/login')
@@ -88,6 +88,6 @@ def login(body: LoginS) -> Union[
 ]:
     try:
         logged_in_user = UserService.login(body)
-        return logged_in_user, 200
+        return jsonify(logged_in_user.model_dump()), 200
     except InvalidEmailOrPasswordError as error:
-        return HTTPError(message=str(error)), 401
+        return jsonify(HTTPError(message=str(error)).model_dump()), 401

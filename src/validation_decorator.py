@@ -24,22 +24,6 @@ def validate():
                 else:
                     raise TypeError('query must be pydantic schema.')
 
-            result = func(*args, **kwargs)
-
-            if isinstance(result, BaseModel):
-                return jsonify(result.model_dump()), 200
-
-            elif type(result) is tuple and len(result) >= 2:
-                if isinstance(result[0], BaseModel) and type(result[1]) is int:
-                    schema, status_code = result
-                    return jsonify(schema.model_dump()), status_code
-                elif isinstance(result[0], tuple) and type(result[1]) is int:
-                    schemas, status_code = result
-                    return jsonify([schema.model_dump() for schema in schemas]), status_code
-                else:
-                    schemas, status_code = result, 200
-                    return jsonify([schema.model_dump() for schema in schemas]), status_code
-            else:
-                return result
+            return func(*args, **kwargs)
         return wrapper
     return decorate
