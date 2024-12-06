@@ -21,6 +21,11 @@ class FullUserS(ReadUserS):
     hashed_password:    str
 
 
+class AccessTokenPayloadS(BaseModel):
+    sub:    NonNegativeInt
+    exp:    NonNegativeInt
+
+
 class LoginS(BaseModel):
     email:      EmailStr
     password:   str
@@ -28,3 +33,4 @@ class LoginS(BaseModel):
 
 class LoggedInS(ReadUserS):
     access_token:   str
+    exp:            NonNegativeInt

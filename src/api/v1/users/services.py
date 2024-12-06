@@ -1,7 +1,9 @@
+from datetime import datetime, timezone
+
 from api.v1.users.dao import UserDAO
-from api.v1.users.schemas import CreateUserS, ReadUserS, BaseUserS, LoginS, LoggedInS
-from api.v1.users.utils import is_correct_password
-from flask_jwt_extended import create_access_token
+from api.v1.users.schemas import CreateUserS, ReadUserS, BaseUserS, LoginS, LoggedInS, AccessTokenPayloadS
+from api.v1.users.utils import is_correct_password, create_access_token
+from config import settings
 from errors import InvalidEmailOrPasswordError
 
 
@@ -37,8 +39,11 @@ class UserService:
         """
         user = UserDAO.get_user_with_password(data.email)
         if user is not None and is_correct_password(data.password, user.hashed_password):
-            access_token = create_access_token(identity=data.email)
-            return LoggedInS(**user.model_dump(), access_token=access_token)
+            expires_in = datetime.now(tz=timezone.utc) + settings.access_token_ttl_timedelta
+            exp = int(expires_in.timestamp())
+            payload = AccessTokenPayloadS(sub=user.id, exp=exp)
+            access_token = create_access_token(payload)
+            return LoggedInS(**user.model_dump(), access_token=access_token, exp=exp)
         else:
             raise InvalidEmailOrPasswordError()
 

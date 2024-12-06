@@ -2,7 +2,6 @@ from pathlib import Path
 
 from flask import Flask, jsonify
 from flask_swagger_ui import get_swaggerui_blueprint
-from flask_jwt_extended import JWTManager
 from pydantic import ValidationError
 
 from api.v1.users.routes import router as users_router
@@ -16,8 +15,6 @@ from docs import Docs
 STATIC_DIR = Path(__file__).parent.parent / 'static'
 
 app = Flask(__name__, static_folder=STATIC_DIR, static_url_path='/static')
-app.config["JWT_SECRET_KEY"] = settings.JWT_SECRET
-jwt = JWTManager(app)
 
 app.register_blueprint(users_router)
 app.register_blueprint(projects_router)
