@@ -10,7 +10,7 @@ def is_utc_datetime_validator(value: datetime) -> datetime:
     if tz is timezone.utc:
         return value
     else:
-        raise ValueError('datetime must have a UTC timezone.')  # конвертировать
+        raise ValueError('datetime must have a UTC timezone.')
 
 
 def password_validator(value: str) -> str:

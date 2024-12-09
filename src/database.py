@@ -13,8 +13,6 @@ engine = create_engine(url=settings.database_url_psycopg, echo=False, connect_ar
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
-# контекст
-# flask
 def get_db():
     session = SessionLocal()
     try:
