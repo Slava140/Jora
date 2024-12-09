@@ -1,14 +1,25 @@
+class AppError(Exception):
+    message: str
 
-class AlreadyExistsError(Exception):
-    def __init__(self, what: str):
-        super().__init__(f'{what} is already exist.')
-
-
-class WasNotFoundError(Exception):
-    def __init__(self, what: str):
-        super().__init__(f'{what} was not found.')
-
-
-class InvalidEmailOrPasswordError(Exception):
     def __init__(self):
-        super().__init__('Invalid email or password.')
+        super().__init__(self.message)
+
+
+class AlreadyExistsError(AppError):
+    def __init__(self, what: str):
+        self.message = f'{what} is already exist.'
+        super().__init__()
+
+
+class WasNotFoundError(AppError):
+    def __init__(self, what: str):
+        self.message = f'{what} was not found.'
+        super().__init__()
+
+
+class InvalidEmailOrPasswordError(AppError):
+    def __init__(self):
+        self.message = 'Invalid email or password.'
+        super().__init__()
+
+

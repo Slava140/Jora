@@ -11,7 +11,7 @@ from api.v1.users.routes import auth_router
 
 from config import settings
 from docs import Docs
-
+from errors import AppError
 
 STATIC_DIR = Path(__file__).parent.parent / 'static'
 
@@ -43,6 +43,11 @@ def handle_validation_error(error: ValidationError):
             'msg': e['msg']
         } for e in error.errors()
     ]), 422
+
+
+@app.errorhandler(AppError)
+def handle_app_error(error: AppError):
+    return jsonify({'message': error.message})
 
 
 @app.route('/', methods=['GET'])
