@@ -47,7 +47,7 @@ def handle_validation_error(error: ValidationError):
 
 @app.errorhandler(AppError)
 def handle_app_error(error: AppError):
-    return jsonify({'message': error.message})
+    return jsonify({'message': error.message}), error.status_code
 
 
 @app.route('/', methods=['GET'])
