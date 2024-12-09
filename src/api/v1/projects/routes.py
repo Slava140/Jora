@@ -1,6 +1,7 @@
 from typing import Union
 
 from flask import Blueprint, jsonify
+from flask_jwt_extended import jwt_required, get_jwt
 
 from api.v1.projects.schemas import CreateProjectS, ReadProjectS
 from _types import Resp
@@ -27,12 +28,14 @@ def add_project(body: CreateProjectS) -> Union[
 
 
 @router.get('/')
+@jwt_required()
 @validate()
 def get_projects(query: PaginationQS) -> Union[
     Resp[ReadProjectS, 200],
     Resp[HTTPError, 400]
 ]:
     try:
+        print(get_jwt())
         projects = ProjectService.get_many(query.limit, query.page)
         return jsonify([project.model_dump() for project in projects]), 200
 
@@ -71,4 +74,4 @@ def update_project_by_id(project_id: int, body: CreateProjectS) -> Union[
 @validate()
 def delete_project_by_id(project_id: int) -> Resp[EmptyResponse, 202]:
     ProjectService.delete_by_id(project_id)
-    return jsonify({}), 202
+    return jsonify(), 204

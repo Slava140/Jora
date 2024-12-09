@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from flask import Flask, jsonify
+from flask_jwt_extended import JWTManager
 from flask_swagger_ui import get_swaggerui_blueprint
 from pydantic import ValidationError
 
@@ -15,6 +16,9 @@ from docs import Docs
 STATIC_DIR = Path(__file__).parent.parent / 'static'
 
 app = Flask(__name__, static_folder=STATIC_DIR, static_url_path='/static')
+app.config["JWT_SECRET_KEY"] = settings.JWT_SECRET
+app.config['JWT_TOKEN_LOCATION'] = ['headers']
+
 
 app.register_blueprint(users_router)
 app.register_blueprint(projects_router)
@@ -26,6 +30,8 @@ docs.save(STATIC_DIR / 'docs.json')
 
 swagger_route = get_swaggerui_blueprint(base_url='/docs', api_url='/static/docs.json')
 app.register_blueprint(swagger_route)
+
+jwt = JWTManager(app)
 
 
 @app.errorhandler(ValidationError)

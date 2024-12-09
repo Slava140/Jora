@@ -4,13 +4,13 @@ from base_pydantic_types import UTCDatetime, StrFrom3To255, Str500
 
 
 class BaseProjectS(BaseModel):
-    title: StrFrom3To255
-    description: Str500 | None = None
-    owner_id: NonNegativeInt
+    title:          StrFrom3To255
+    description:    Str500 | None = None
+    owner_id:       NonNegativeInt
 
 
 class ReadProjectS(BaseProjectS):
-    id: NonNegativeInt
+    id:             NonNegativeInt
     created_at:     UTCDatetime
     updated_at:     UTCDatetime
 

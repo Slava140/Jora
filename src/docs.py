@@ -45,7 +45,7 @@ class Docs:
             else:
                 result.append(part)
 
-        return '/' + '/'.join(result)
+        return '/' + '/'.join(result) + '/'
 
     def add_route(self,
                   method: Literal['get', 'post', 'put', 'patch', 'delete'],
