@@ -2,15 +2,14 @@ import re
 from datetime import datetime, timezone
 from typing import Annotated
 
-from pydantic import Field, AfterValidator
+from pydantic import Field, AfterValidator, BeforeValidator, BaseModel
 
 
 def is_utc_datetime_validator(value: datetime) -> datetime:
-    tz = value.tzinfo
-    if tz is timezone.utc:
-        return value
+    if isinstance(value, datetime):
+        return value.astimezone(timezone.utc)
     else:
-        raise ValueError('datetime must have a UTC timezone.')
+        raise ValueError('Value must be datetime.')
 
 
 def password_validator(value: str) -> str:
@@ -35,5 +34,5 @@ def password_validator(value: str) -> str:
 StrFrom3To255 = Annotated[str, Field(min_length=3, max_length=255)]
 Str500 = Annotated[str, Field(max_length=500)]
 
-UTCDatetime = Annotated[datetime, AfterValidator(is_utc_datetime_validator)]
+UTCDatetime = Annotated[datetime, BeforeValidator(is_utc_datetime_validator)]
 PasswordStr = Annotated[str, AfterValidator(password_validator)]
