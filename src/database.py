@@ -3,22 +3,9 @@ from datetime import datetime
 from typing import Annotated
 from uuid import UUID
 
+from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import String, text, ForeignKey, DateTime
-from sqlalchemy.engine import create_engine
-from sqlalchemy.orm import DeclarativeBase, registry, mapped_column, sessionmaker
-
-from config import settings
-
-engine = create_engine(url=settings.database_url_psycopg, echo=False, connect_args={"options": "-c timezone=utc"})
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-
-def get_db():
-    session = SessionLocal()
-    try:
-        yield session
-    finally:
-        session.close()
+from sqlalchemy.orm import DeclarativeBase, registry, mapped_column
 
 
 sql_utc_now = text("timezone('utc', now())")
@@ -53,3 +40,6 @@ class Base(DeclarativeBase):
         d = deepcopy(self.__dict__)
         d.pop('_sa_instance_state')
         return d
+
+
+db = SQLAlchemy(model_class=Base, engine_options={"connect_args": {"options": "-c timezone=utc"}})

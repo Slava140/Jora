@@ -42,7 +42,7 @@ def get_users(query: PaginationQS) -> Union[
         return jsonify(HTTPError(message=str(error)).model_dump()), 400
 
 
-@router.get('/<int:user_id>')
+@router.get('/<int:user_id>/')
 @validate()
 def get_user_by_id(user_id: int) -> Union[
     Resp[ReadUserS, 200],
@@ -55,7 +55,7 @@ def get_user_by_id(user_id: int) -> Union[
     return jsonify(user.model_dump()), 200
 
 
-@router.put('/<int:user_id>')
+@router.put('/<int:user_id>/')
 @validate()
 def update_user_by_id(user_id: int, body: BaseUserS) -> Union[
     Resp[ReadUserS, 200],
@@ -73,14 +73,14 @@ def update_user_by_id(user_id: int, body: BaseUserS) -> Union[
         return jsonify(HTTPError(message=str(error)).model_dump()), 404
 
 
-@router.delete('/<int:user_id>')
+@router.delete('/<int:user_id>/')
 @validate()
 def delete_user_by_id(user_id: int) -> Resp[EmptyResponse, 202]:
     UserService.delete_by_id(user_id)
     return jsonify({}), 202
 
 
-@auth_router.post('/login')
+@auth_router.post('/login/')
 @validate()
 def login(body: LoginS) -> Union[
     Resp[LoggedInS, 200],

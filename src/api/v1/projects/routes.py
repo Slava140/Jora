@@ -43,7 +43,7 @@ def get_projects(query: PaginationQS) -> Union[
         return jsonify(HTTPError(message=str(error)).model_dump()), 400
 
 
-@router.get('/<int:project_id>')
+@router.get('/<int:project_id>/')
 @validate()
 def get_project_by_id(project_id: int) -> Union[
     Resp[ReadProjectS, 200],
@@ -56,7 +56,7 @@ def get_project_by_id(project_id: int) -> Union[
     return jsonify(project.model_dump()), 200
 
 
-@router.put('/<int:project_id>')
+@router.put('/<int:project_id>/')
 @validate()
 def update_project_by_id(project_id: int, body: CreateProjectS) -> Union[
     Resp[ReadProjectS, 200],
@@ -70,7 +70,7 @@ def update_project_by_id(project_id: int, body: CreateProjectS) -> Union[
         return jsonify(HTTPError(message=str(error)).model_dump()), 404
 
 
-@router.delete('/<int:project_id>')
+@router.delete('/<int:project_id>/')
 @validate()
 def delete_project_by_id(project_id: int) -> Resp[EmptyResponse, 202]:
     ProjectService.delete_by_id(project_id)

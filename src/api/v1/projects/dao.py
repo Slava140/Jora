@@ -1,36 +1,13 @@
-from typing import Any
-
-from sqlalchemy import insert, select, and_, update, delete
-from sqlalchemy.orm import InstrumentedAttribute, Session
+from sqlalchemy import insert, select, update, delete
 
 from api.v1.projects.models import ProjectM
 from api.v1.projects.schemas import CreateProjectS, ReadProjectS
 from api.v1.users.services import UserService
-from database import get_db
 from errors import WasNotFoundError
+from database import db
 
 
 class ProjectDAO:
-    @staticmethod
-    def get_one(
-            where: tuple[InstrumentedAttribute, Any],
-            exclude_where: tuple[InstrumentedAttribute, Any] | None = None,
-            session: Session | None = None) -> ProjectM | None:
-
-        session = next(get_db()) if session is None else session
-        if exclude_where is None:
-            query = select(ProjectM).where(where[0] == where[1]).limit(1)
-        else:
-            query = select(
-                ProjectM
-            ).where(
-                and_(
-                    where[0] == where[1],
-                    exclude_where[0].not_in([exclude_where[1]])
-                )
-            ).limit(1)
-        return session.execute(query).scalar_one_or_none()
-
     @staticmethod
     def add(project: CreateProjectS) -> ReadProjectS:
         """
@@ -42,20 +19,20 @@ class ProjectDAO:
             **project.model_dump()
         ).returning('*')
 
-        with next(get_db()) as session:
+        with db.session.begin() as transaction:
             if UserService.get_one_by_id_or_none(project.owner_id) is None:
                 raise WasNotFoundError(f'Owner user with id {project.owner_id}')
 
-            result = session.execute(stmt).mappings().one()
-            session.commit()
+            result = db.session.execute(stmt).mappings().one()
+            transaction.commit()
 
         return ReadProjectS(**result)
 
     @staticmethod
     def get_many(limit: int, page: int) -> tuple[ReadProjectS, ...]:
         query = select(ProjectM).limit(limit).offset((page - 1) * limit)
-        with next(get_db()) as session:
-            result = session.execute(query).scalars().fetchall()
+        result = db.session.execute(query).scalars().fetchall()
+
         return tuple(ReadProjectS(**data.to_dict()) for data in result)
 
     @staticmethod
@@ -66,8 +43,7 @@ class ProjectDAO:
             ProjectM.id == project_id
         )
 
-        with next(get_db()) as session:
-            result = session.execute(query).scalar_one_or_none()
+        result = db.session.execute(query).scalar_one_or_none()
 
         return ReadProjectS(**result.to_dict()) if result is not None else None
 
@@ -84,8 +60,8 @@ class ProjectDAO:
             **updated_project.model_dump()
         ).returning('*')
 
-        with next(get_db()) as session:
-            project = ProjectDAO.get_one(where=(ProjectM.id, project_id), session=session)
+        with db.session.begin() as transaction:
+            project = ProjectDAO.get_one_by_id_or_none(project_id)
 
             if project is None:
                 raise WasNotFoundError(f'Project with id={project_id}')
@@ -95,8 +71,8 @@ class ProjectDAO:
             if owner_user is None:
                 raise WasNotFoundError(f'Owner user with id {updated_project.owner_id}')
 
-            result = session.execute(stmt).mappings().one()
-            session.commit()
+            result = db.session.execute(stmt).mappings().one()
+            transaction.commit()
 
         return ReadProjectS(**result)
 
@@ -104,8 +80,7 @@ class ProjectDAO:
     def delete_by_id(project_id: int) -> None:
         stmt = delete(ProjectM).where(ProjectM.id == project_id)
 
-        with next(get_db()) as session:
-            session.execute(stmt)
-            session.commit()
+        db.session.execute(stmt)
+        db.session.commit()
 
         return None

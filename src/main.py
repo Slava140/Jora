@@ -10,15 +10,16 @@ from api.v1.projects.routes import router as projects_router
 from api.v1.users.routes import auth_router
 
 from config import settings
+from database import db
 from docs import Docs
 from errors import AppError
 
 STATIC_DIR = Path(__file__).parent.parent / 'static'
 
 app = Flask(__name__, static_folder=STATIC_DIR, static_url_path='/static')
+app.config["SQLALCHEMY_DATABASE_URI"] = settings.database_url_psycopg
 app.config["JWT_SECRET_KEY"] = settings.JWT_SECRET
 app.config['JWT_TOKEN_LOCATION'] = ['headers']
-
 
 app.register_blueprint(users_router)
 app.register_blueprint(projects_router)
@@ -32,6 +33,9 @@ swagger_route = get_swaggerui_blueprint(base_url='/docs', api_url='/static/docs.
 app.register_blueprint(swagger_route)
 
 jwt = JWTManager(app)
+
+with app.app_context():
+    db.init_app(app)
 
 
 @app.errorhandler(ValidationError)
