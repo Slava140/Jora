@@ -44,10 +44,10 @@ class UserDAO:
 
         with db.session.begin() as transaction:
             if UserDAO._get_one_or_none((UserM.email, user.email)) is not None:
-                raise AlreadyExistsError(f'UserM(email={user.email})')
+                raise AlreadyExistsError(f'User with email {user.email}')
 
             if UserDAO._get_one_or_none((UserM.username, user.username)) is not None:
-                raise AlreadyExistsError(f'UserM(username={user.username})')
+                raise AlreadyExistsError(f'User with username {user.username}')
 
             result = db.session.execute(stmt).mappings().one()
             transaction.commit()
@@ -100,19 +100,19 @@ class UserDAO:
             user = UserDAO._get_one_or_none(where=(UserM.id, user_id))
 
             if user is None:
-                raise WasNotFoundError(f'UserM(id={user_id})')
+                raise WasNotFoundError(f'User with id {user_id}')
 
             is_email_unique = UserDAO._get_one_or_none(
                 where=(UserM.email, updated_user.email), exclude_where=(UserM.id, user_id)
             ) is None
             if not is_email_unique:
-                raise AlreadyExistsError(f'UserM(email={updated_user.email})')
+                raise AlreadyExistsError(f'User with email {updated_user.email}')
 
             is_username_unique = UserDAO._get_one_or_none(
                 where=(UserM.username, updated_user.username), exclude_where=(UserM.id, user_id)
             ) is None
             if not is_username_unique:
-                raise AlreadyExistsError(f'UserM(username={updated_user.username})')
+                raise AlreadyExistsError(f'User with username {updated_user.username}')
 
             result = db.session.execute(stmt).mappings().one()
             transaction.commit()
