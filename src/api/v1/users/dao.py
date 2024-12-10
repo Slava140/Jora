@@ -121,7 +121,13 @@ class UserDAO:
 
     @staticmethod
     def delete_by_id(user_id: int) -> None:
-        stmt = delete(UserM).where(UserM.id == user_id)
+        stmt = update(
+            UserM
+        ).where(
+            UserM.id == user_id
+        ).values(
+            is_active=False
+        )
 
         db.session.execute(stmt)
         db.session.commit()

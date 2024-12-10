@@ -4,9 +4,9 @@ from typing import Annotated
 from uuid import UUID
 
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import String, text, ForeignKey, DateTime
+from sqlalchemy import String, Boolean, text, ForeignKey, DateTime
 from sqlalchemy.orm import DeclarativeBase, registry, mapped_column
-
+from sqlalchemy.sql import expression
 
 sql_utc_now = text("timezone('utc', now())")
 
@@ -18,11 +18,12 @@ str_255_unique = Annotated[str, mapped_column(String(255), unique=True)]
 pk_int = Annotated[int, mapped_column(primary_key=True, autoincrement=True)]
 pk_uuid = Annotated[UUID, mapped_column(primary_key=True)]
 
+is_active = Annotated[bool, mapped_column(Boolean, server_default=expression.true())]
 created_at = Annotated[datetime, mapped_column(DateTime(timezone=True), server_default=sql_utc_now)]
 updated_at = Annotated[datetime, mapped_column(DateTime(timezone=True), server_default=sql_utc_now, onupdate=sql_utc_now)]
 
 
-fk_user_id = Annotated[int, mapped_column(ForeignKey(column='users.id', ondelete='CASCADE'))]
+fk_user_id = Annotated[int, mapped_column(ForeignKey(column='users.id'))]
 fk_task_id = Annotated[int, mapped_column(ForeignKey(column='tasks.id'))]
 #
 # datetime_utc_tz = Annotated[datetime, mapped_column(DateTime(timezone=True))]
