@@ -1,12 +1,10 @@
-from datetime import datetime, timezone
-
 from flask_jwt_extended import create_access_token
 
 from api.v1.users.dao import UserDAO
 from api.v1.users.schemas import CreateUserS, ReadUserS, BaseUserS, LoginS, LoggedInS
 from api.v1.users.utils import is_correct_password
 from config import settings
-from errors import InvalidEmailOrPasswordError
+from errors import InvalidEmailOrPasswordError, MustBePositiveError
 
 
 class UserService:
@@ -20,10 +18,10 @@ class UserService:
     @staticmethod
     def get_many(limit: int, page: int) -> tuple[ReadUserS, ...]:
         """
-        :except ValueError
+        :except MustBePositiveError
         """
         if limit <= 0 or page <= 0:
-            raise ValueError('limit and page must be positive.')
+            raise MustBePositiveError('limit and page')
         return UserDAO.get_many(limit, page)
 
     @staticmethod

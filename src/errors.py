@@ -6,13 +6,15 @@ class AppError(Exception):
 
 
 class AlreadyExistsError(AppError):
-    def __init__(self, what: str):
-        super().__init__(message=f'{what} is already exist.', status_code=409)
+    def __init__(self, what: str | None = None):
+        message = f'{what} is already exist' if what is not None else 'Already exist.'
+        super().__init__(message=message, status_code=409)
 
 
 class WasNotFoundError(AppError):
-    def __init__(self, what: str):
-        super().__init__(message=f'{what} was not found.', status_code=404)
+    def __init__(self, what: str | None = None):
+        message = f'{what} was not found.' if what is None else 'Not Found'
+        super().__init__(message=message, status_code=404)
 
 
 class InvalidEmailOrPasswordError(AppError):
@@ -20,3 +22,7 @@ class InvalidEmailOrPasswordError(AppError):
         super().__init__(message='Invalid email or password.', status_code=401)
 
 
+class MustBePositiveError(AppError):
+    def __init__(self, what: str | None = None):
+        message = f'{what} must be positive.' if what is not None else 'Must be positive.'
+        super().__init__(message=message, status_code=400)

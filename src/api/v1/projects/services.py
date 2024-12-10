@@ -1,5 +1,6 @@
 from api.v1.projects.dao import ProjectDAO
 from api.v1.projects.schemas import CreateProjectS, ReadProjectS
+from errors import MustBePositiveError
 
 
 class ProjectService:
@@ -13,10 +14,10 @@ class ProjectService:
     @staticmethod
     def get_many(limit: int, page: int) -> tuple[ReadProjectS, ...]:
         """
-        :except ValueError
+        :except MustBePositiveError
         """
         if limit <= 0 or page <= 0:
-            raise ValueError('limit and page must be positive.')
+            raise MustBePositiveError('limit and page')
         return ProjectDAO.get_many(limit, page)
 
     @staticmethod
