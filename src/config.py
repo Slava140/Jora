@@ -15,9 +15,13 @@ class Settings(BaseSettings):
     DB_PASS: str
     DB_NAME: str
 
+    lOG_LEVEL: str
+
     JWT_SECRET: str
     ACCESS_TOKEN_TTL: int
     REFRESH_TOKEN_TTL: int
+
+    SRC_PATH: Path = Path(__file__).parent
 
     @property
     def database_url_psycopg(self):
