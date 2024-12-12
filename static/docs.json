@@ -1,0 +1,384 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "Jora API",
+    "version": "v1"
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "paths": {
+    "/static/{filename}/": {
+      "get": {
+        "parameters": [
+          {
+            "required": true,
+            "deprecated": false,
+            "schema": {},
+            "name": "filename",
+            "in": "path",
+            "allowEmptyValue": false,
+            "allowReserved": false
+          }
+        ],
+        "responses": {},
+        "deprecated": false
+      }
+    },
+    "//": {
+      "get": {
+        "parameters": [],
+        "responses": {},
+        "deprecated": false
+      }
+    },
+    "/api/v1/users/": {
+      "get": {
+        "parameters": [
+          {
+            "required": false,
+            "deprecated": false,
+            "style": "path",
+            "schema": {
+              "title": "Page",
+              "exclusiveMinimum": false,
+              "type": "integer",
+              "default": 1
+            },
+            "name": "page",
+            "in": "query",
+            "allowEmptyValue": false,
+            "allowReserved": false
+          },
+          {
+            "required": false,
+            "deprecated": false,
+            "style": "path",
+            "schema": {
+              "title": "Limit",
+              "exclusiveMinimum": false,
+              "type": "integer",
+              "default": 10
+            },
+            "name": "limit",
+            "in": "query",
+            "allowEmptyValue": false,
+            "allowReserved": false
+          }
+        ],
+        "responses": {},
+        "deprecated": false
+      },
+      "post": {
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserS"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {},
+        "deprecated": false
+      }
+    },
+    "/api/v1/users/{user_id}/": {
+      "get": {
+        "parameters": [
+          {
+            "required": true,
+            "deprecated": false,
+            "schema": {
+              "type": "integer"
+            },
+            "name": "user_id",
+            "in": "path",
+            "allowEmptyValue": false,
+            "allowReserved": false
+          }
+        ],
+        "responses": {},
+        "deprecated": false
+      },
+      "put": {
+        "parameters": [
+          {
+            "required": true,
+            "deprecated": false,
+            "schema": {
+              "type": "integer"
+            },
+            "name": "user_id",
+            "in": "path",
+            "allowEmptyValue": false,
+            "allowReserved": false
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BaseUserS"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {},
+        "deprecated": false
+      },
+      "delete": {
+        "parameters": [
+          {
+            "required": true,
+            "deprecated": false,
+            "schema": {
+              "type": "integer"
+            },
+            "name": "user_id",
+            "in": "path",
+            "allowEmptyValue": false,
+            "allowReserved": false
+          }
+        ],
+        "responses": {},
+        "deprecated": false
+      }
+    },
+    "/api/v1/projects/": {
+      "get": {
+        "parameters": [
+          {
+            "required": false,
+            "deprecated": false,
+            "style": "path",
+            "schema": {
+              "title": "Page",
+              "exclusiveMinimum": false,
+              "type": "integer",
+              "default": 1
+            },
+            "name": "page",
+            "in": "query",
+            "allowEmptyValue": false,
+            "allowReserved": false
+          },
+          {
+            "required": false,
+            "deprecated": false,
+            "style": "path",
+            "schema": {
+              "title": "Limit",
+              "exclusiveMinimum": false,
+              "type": "integer",
+              "default": 10
+            },
+            "name": "limit",
+            "in": "query",
+            "allowEmptyValue": false,
+            "allowReserved": false
+          }
+        ],
+        "responses": {},
+        "deprecated": false
+      },
+      "post": {
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProjectS"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {},
+        "deprecated": false
+      }
+    },
+    "/api/v1/projects/{project_id}/": {
+      "get": {
+        "parameters": [
+          {
+            "required": true,
+            "deprecated": false,
+            "schema": {
+              "type": "integer"
+            },
+            "name": "project_id",
+            "in": "path",
+            "allowEmptyValue": false,
+            "allowReserved": false
+          }
+        ],
+        "responses": {},
+        "deprecated": false
+      },
+      "put": {
+        "parameters": [
+          {
+            "required": true,
+            "deprecated": false,
+            "schema": {
+              "type": "integer"
+            },
+            "name": "project_id",
+            "in": "path",
+            "allowEmptyValue": false,
+            "allowReserved": false
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProjectS"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {},
+        "deprecated": false
+      },
+      "delete": {
+        "parameters": [
+          {
+            "required": true,
+            "deprecated": false,
+            "schema": {
+              "type": "integer"
+            },
+            "name": "project_id",
+            "in": "path",
+            "allowEmptyValue": false,
+            "allowReserved": false
+          }
+        ],
+        "responses": {},
+        "deprecated": false
+      }
+    },
+    "/auth/login/": {
+      "post": {
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginS"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {},
+        "deprecated": false
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BaseUserS": {
+        "title": "BaseUserS",
+        "required": [
+          "username",
+          "email"
+        ],
+        "type": "object",
+        "properties": {
+          "username": {
+            "title": "Username",
+            "maxLength": 255,
+            "minLength": 3,
+            "type": "string"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string",
+            "format": "email"
+          }
+        }
+      },
+      "CreateProjectS": {
+        "title": "CreateProjectS",
+        "required": [
+          "title",
+          "owner_id"
+        ],
+        "type": "object",
+        "properties": {
+          "title": {
+            "title": "Title",
+            "maxLength": 255,
+            "minLength": 3,
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "maxLength": 500,
+            "type": "string",
+            "nullable": true
+          },
+          "owner_id": {
+            "title": "Owner Id",
+            "minimum": 0.0,
+            "type": "integer"
+          }
+        }
+      },
+      "CreateUserS": {
+        "title": "CreateUserS",
+        "required": [
+          "username",
+          "email",
+          "password"
+        ],
+        "type": "object",
+        "properties": {
+          "username": {
+            "title": "Username",
+            "maxLength": 255,
+            "minLength": 3,
+            "type": "string"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "title": "Password",
+            "type": "string"
+          }
+        }
+      },
+      "LoginS": {
+        "title": "LoginS",
+        "required": [
+          "email",
+          "password"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "title": "Email",
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "title": "Password",
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

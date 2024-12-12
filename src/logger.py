@@ -1,12 +1,14 @@
 import logging
-import logging.handlers
 import logging.config
-import sys
-import traceback
+import os.path
 
-from flask import g, request, has_request_context
+from flask import request, has_request_context
 
 from config import settings
+
+
+logs_dir = settings.SRC_PATH.parent / 'logs'
+logs_dir.mkdir(exist_ok=True)
 
 
 class RequestFormatter(logging.Formatter):
@@ -48,7 +50,7 @@ config = {
             'class': 'logging.handlers.RotatingFileHandler',
             'formatter': 'detailed',
             'level': 'DEBUG',
-            'filename': settings.SRC_PATH.parent / 'logs/app.log',
+            'filename': logs_dir / 'app.log',
             'maxBytes': 1000000,
             'backupCount': 3,
         },
