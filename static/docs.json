@@ -282,23 +282,6 @@
         "responses": {},
         "deprecated": false
       }
-    },
-    "/auth/signup/": {
-      "post": {
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateUserS"
-              }
-            }
-          },
-          "required": false
-        },
-        "responses": {},
-        "deprecated": false
-      }
     }
   },
   "components": {
@@ -396,18 +379,6 @@
           }
         }
       }
-    },
-    "securitySchemes": {
-      "jwt": {
-        "type": "http",
-        "scheme": "bearer",
-        "bearerFormat": "JWT"
-      }
     }
-  },
-  "security": [
-    {
-      "jwt": []
-    }
-  ]
+  }
 }

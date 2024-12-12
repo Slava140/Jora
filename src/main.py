@@ -22,6 +22,7 @@ from logger import get_logger
 logger = get_logger('main')
 
 STATIC_DIR = Path(__file__).parent.parent / 'static'
+STATIC_DIR.mkdir(exist_ok=True)
 
 main_router = Blueprint(name='main', import_name=__name__, url_prefix='/')
 main_router.register_blueprint(users_router)
