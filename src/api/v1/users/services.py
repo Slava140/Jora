@@ -39,7 +39,7 @@ class UserService:
         """
         user = UserDAO.get_user_with_password(data.email)
         if user is not None and is_correct_password(data.password, user.hashed_password):
-            access_token = create_access_token(identity=str(user.id), expires_delta=settings.access_token_ttl_timedelta)
+            access_token = create_access_token(identity=str(user.id))
             return LoggedInS(**user.model_dump(), access_token=access_token)
         else:
             raise InvalidEmailOrPasswordError()

@@ -1,6 +1,7 @@
 from typing import Union
 
 from flask import Blueprint, jsonify
+from flask_jwt_extended import jwt_required, get_jwt
 
 from api.v1.users.services import UserService
 from api.v1.users.schemas import CreateUserS, BaseUserS, ReadUserS, LoginS, LoggedInS
@@ -15,6 +16,7 @@ auth_router = Blueprint(name='auth', import_name=__name__, url_prefix='/auth')
 
 
 @router.post('/')
+@jwt_required()
 @validate()
 def add_user(body: CreateUserS) -> Union[
     Resp[ReadUserS, 201],
@@ -25,6 +27,7 @@ def add_user(body: CreateUserS) -> Union[
 
 
 @router.get('/')
+@jwt_required()
 @validate()
 def get_users(query: PaginationQS) -> Union[
     Resp[ReadUserS, 200],
@@ -35,6 +38,7 @@ def get_users(query: PaginationQS) -> Union[
 
 
 @router.get('/<int:user_id>/')
+@jwt_required()
 @validate()
 def get_user_by_id(user_id: int) -> Union[
     Resp[ReadUserS, 200],
@@ -48,17 +52,19 @@ def get_user_by_id(user_id: int) -> Union[
 
 
 @router.put('/<int:user_id>/')
+@jwt_required()
 @validate()
 def update_user_by_id(user_id: int, body: BaseUserS) -> Union[
     Resp[ReadUserS, 200],
     Resp[HTTPError, 404],
     Resp[HTTPError, 409]
 ]:
-    user = UserService.update_by_id(int(user_id), body)
+    user = UserService.update_by_id(user_id, body)
     return jsonify(user.model_dump()), 200
 
 
 @router.delete('/<int:user_id>/')
+@jwt_required()
 @validate()
 def delete_user_by_id(user_id: int) -> Resp[EmptyResponse, 204]:
     UserService.delete_by_id(user_id)

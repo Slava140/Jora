@@ -3,8 +3,10 @@ import traceback
 from pathlib import Path
 
 from flask import Flask, jsonify, request, Response, Blueprint
-from flask_jwt_extended import JWTManager
 from flask_swagger_ui import get_swaggerui_blueprint
+from flask_jwt_extended import JWTManager
+from flask_jwt_extended.exceptions import JWTExtendedException
+from jwt.exceptions import PyJWTError
 from pydantic import ValidationError
 
 from api.v1.users.routes import router as users_router
@@ -48,6 +50,18 @@ def handle_validation_error(error: ValidationError):
     return jsonify(errors), 422
 
 
+@main_router.errorhandler(JWTExtendedException)
+def handle_flask_jwt_error(error: JWTExtendedException):
+    logger.debug('JWT error %s', traceback.format_exc())
+    return jsonify({'message': str(error)}), 401
+
+
+@main_router.errorhandler(PyJWTError)
+def handle_jwt_error(error: PyJWTError):
+    logger.debug('JWT error %s', traceback.format_exc())
+    return jsonify({'message': str(error)}), 401
+
+
 @main_router.errorhandler(AppError)
 def handle_app_error(error: AppError):
     logger.debug('App error: %s', error.message)
@@ -77,6 +91,7 @@ def create_app():
 
     app.config["SQLALCHEMY_DATABASE_URI"] = settings.database_url_psycopg
     app.config["JWT_SECRET_KEY"] = settings.JWT_SECRET
+    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = settings.access_token_ttl_timedelta
     app.config['JWT_TOKEN_LOCATION'] = ['headers']
 
     app.register_blueprint(main_router)
@@ -90,6 +105,8 @@ def create_app():
 
     with app.app_context():
         db.init_app(app)
+
+    JWTManager(app)
 
     return app
 

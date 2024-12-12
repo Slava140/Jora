@@ -1,6 +1,7 @@
 from typing import Union
 
 from flask import Blueprint, jsonify
+from flask_jwt_extended import jwt_required
 
 from api.v1.projects.schemas import CreateProjectS, ReadProjectS
 from _types import Resp
@@ -13,6 +14,7 @@ router = Blueprint(name='projects', import_name=__name__, url_prefix='/api/v1/pr
 
 
 @router.post('/')
+@jwt_required()
 @validate()
 def add_project(body: CreateProjectS) -> Union[
     Resp[ReadProjectS, 201],
@@ -23,6 +25,7 @@ def add_project(body: CreateProjectS) -> Union[
 
 
 @router.get('/')
+@jwt_required()
 @validate()
 def get_projects(query: PaginationQS) -> Union[
     Resp[ReadProjectS, 200],
@@ -33,6 +36,7 @@ def get_projects(query: PaginationQS) -> Union[
 
 
 @router.get('/<int:project_id>/')
+@jwt_required()
 @validate()
 def get_project_by_id(project_id: int) -> Union[
     Resp[ReadProjectS, 200],
@@ -46,6 +50,7 @@ def get_project_by_id(project_id: int) -> Union[
 
 
 @router.put('/<int:project_id>/')
+@jwt_required()
 @validate()
 def update_project_by_id(project_id: int, body: CreateProjectS) -> Union[
     Resp[ReadProjectS, 200],
@@ -56,6 +61,7 @@ def update_project_by_id(project_id: int, body: CreateProjectS) -> Union[
 
 
 @router.delete('/<int:project_id>/')
+@jwt_required()
 @validate()
 def delete_project_by_id(project_id: int) -> Resp[EmptyResponse, 204]:
     ProjectService.delete_by_id(project_id)
