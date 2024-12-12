@@ -134,7 +134,17 @@ class Docs:
     def get_docs_json(self, indent: int = 2):
         open_api = OpenAPI(**{
             'info': {'title': self.title, 'version': self.version},
-            'paths': self.paths
+            'paths': self.paths,
+            'components': {
+                'securitySchemes': {
+                    'jwt': {
+                        'type': 'http',
+                        'scheme': 'bearer',
+                        'bearerFormat': 'JWT'
+                    }
+                },
+            },
+            'security': [{'jwt': []}],
         })
         open_api = construct_open_api_with_schema_class(open_api)
         return open_api.model_dump_json(by_alias=True, exclude_none=True, indent=indent)
