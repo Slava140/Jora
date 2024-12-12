@@ -2,18 +2,35 @@ import enum
 
 from sqlalchemy.orm import Mapped
 
-from database import Base, pk_int, fk_user_id, str_255, created_at, updated_at, str_500
+from database import (Base,
+                      pk_int, fk_user_id, fk_project_id,
+                      str_255, str_500,
+                      created_at, updated_at, datetime_utc_tz,
+                      task_status as status,
+                      )
 
 
-# description
-# tasks - project
-# регистрация
-# смена пароля
-# управление проектом
 class Status(enum.Enum):
-    assigned = 'assigned'
+    open = 'open'
     in_progress = 'in_progress'
-    done = 'done'
+    finished = 'finished'
+
+
+class TaskM(Base):
+    __tablename__ = 'tasks'
+
+    id:             Mapped[pk_int]
+    title:          Mapped[str_255]
+    description:    Mapped[str]
+    status:         Mapped[status]
+    due_date:       Mapped[datetime_utc_tz | None]
+    finished_at:    Mapped[datetime_utc_tz | None]
+    created_at:     Mapped[created_at]
+    updated_at:     Mapped[updated_at]
+
+    project_id:     Mapped[fk_project_id]
+    author_id:      Mapped[fk_user_id]
+    assignee_id:    Mapped[fk_user_id | None]
 
 
 class ProjectM(Base):
