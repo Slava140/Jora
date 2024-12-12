@@ -45,6 +45,12 @@ class UserService:
             raise InvalidEmailOrPasswordError()
 
     @staticmethod
+    def signup(user: CreateUserS) -> LoggedInS:
+        created_user = UserDAO.add(user)
+        access_token = create_access_token(identity=str(created_user.id))
+        return LoggedInS(**created_user.model_dump(), access_token=access_token)
+
+    @staticmethod
     def update_by_id(user_id: int, updated_user: BaseUserS) -> ReadUserS:
         """
         :except AlreadyExistsError

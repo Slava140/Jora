@@ -79,3 +79,13 @@ def login(body: LoginS) -> Union[
 ]:
     logged_in_user = UserService.login(body)
     return jsonify(logged_in_user.model_dump()), 200
+
+
+@auth_router.post('/signup/')
+@validate()
+def signup(body: CreateUserS) -> Union[
+    Resp[LoggedInS, 201],
+    Resp[HTTPError, 409]
+]:
+    logged_in_user = UserService.signup(body)
+    return jsonify(logged_in_user.model_dump()), 201
