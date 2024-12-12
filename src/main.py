@@ -29,7 +29,7 @@ main_router.register_blueprint(auth_router)
 
 @main_router.errorhandler(Exception)
 def handle_all_errors(error: Exception):
-    error_code = random.randint(100000, 600000)
+    error_code = random.randint(100_000, 999_999)
     logger.error("[code:%d] %s", error_code, error)
     logger.debug("[code:%d] %s", error_code, traceback.format_exc())
     return jsonify({'message': f'Unknown error. Code: {error_code}'}), 500
