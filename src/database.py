@@ -1,6 +1,6 @@
 from copy import deepcopy
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, Literal
 from uuid import UUID
 
 from flask_sqlalchemy import SQLAlchemy
@@ -19,14 +19,16 @@ pk_int = Annotated[int, mapped_column(primary_key=True, autoincrement=True)]
 pk_uuid = Annotated[UUID, mapped_column(primary_key=True)]
 
 is_active = Annotated[bool, mapped_column(Boolean, server_default=expression.true())]
+task_status = Annotated[Literal['open', 'in_progress', 'finished'], mapped_column(String(50), server_default='open')]
+
 created_at = Annotated[datetime, mapped_column(DateTime(timezone=True), server_default=sql_utc_now)]
 updated_at = Annotated[datetime, mapped_column(DateTime(timezone=True), server_default=sql_utc_now, onupdate=sql_utc_now)]
+datetime_utc_tz = Annotated[datetime, mapped_column(DateTime(timezone=True))]
 
 
 fk_user_id = Annotated[int, mapped_column(ForeignKey(column='users.id'))]
+fk_project_id = Annotated[int, mapped_column(ForeignKey(column='projects.id'))]
 fk_task_id = Annotated[int, mapped_column(ForeignKey(column='tasks.id'))]
-#
-# datetime_utc_tz = Annotated[datetime, mapped_column(DateTime(timezone=True))]
 
 
 class Base(DeclarativeBase):
