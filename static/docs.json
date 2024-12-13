@@ -34,6 +34,40 @@
         "deprecated": false
       }
     },
+    "/auth/login/": {
+      "post": {
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginS"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {},
+        "deprecated": false
+      }
+    },
+    "/auth/signup/": {
+      "post": {
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserS"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {},
+        "deprecated": false
+      }
+    },
     "/api/v1/users/": {
       "get": {
         "parameters": [
@@ -266,31 +300,14 @@
         "deprecated": false
       }
     },
-    "/auth/login/": {
+    "/api/v1/tasks/": {
       "post": {
         "parameters": [],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/LoginS"
-              }
-            }
-          },
-          "required": false
-        },
-        "responses": {},
-        "deprecated": false
-      }
-    },
-    "/auth/signup/": {
-      "post": {
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateUserS"
+                "$ref": "#/components/schemas/RequestBodyOfTaskS"
               }
             }
           },
@@ -393,6 +410,48 @@
           "password": {
             "title": "Password",
             "type": "string"
+          }
+        }
+      },
+      "RequestBodyOfTaskS": {
+        "title": "RequestBodyOfTaskS",
+        "required": [
+          "title",
+          "description",
+          "project_id"
+        ],
+        "type": "object",
+        "properties": {
+          "title": {
+            "title": "Title",
+            "maxLength": 255,
+            "minLength": 3,
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "enum": [
+              "open",
+              "in_progress",
+              "finished"
+            ],
+            "type": "string",
+            "default": "open"
+          },
+          "due_date": {
+            "title": "Due Date",
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "project_id": {
+            "title": "Project Id",
+            "minimum": 0.0,
+            "type": "integer"
           }
         }
       }

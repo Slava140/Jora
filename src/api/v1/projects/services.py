@@ -1,5 +1,8 @@
-from api.v1.projects.dao import ProjectDAO
-from api.v1.projects.schemas import CreateProjectS, ReadProjectS
+from api.v1.projects.dao import ProjectDAO, TaskDAO
+from api.v1.projects.schemas import (
+    CreateProjectS, ReadProjectS,
+    CreateTaskS, ReadTaskS,
+)
 from errors import MustBePositiveError
 
 
@@ -34,3 +37,9 @@ class ProjectService:
     @staticmethod
     def delete_by_id(project_id: int) -> None:
         return ProjectDAO.delete_by_id(project_id)
+
+
+class TaskService:
+    @staticmethod
+    def add(task: CreateTaskS) -> ReadTaskS:
+        return TaskDAO.add(task)

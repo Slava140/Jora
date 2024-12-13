@@ -36,10 +36,10 @@ class TaskM(Base):
 class ProjectM(Base):
     __tablename__ = 'projects'
 
-    id:                 Mapped[pk_int]
-    title:              Mapped[str_255]
-    description:        Mapped[str_500 | None]
-    created_at:         Mapped[created_at]
-    updated_at:         Mapped[updated_at]
+    id:             Mapped[pk_int]
+    title:          Mapped[str_255]
+    description:    Mapped[str_500 | None]
+    created_at:     Mapped[created_at]
+    updated_at:     Mapped[updated_at]
 
-    owner_id:           Mapped[fk_user_id]
+    owner_id:       Mapped[fk_user_id]

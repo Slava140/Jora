@@ -1,8 +1,10 @@
 import re
 from datetime import datetime, timezone
-from typing import Annotated
+from typing import Annotated, Literal
 
 from pydantic import Field, AfterValidator, BeforeValidator, BaseModel
+
+from api.v1.projects.models import Status
 
 
 def is_utc_datetime_validator(value: datetime) -> datetime:
@@ -33,6 +35,8 @@ def password_validator(value: str) -> str:
 
 StrFrom3To255 = Annotated[str, Field(min_length=3, max_length=255)]
 Str500 = Annotated[str, Field(max_length=500)]
+
+StrTaskStatus = Annotated[Literal['open', 'in_progress', 'finished'], Field(default=Status.open)]
 
 UTCDatetime = Annotated[datetime, BeforeValidator(is_utc_datetime_validator)]
 PasswordStr = Annotated[str, AfterValidator(password_validator)]
