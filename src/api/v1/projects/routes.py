@@ -75,8 +75,27 @@ def delete_project_by_id(project_id: int) -> Resp[EmptyResponse, 204]:
 @tasks_router.post('/')
 @jwt_required()
 @validate()
-def add_task(body: RequestBodyOfTaskS):
+def add_task(body: RequestBodyOfTaskS) -> Resp[ReadTaskS, 201]:
     author_id = get_jwt_identity()
     task_schema_with_author = CreateTaskS(author_id=author_id, **body.model_dump())
     created_task = TaskService.add(task_schema_with_author)
     return jsonify(**created_task.model_dump()), 201
+
+
+@tasks_router.get('/')
+@jwt_required()
+@validate()
+def get_tasks(query: PaginationQS) -> Resp[ReadTaskS, 200]:
+    tasks = TaskService.get_many(query.limit, query.page)
+    return jsonify([task.model_dump() for task in tasks]), 200
+
+
+@tasks_router.get('/<int:task_id>/')
+@jwt_required()
+@validate()
+def get_task_by_id(task_id: int) -> Resp[ReadTaskS, 200]:
+    task = TaskService.get_one_by_id_or_none(task_id)
+    if task is None:
+        raise WasNotFoundError(f'Task with id {task_id}')
+
+    return jsonify(task.model_dump()), 200

@@ -42,4 +42,20 @@ class ProjectService:
 class TaskService:
     @staticmethod
     def add(task: CreateTaskS) -> ReadTaskS:
+        """
+        :except WasNotFoundError
+        """
         return TaskDAO.add(task)
+
+    @staticmethod
+    def get_many(limit: int, page: int) -> tuple[ReadTaskS, ...]:
+        """
+        :except MustBePositiveError
+        """
+        if limit <= 0 or page <= 0:
+            raise MustBePositiveError('limit and page')
+        return TaskDAO.get_many(limit, page)
+
+    @staticmethod
+    def get_one_by_id_or_none(task_id: int) -> ReadTaskS | None:
+        return TaskDAO.get_one_by_id_or_none(task_id)

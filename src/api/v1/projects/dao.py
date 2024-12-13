@@ -93,6 +93,9 @@ class ProjectDAO:
 class TaskDAO:
     @staticmethod
     def add(task: CreateTaskS) -> ReadTaskS:
+        """
+        :except WasNotFoundError
+        """
         stmt = insert(
             TaskM
         ).values(
@@ -109,3 +112,22 @@ class TaskDAO:
             transaction.commit()
 
         return ReadTaskS(**result)
+
+    @staticmethod
+    def get_many(limit: int, page: int) -> tuple[ReadTaskS, ...]:
+        query = select(TaskM).limit(limit).offset((page - 1) * limit)
+        result = db.session.execute(query).scalars().fetchall()
+
+        return tuple(ReadTaskS(**data.to_dict()) for data in result)
+
+    @staticmethod
+    def get_one_by_id_or_none(task_id: int) -> ReadTaskS | None:
+        query = select(
+            TaskM
+        ).where(
+            TaskM.id == task_id
+        )
+
+        result = db.session.execute(query).scalar_one_or_none()
+
+        return ReadTaskS(**result.to_dict()) if result is not None else None

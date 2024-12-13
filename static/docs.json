@@ -301,6 +301,42 @@
       }
     },
     "/api/v1/tasks/": {
+      "get": {
+        "parameters": [
+          {
+            "required": false,
+            "deprecated": false,
+            "style": "path",
+            "schema": {
+              "title": "Page",
+              "exclusiveMinimum": false,
+              "type": "integer",
+              "default": 1
+            },
+            "name": "page",
+            "in": "query",
+            "allowEmptyValue": false,
+            "allowReserved": false
+          },
+          {
+            "required": false,
+            "deprecated": false,
+            "style": "path",
+            "schema": {
+              "title": "Limit",
+              "exclusiveMinimum": false,
+              "type": "integer",
+              "default": 10
+            },
+            "name": "limit",
+            "in": "query",
+            "allowEmptyValue": false,
+            "allowReserved": false
+          }
+        ],
+        "responses": {},
+        "deprecated": false
+      },
       "post": {
         "parameters": [],
         "requestBody": {
@@ -313,6 +349,25 @@
           },
           "required": false
         },
+        "responses": {},
+        "deprecated": false
+      }
+    },
+    "/api/v1/tasks/{task_id}/": {
+      "get": {
+        "parameters": [
+          {
+            "required": true,
+            "deprecated": false,
+            "schema": {
+              "type": "integer"
+            },
+            "name": "task_id",
+            "in": "path",
+            "allowEmptyValue": false,
+            "allowReserved": false
+          }
+        ],
         "responses": {},
         "deprecated": false
       }

@@ -130,10 +130,9 @@ if __name__ == '__main__':
     logger.info('Start app...')
     try:
         app_ = create_app()
+        app_.run(debug=True, port=8000, host='0.0.0.0')
+        logger.info('App is running')
     except Exception as e:
         logger.error(str(e))
         logger.debug(traceback.format_exc())
         raise
-    app_.run(debug=True, port=8000, host='0.0.0.0')
-    logger.info('App is running')
-
