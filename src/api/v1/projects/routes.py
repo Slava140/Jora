@@ -1,19 +1,23 @@
 from typing import Union
 
 from flask import Blueprint, jsonify
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
-from api.v1.projects.schemas import CreateProjectS, ReadProjectS
+from api.v1.projects.services import ProjectService, TaskService
+from api.v1.projects.schemas import (
+    CreateProjectS, ReadProjectS,
+    CreateTaskS, ReadTaskS, RequestBodyOfTaskS, UpdateTaskS
+)
 from _types import Resp
 from validation_decorator import validate
-from api.v1.projects.services import ProjectService
 from errors import WasNotFoundError
 from global_schemas import HTTPError, PaginationQS, EmptyResponse
 
-router = Blueprint(name='projects', import_name=__name__, url_prefix='/api/v1/projects')
+projects_router = Blueprint(name='projects', import_name=__name__, url_prefix='/api/v1/projects')
+tasks_router = Blueprint(name='tasks', import_name=__name__, url_prefix='/api/v1/tasks')
 
 
-@router.post('/')
+@projects_router.post('/')
 @jwt_required()
 @validate()
 def add_project(body: CreateProjectS) -> Union[
@@ -24,7 +28,7 @@ def add_project(body: CreateProjectS) -> Union[
     return jsonify(created_project.model_dump()), 201
 
 
-@router.get('/')
+@projects_router.get('/')
 @jwt_required()
 @validate()
 def get_projects(query: PaginationQS) -> Union[
@@ -35,7 +39,7 @@ def get_projects(query: PaginationQS) -> Union[
     return jsonify([project.model_dump() for project in projects]), 200
 
 
-@router.get('/<int:project_id>/')
+@projects_router.get('/<int:project_id>/')
 @jwt_required()
 @validate()
 def get_project_by_id(project_id: int) -> Union[
@@ -49,7 +53,7 @@ def get_project_by_id(project_id: int) -> Union[
     return jsonify(project.model_dump()), 200
 
 
-@router.put('/<int:project_id>/')
+@projects_router.put('/<int:project_id>/')
 @jwt_required()
 @validate()
 def update_project_by_id(project_id: int, body: CreateProjectS) -> Union[
@@ -60,9 +64,54 @@ def update_project_by_id(project_id: int, body: CreateProjectS) -> Union[
     return jsonify(project.model_dump()), 200
 
 
-@router.delete('/<int:project_id>/')
+@projects_router.delete('/<int:project_id>/')
 @jwt_required()
 @validate()
 def delete_project_by_id(project_id: int) -> Resp[EmptyResponse, 204]:
     ProjectService.delete_by_id(project_id)
+    return jsonify(), 204
+
+
+@tasks_router.post('/')
+@jwt_required()
+@validate()
+def add_task(body: RequestBodyOfTaskS) -> Resp[ReadTaskS, 201]:
+    author_id = get_jwt_identity()
+    task_schema_with_author = CreateTaskS(author_id=author_id, **body.model_dump())
+    created_task = TaskService.add(task_schema_with_author)
+    return jsonify(**created_task.model_dump()), 201
+
+
+@tasks_router.get('/')
+@jwt_required()
+@validate()
+def get_tasks(query: PaginationQS) -> Resp[ReadTaskS, 200]:
+    tasks = TaskService.get_many(query.limit, query.page)
+    return jsonify([task.model_dump() for task in tasks]), 200
+
+
+@tasks_router.get('/<int:task_id>/')
+@jwt_required()
+@validate()
+def get_task_by_id(task_id: int) -> Resp[ReadTaskS, 200]:
+    task = TaskService.get_one_by_id_or_none(task_id)
+    if task is None:
+        raise WasNotFoundError(f'Task with id {task_id}')
+
+    return jsonify(task.model_dump()), 200
+
+
+@tasks_router.put('/<int:task_id>/')
+@jwt_required()
+@validate()
+def update_task_by_id(task_id: int, body: UpdateTaskS) -> Resp[ReadProjectS, 200]:
+    task = TaskService.update_by_id(task_id, body)
+    return jsonify(task.model_dump()), 200
+
+
+@tasks_router.delete('/<int:task_id>/')
+@jwt_required()
+@validate()
+def delete_task_by_id(task_id: int) -> Resp[EmptyResponse, 204]:
+    TaskService.delete_by_id(task_id)
     return jsonify(), 204

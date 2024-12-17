@@ -13,7 +13,7 @@ class AlreadyExistsError(AppError):
 
 class WasNotFoundError(AppError):
     def __init__(self, what: str | None = None):
-        message = f'{what} was not found.' if what is None else 'Not Found'
+        message = f'{what} was not found.' if what is not None else 'Not Found.'
         super().__init__(message=message, status_code=404)
 
 

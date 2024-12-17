@@ -2,6 +2,7 @@ import random
 import traceback
 from pathlib import Path
 
+import werkzeug.exceptions
 from flask import Flask, jsonify, request, Response, Blueprint
 from flask_swagger_ui import get_swaggerui_blueprint
 from flask_jwt_extended import JWTManager
@@ -10,7 +11,7 @@ from jwt.exceptions import PyJWTError
 from pydantic import ValidationError
 
 from api.v1.users.routes import router as users_router
-from api.v1.projects.routes import router as projects_router
+from api.v1.projects.routes import projects_router, tasks_router
 from api.v1.users.routes import auth_router
 
 from config import settings
@@ -25,17 +26,30 @@ STATIC_DIR = Path(__file__).parent.parent / 'static'
 STATIC_DIR.mkdir(exist_ok=True)
 
 main_router = Blueprint(name='main', import_name=__name__, url_prefix='/')
+main_router.register_blueprint(auth_router)
 main_router.register_blueprint(users_router)
 main_router.register_blueprint(projects_router)
-main_router.register_blueprint(auth_router)
+main_router.register_blueprint(tasks_router)
 
 
 @main_router.errorhandler(Exception)
 def handle_all_errors(error: Exception):
+    """
+    Ловит все ошибки.
+
+    Возвращает пользователю код ошибки
+    по которому можно найти полный traceback в логах.
+    """
     error_code = random.randint(100_000, 999_999)
     logger.error("[code:%d] %s", error_code, error)
     logger.debug("[code:%d] %s", error_code, traceback.format_exc())
     return jsonify({'message': f'Unknown error. Code: {error_code}'}), 500
+
+
+@main_router.errorhandler(werkzeug.exceptions.HTTPException)
+def handle_flask_http_error(error: werkzeug.exceptions.HTTPException):
+    """ Ловит ошибки генерируемые Flask-ом """
+    return jsonify({'message': error.description}), error.code
 
 
 @main_router.errorhandler(ValidationError)
@@ -65,6 +79,7 @@ def handle_jwt_error(error: PyJWTError):
 
 @main_router.errorhandler(AppError)
 def handle_app_error(error: AppError):
+    """ Ловит все ошибки генерируемые приложением """
     logger.debug('App error: %s', error.message)
     return jsonify({'message': error.message}), error.status_code
 
@@ -116,10 +131,9 @@ if __name__ == '__main__':
     logger.info('Start app...')
     try:
         app_ = create_app()
+        app_.run(debug=True, port=8000, host='0.0.0.0')
+        logger.info('App is running')
     except Exception as e:
         logger.error(str(e))
         logger.debug(traceback.format_exc())
         raise
-    app_.run(debug=True, port=8000, host='0.0.0.0')
-    logger.info('App is running')
-

@@ -1,5 +1,8 @@
-from api.v1.projects.dao import ProjectDAO
-from api.v1.projects.schemas import CreateProjectS, ReadProjectS
+from api.v1.projects.dao import ProjectDAO, TaskDAO
+from api.v1.projects.schemas import (
+    CreateProjectS, ReadProjectS,
+    CreateTaskS, ReadTaskS, UpdateTaskS,
+)
 from errors import MustBePositiveError
 
 
@@ -34,3 +37,36 @@ class ProjectService:
     @staticmethod
     def delete_by_id(project_id: int) -> None:
         return ProjectDAO.delete_by_id(project_id)
+
+
+class TaskService:
+    @staticmethod
+    def add(task: CreateTaskS) -> ReadTaskS:
+        """
+        :except WasNotFoundError
+        """
+        return TaskDAO.add(task)
+
+    @staticmethod
+    def get_many(limit: int, page: int) -> tuple[ReadTaskS, ...]:
+        """
+        :except MustBePositiveError
+        """
+        if limit <= 0 or page <= 0:
+            raise MustBePositiveError('limit and page')
+        return TaskDAO.get_many(limit, page)
+
+    @staticmethod
+    def get_one_by_id_or_none(task_id: int) -> ReadTaskS | None:
+        return TaskDAO.get_one_by_id_or_none(task_id)
+
+    @staticmethod
+    def update_by_id(task_id: int, updated_task: UpdateTaskS) -> ReadTaskS:
+        """
+        :except WasNotFoundError
+        """
+        return TaskDAO.update_by_id(task_id, updated_task)
+
+    @staticmethod
+    def delete_by_id(project_id: int) -> None:
+        return TaskDAO.delete_by_id(project_id)

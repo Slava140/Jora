@@ -6,7 +6,7 @@ from database import (Base,
                       pk_int, fk_user_id, fk_project_id,
                       str_255, str_500,
                       created_at, updated_at, datetime_utc_tz,
-                      task_status as status,
+                      task_status as status, is_archived
                       )
 
 
@@ -27,6 +27,7 @@ class TaskM(Base):
     finished_at:    Mapped[datetime_utc_tz | None]
     created_at:     Mapped[created_at]
     updated_at:     Mapped[updated_at]
+    is_archived:    Mapped[is_archived]
 
     project_id:     Mapped[fk_project_id]
     author_id:      Mapped[fk_user_id]
@@ -36,10 +37,11 @@ class TaskM(Base):
 class ProjectM(Base):
     __tablename__ = 'projects'
 
-    id:                 Mapped[pk_int]
-    title:              Mapped[str_255]
-    description:        Mapped[str_500 | None]
-    created_at:         Mapped[created_at]
-    updated_at:         Mapped[updated_at]
+    id:             Mapped[pk_int]
+    title:          Mapped[str_255]
+    description:    Mapped[str_500 | None]
+    created_at:     Mapped[created_at]
+    updated_at:     Mapped[updated_at]
+    is_archived:    Mapped[is_archived]
 
-    owner_id:           Mapped[fk_user_id]
+    owner_id:       Mapped[fk_user_id]
