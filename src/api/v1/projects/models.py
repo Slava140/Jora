@@ -56,4 +56,4 @@ class CommentM(Base):
     is_archived:    Mapped[is_archived]
 
     author_id:      Mapped[fk_user_id]
-    project_id:     Mapped[fk_task_id]
+    task_id:        Mapped[fk_task_id]
