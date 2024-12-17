@@ -19,6 +19,7 @@ pk_int = Annotated[int, mapped_column(primary_key=True, autoincrement=True)]
 pk_uuid = Annotated[UUID, mapped_column(primary_key=True)]
 
 is_active = Annotated[bool, mapped_column(Boolean, server_default=expression.true())]
+is_archived = Annotated[bool, mapped_column(Boolean, server_default=expression.false())]
 task_status = Annotated[Literal['open', 'in_progress', 'finished'], mapped_column(String(50), server_default='open')]
 
 created_at = Annotated[datetime, mapped_column(DateTime(timezone=True), server_default=sql_utc_now)]
