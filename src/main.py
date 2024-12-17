@@ -11,7 +11,7 @@ from jwt.exceptions import PyJWTError
 from pydantic import ValidationError
 
 from api.v1.users.routes import router as users_router
-from api.v1.projects.routes import projects_router, tasks_router
+from api.v1.projects.routes import projects_router, tasks_router, comments_router
 from api.v1.users.routes import auth_router
 
 from config import settings
@@ -30,6 +30,7 @@ main_router.register_blueprint(auth_router)
 main_router.register_blueprint(users_router)
 main_router.register_blueprint(projects_router)
 main_router.register_blueprint(tasks_router)
+main_router.register_blueprint(comments_router)
 
 
 @main_router.errorhandler(Exception)

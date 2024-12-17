@@ -3,10 +3,11 @@ from typing import Union
 from flask import Blueprint, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
-from api.v1.projects.services import ProjectService, TaskService
+from api.v1.projects.services import ProjectService, TaskService, CommentService
 from api.v1.projects.schemas import (
     CreateProjectS, ReadProjectS,
-    CreateTaskS, ReadTaskS, RequestBodyOfTaskS, UpdateTaskS
+    CreateTaskS, ReadTaskS, RequestBodyOfTaskS, UpdateTaskS,
+    CreateCommentS, RequestBodyOfCommentS, ReadCommentS
 )
 from _types import Resp
 from validation_decorator import validate
@@ -15,6 +16,7 @@ from global_schemas import HTTPError, PaginationQS, EmptyResponse
 
 projects_router = Blueprint(name='projects', import_name=__name__, url_prefix='/api/v1/projects')
 tasks_router = Blueprint(name='tasks', import_name=__name__, url_prefix='/api/v1/tasks')
+comments_router = Blueprint(name='comments', import_name=__name__, url_prefix='/api/v1/comments')
 
 
 @projects_router.post('/')
@@ -115,3 +117,13 @@ def update_task_by_id(task_id: int, body: UpdateTaskS) -> Resp[ReadProjectS, 200
 def delete_task_by_id(task_id: int) -> Resp[EmptyResponse, 204]:
     TaskService.delete_by_id(task_id)
     return jsonify(), 204
+
+
+@comments_router.post('/')
+@jwt_required()
+@validate()
+def add_comment(body: RequestBodyOfCommentS) -> Resp[ReadCommentS, 201]:
+    author_id = get_jwt_identity()
+    comment_schema_with_author = CreateCommentS(author_id=author_id, **body.model_dump())
+    created_comment = CommentService.add(comment_schema_with_author)
+    return jsonify(created_comment.model_dump()), 201

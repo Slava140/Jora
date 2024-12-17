@@ -1,7 +1,8 @@
-from api.v1.projects.dao import ProjectDAO, TaskDAO
+from api.v1.projects.dao import ProjectDAO, TaskDAO, CommentDAO
 from api.v1.projects.schemas import (
     CreateProjectS, ReadProjectS,
     CreateTaskS, ReadTaskS, UpdateTaskS,
+    CreateCommentS, ReadCommentS,
 )
 from errors import MustBePositiveError
 
@@ -70,3 +71,12 @@ class TaskService:
     @staticmethod
     def delete_by_id(project_id: int) -> None:
         return TaskDAO.delete_by_id(project_id)
+
+
+class CommentService:
+    @staticmethod
+    def add(comment: CreateCommentS) -> ReadCommentS:
+        """
+        :except WasNotFoundError
+        """
+        return CommentDAO.add(comment)

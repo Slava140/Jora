@@ -10,7 +10,7 @@ from database import (Base,
                       )
 
 
-class Status(enum.Enum):
+class Status(str, enum.Enum):
     open = 'open'
     in_progress = 'in_progress'
     finished = 'finished'

@@ -415,6 +415,23 @@
         "responses": {},
         "deprecated": false
       }
+    },
+    "/api/v1/comments/": {
+      "post": {
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestBodyOfCommentS"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {},
+        "deprecated": false
+      }
     }
   },
   "components": {
@@ -509,6 +526,25 @@
           "password": {
             "title": "Password",
             "type": "string"
+          }
+        }
+      },
+      "RequestBodyOfCommentS": {
+        "title": "RequestBodyOfCommentS",
+        "required": [
+          "content",
+          "task_id"
+        ],
+        "type": "object",
+        "properties": {
+          "content": {
+            "title": "Content",
+            "type": "string"
+          },
+          "task_id": {
+            "title": "Task Id",
+            "minimum": 0.0,
+            "type": "integer"
           }
         }
       },

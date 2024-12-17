@@ -1,9 +1,10 @@
-from sqlalchemy import insert, select, update, delete
+from sqlalchemy import insert, select, update
 
-from api.v1.projects.models import ProjectM, TaskM
+from api.v1.projects.models import ProjectM, TaskM, CommentM
 from api.v1.projects.schemas import (
     CreateProjectS, ReadProjectS,
     CreateTaskS, ReadTaskS, UpdateTaskS,
+    CreateCommentS, ReadCommentS
 )
 
 from api.v1.users.services import UserService
@@ -110,7 +111,7 @@ class TaskDAO:
 
         with db.session.begin() as transaction:
             if UserService.get_one_by_id_or_none(task.author_id) is None:
-                raise WasNotFoundError(f'Author with id {task.author_id}')
+                raise WasNotFoundError(f'Author user with id {task.author_id}')
             if ProjectDAO.get_one_by_id_or_none(task.project_id) is None:
                 raise WasNotFoundError(f'Project with id {task.project_id}')
 
@@ -179,3 +180,28 @@ class TaskDAO:
             if TaskDAO.get_one_by_id_or_none(task_id) is not None:
                 db.session.execute(stmt)
             transaction.commit()
+
+
+class CommentDAO:
+    @staticmethod
+    def add(comment: CreateCommentS) -> ReadCommentS:
+        """
+        :except WasNotFoundError
+        """
+        stmt = insert(
+            CommentM
+        ).values(
+            **comment.model_dump()
+        ).returning('*')
+
+        with db.session.begin() as transaction:
+            if UserService.get_one_by_id_or_none(comment.author_id) is None:
+                raise WasNotFoundError(f"Author user with id {comment.author_id}")
+
+            if TaskDAO.get_one_by_id_or_none(comment.task_id) is None:
+                raise WasNotFoundError(f"Task with id {comment.task_id}")
+
+            result = db.session.execute(stmt).mappings().one()
+            transaction.commit()
+
+        return ReadCommentS(**result)
