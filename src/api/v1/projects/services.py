@@ -66,3 +66,7 @@ class TaskService:
         :except WasNotFoundError
         """
         return TaskDAO.update_by_id(task_id, updated_task)
+
+    @staticmethod
+    def delete_by_id(project_id: int) -> None:
+        return TaskDAO.delete_by_id(project_id)

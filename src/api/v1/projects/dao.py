@@ -82,12 +82,18 @@ class ProjectDAO:
 
     @staticmethod
     def delete_by_id(project_id: int) -> None:
-        stmt = delete(ProjectM).where(ProjectM.id == project_id)
+        stmt = update(
+            ProjectM
+        ).where(
+            ProjectM.id == project_id
+        ).values(
+            is_archived=True
+        )
 
-        db.session.execute(stmt)
-        db.session.commit()
-
-        return None
+        with db.session.begin() as transaction:
+            if ProjectDAO.get_one_by_id_or_none(project_id) is not None:
+                db.session.execute(stmt)
+            transaction.commit()
 
 
 class TaskDAO:
@@ -158,3 +164,18 @@ class TaskDAO:
             transaction.commit()
 
         return ReadTaskS(**result)
+
+    @staticmethod
+    def delete_by_id(task_id: int) -> None:
+        stmt = update(
+            TaskM
+        ).where(
+            TaskM.id == task_id
+        ).values(
+            is_archived=True
+        )
+
+        with db.session.begin() as transaction:
+            if TaskDAO.get_one_by_id_or_none(task_id) is not None:
+                db.session.execute(stmt)
+            transaction.commit()

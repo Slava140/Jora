@@ -107,3 +107,11 @@ def get_task_by_id(task_id: int) -> Resp[ReadTaskS, 200]:
 def update_task_by_id(task_id: int, body: UpdateTaskS) -> Resp[ReadProjectS, 200]:
     task = TaskService.update_by_id(task_id, body)
     return jsonify(task.model_dump()), 200
+
+
+@tasks_router.delete('/<int:task_id>/')
+@jwt_required()
+@validate()
+def delete_task_by_id(task_id: int) -> Resp[EmptyResponse, 204]:
+    TaskService.delete_by_id(task_id)
+    return jsonify(), 204
