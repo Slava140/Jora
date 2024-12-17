@@ -24,7 +24,7 @@ class CreateProjectS(BaseProjectS):
 class BaseTaskS(BaseModel):
     title:          StrFrom3To255
     description:    str
-    status:         Literal['open', 'in_progress', 'finished'] = 'open'
+    status:         StrTaskStatus
     due_date:       UTCDatetime | None = None
     project_id:     NonNegativeInt
 
@@ -44,3 +44,8 @@ class ReadTaskS(BaseTaskS):
 
 class CreateTaskS(RequestBodyOfTaskS):
     author_id:      NonNegativeInt
+
+
+class UpdateTaskS(BaseModel):
+    assignee_id:    NonNegativeInt | None = None
+    status:         StrTaskStatus

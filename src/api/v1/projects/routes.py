@@ -6,7 +6,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from api.v1.projects.services import ProjectService, TaskService
 from api.v1.projects.schemas import (
     CreateProjectS, ReadProjectS,
-    CreateTaskS, ReadTaskS, RequestBodyOfTaskS
+    CreateTaskS, ReadTaskS, RequestBodyOfTaskS, UpdateTaskS
 )
 from _types import Resp
 from validation_decorator import validate
@@ -98,4 +98,12 @@ def get_task_by_id(task_id: int) -> Resp[ReadTaskS, 200]:
     if task is None:
         raise WasNotFoundError(f'Task with id {task_id}')
 
+    return jsonify(task.model_dump()), 200
+
+
+@tasks_router.put('/<int:task_id>/')
+@jwt_required()
+@validate()
+def update_task_by_id(task_id: int, body: UpdateTaskS) -> Resp[ReadProjectS, 200]:
+    task = TaskService.update_by_id(task_id, body)
     return jsonify(task.model_dump()), 200

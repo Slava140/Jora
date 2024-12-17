@@ -370,6 +370,33 @@
         ],
         "responses": {},
         "deprecated": false
+      },
+      "put": {
+        "parameters": [
+          {
+            "required": true,
+            "deprecated": false,
+            "schema": {
+              "type": "integer"
+            },
+            "name": "task_id",
+            "in": "path",
+            "allowEmptyValue": false,
+            "allowReserved": false
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTaskS"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {},
+        "deprecated": false
       }
     }
   },
@@ -507,6 +534,28 @@
             "title": "Project Id",
             "minimum": 0.0,
             "type": "integer"
+          }
+        }
+      },
+      "UpdateTaskS": {
+        "title": "UpdateTaskS",
+        "type": "object",
+        "properties": {
+          "assignee_id": {
+            "title": "Assignee Id",
+            "minimum": 0.0,
+            "type": "integer",
+            "nullable": true
+          },
+          "status": {
+            "title": "Status",
+            "enum": [
+              "open",
+              "in_progress",
+              "finished"
+            ],
+            "type": "string",
+            "default": "open"
           }
         }
       }

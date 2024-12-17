@@ -3,7 +3,7 @@ from sqlalchemy import insert, select, update, delete
 from api.v1.projects.models import ProjectM, TaskM
 from api.v1.projects.schemas import (
     CreateProjectS, ReadProjectS,
-    CreateTaskS, ReadTaskS,
+    CreateTaskS, ReadTaskS, UpdateTaskS,
 )
 
 from api.v1.users.services import UserService
@@ -68,7 +68,7 @@ class ProjectDAO:
             project = ProjectDAO.get_one_by_id_or_none(project_id)
 
             if project is None:
-                raise WasNotFoundError(f'Project with id={project_id}')
+                raise WasNotFoundError(f'Project with id {project_id}')
 
             owner_user = UserService.get_one_by_id_or_none(updated_project.owner_id)
 
@@ -131,3 +131,30 @@ class TaskDAO:
         result = db.session.execute(query).scalar_one_or_none()
 
         return ReadTaskS(**result.to_dict()) if result is not None else None
+
+    @staticmethod
+    def update_by_id(task_id: int, updated_task: UpdateTaskS) -> ReadTaskS:
+        """
+        :except WasNotFoundError
+        """
+        stmt = update(
+            TaskM
+        ).where(
+            TaskM.id == task_id
+        ).values(
+            **updated_task.model_dump()
+        ).returning('*')
+
+        with db.session.begin() as transaction:
+            task = TaskDAO.get_one_by_id_or_none(task_id)
+            if task is None:
+                raise WasNotFoundError(f'Task with id {task_id}')
+
+            assignee = UserService.get_one_by_id_or_none(updated_task.assignee_id)
+            if assignee is None:
+                raise WasNotFoundError(f'Assignee user with id {updated_task.assignee_id}')
+
+            result = db.session.execute(stmt).mappings().one()
+            transaction.commit()
+
+        return ReadTaskS(**result)
