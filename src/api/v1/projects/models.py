@@ -3,7 +3,7 @@ import enum
 from sqlalchemy.orm import Mapped
 
 from database import (Base,
-                      pk_int, fk_user_id, fk_project_id,
+                      pk_int, fk_user_id, fk_project_id, fk_task_id,
                       str_255, str_500,
                       created_at, updated_at, datetime_utc_tz,
                       task_status as status, is_archived
@@ -45,3 +45,15 @@ class ProjectM(Base):
     is_archived:    Mapped[is_archived]
 
     owner_id:       Mapped[fk_user_id]
+
+
+class CommentM(Base):
+    __tablename__ = 'comments'
+
+    id:             Mapped[pk_int]
+    content:        Mapped[str]
+    created_at:     Mapped[created_at]
+    is_archived:    Mapped[is_archived]
+
+    author_id:      Mapped[fk_user_id]
+    project_id:     Mapped[fk_task_id]
