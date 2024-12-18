@@ -80,3 +80,16 @@ class CommentService:
         :except WasNotFoundError
         """
         return CommentDAO.add(comment)
+
+    @staticmethod
+    def get_many(limit: int, page: int) -> tuple[ReadCommentS, ...]:
+        """
+        :except MustBePositiveError
+        """
+        if limit <= 0 or page <= 0:
+            raise MustBePositiveError('limit and page')
+        return CommentDAO.get_many(limit, page)
+
+    @staticmethod
+    def get_one_by_id_or_none(comment_id: int) -> ReadCommentS | None:
+        return CommentDAO.get_one_by_id_or_none(comment_id)

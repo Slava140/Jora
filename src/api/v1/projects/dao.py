@@ -205,3 +205,22 @@ class CommentDAO:
             transaction.commit()
 
         return ReadCommentS(**result)
+
+    @staticmethod
+    def get_many(limit: int, page: int) -> tuple[ReadCommentS, ...]:
+        query = select(CommentM).limit(limit).offset((page - 1) * limit)
+        result = db.session.execute(query).scalars().fetchall()
+
+        return tuple(ReadCommentS(**model.to_dict()) for model in result)
+
+    @staticmethod
+    def get_one_by_id_or_none(comment_id: int) -> ReadCommentS | None:
+        query = select(
+            CommentM
+        ).where(
+            CommentM.id == comment_id
+        )
+
+        result = db.session.execute(query).scalar_one_or_none()
+
+        return ReadCommentS(**result.to_dict()) if result is not None else None

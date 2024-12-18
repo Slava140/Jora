@@ -127,3 +127,22 @@ def add_comment(body: RequestBodyOfCommentS) -> Resp[ReadCommentS, 201]:
     comment_schema_with_author = CreateCommentS(author_id=author_id, **body.model_dump())
     created_comment = CommentService.add(comment_schema_with_author)
     return jsonify(created_comment.model_dump()), 201
+
+
+@comments_router.get('/')
+@jwt_required()
+@validate()
+def get_comments(query: PaginationQS) -> Resp[ReadCommentS, 200]:
+    comments = CommentService.get_many(query.limit, query.page)
+    return jsonify([comment.model_dump() for comment in comments]), 200
+
+
+@comments_router.get('/<int:comment_id>/')
+@jwt_required()
+@validate()
+def get_comment_by_id(comment_id: int) -> Resp[ReadCommentS, 200]:
+    comment = CommentService.get_one_by_id_or_none(comment_id)
+    if comment is None:
+        raise WasNotFoundError(f'Comment with id {comment_id}')
+
+    return jsonify(comment.model_dump()), 200
