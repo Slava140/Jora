@@ -10,6 +10,7 @@ from config import settings
 from database import Base
 from api.v1.users.models import UserM
 from api.v1.projects.models import ProjectM, TaskM
+from media.models import MediaM
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

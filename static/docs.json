@@ -487,6 +487,28 @@
         "responses": {},
         "deprecated": false
       }
+    },
+    "/media/": {
+      "post": {
+        "parameters": [
+          {
+            "required": false,
+            "deprecated": false,
+            "style": "path",
+            "schema": {
+              "title": "Task Id",
+              "minimum": 0.0,
+              "type": "integer"
+            },
+            "name": "task_id",
+            "in": "query",
+            "allowEmptyValue": false,
+            "allowReserved": false
+          }
+        ],
+        "responses": {},
+        "deprecated": false
+      }
     }
   },
   "components": {

@@ -16,6 +16,9 @@ class Settings(BaseSettings):
     DB_NAME: str
 
     JWT_SECRET: str
+    MEDIA_PATH: Path
+    ALLOWED_FILE_EXTENSIONS: set
+
     ACCESS_TOKEN_TTL: int
     REFRESH_TOKEN_TTL: int
 

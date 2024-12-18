@@ -13,12 +13,14 @@ from pydantic import ValidationError
 from api.v1.users.routes import router as users_router
 from api.v1.projects.routes import projects_router, tasks_router, comments_router
 from api.v1.users.routes import auth_router
+from media.routes import router as media_router
 
 from config import settings
 from database import db
 from docs import Docs
 from errors import AppError
 from logger import get_logger
+
 
 logger = get_logger('main')
 
@@ -31,6 +33,7 @@ main_router.register_blueprint(users_router)
 main_router.register_blueprint(projects_router)
 main_router.register_blueprint(tasks_router)
 main_router.register_blueprint(comments_router)
+main_router.register_blueprint(media_router)
 
 
 @main_router.errorhandler(Exception)
@@ -106,6 +109,7 @@ def ok():
 def create_app():
     app = Flask(__name__, static_folder=STATIC_DIR, static_url_path='/static')
 
+    app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024
     app.config["SQLALCHEMY_DATABASE_URI"] = settings.database_url_psycopg
     app.config["JWT_SECRET_KEY"] = settings.JWT_SECRET
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = settings.access_token_ttl_timedelta
