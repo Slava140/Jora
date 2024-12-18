@@ -10,17 +10,21 @@ from base_pydantic_types import UTCDatetime, StrFrom3To255, Str500, StrTaskStatu
 class BaseProjectS(BaseModel):
     title:          StrFrom3To255
     description:    Str500 | None = None
-    owner_id:       NonNegativeInt
 
 
-class ReadProjectS(BaseProjectS):
+class RequestBodyOfProjectS(BaseProjectS):
+    ...
+
+
+class ReadProjectS(RequestBodyOfProjectS):
     id:             NonNegativeInt
     created_at:     UTCDatetime
     updated_at:     UTCDatetime
+    owner_id:       NonNegativeInt
 
 
 class CreateProjectS(BaseProjectS):
-    ...
+    owner_id:       NonNegativeInt
 
 
 ###########################

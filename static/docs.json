@@ -227,7 +227,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateProjectS"
+                "$ref": "#/components/schemas/RequestBodyOfProjectS"
               }
             }
           },
@@ -600,6 +600,27 @@
             "title": "Task Id",
             "minimum": 0.0,
             "type": "integer"
+          }
+        }
+      },
+      "RequestBodyOfProjectS": {
+        "title": "RequestBodyOfProjectS",
+        "required": [
+          "title"
+        ],
+        "type": "object",
+        "properties": {
+          "title": {
+            "title": "Title",
+            "maxLength": 255,
+            "minLength": 3,
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "maxLength": 500,
+            "type": "string",
+            "nullable": true
           }
         }
       },

@@ -5,9 +5,9 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from api.v1.projects.services import ProjectService, TaskService, CommentService
 from api.v1.projects.schemas import (
-    CreateProjectS, ReadProjectS,
+    CreateProjectS, ReadProjectS, RequestBodyOfProjectS,
     CreateTaskS, ReadTaskS, RequestBodyOfTaskS, UpdateTaskS,
-    CreateCommentS, RequestBodyOfCommentS, ReadCommentS
+    CreateCommentS, ReadCommentS, RequestBodyOfCommentS,
 )
 from _types import Resp
 from validation_decorator import validate
@@ -22,11 +22,13 @@ comments_router = Blueprint(name='comments', import_name=__name__, url_prefix='/
 @projects_router.post('/')
 @jwt_required()
 @validate()
-def add_project(body: CreateProjectS) -> Union[
+def add_project(body: RequestBodyOfProjectS) -> Union[
     Resp[ReadProjectS, 201],
     Resp[HTTPError, 404],
 ]:
-    created_project = ProjectService.add(body)
+    owner_id = get_jwt_identity()
+    project_schema_with_owner = CreateProjectS(owner_id=owner_id, **body.model_dump())
+    created_project = ProjectService.add(project_schema_with_owner)
     return jsonify(created_project.model_dump()), 201
 
 
