@@ -509,6 +509,25 @@
         "responses": {},
         "deprecated": false
       }
+    },
+    "/media/{media_id}/": {
+      "get": {
+        "parameters": [
+          {
+            "required": true,
+            "deprecated": false,
+            "schema": {
+              "type": "integer"
+            },
+            "name": "media_id",
+            "in": "path",
+            "allowEmptyValue": false,
+            "allowReserved": false
+          }
+        ],
+        "responses": {},
+        "deprecated": false
+      }
     }
   },
   "components": {

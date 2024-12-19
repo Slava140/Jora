@@ -1,13 +1,18 @@
 from typing import Any
 
-from sqlalchemy import insert, select, update, and_, delete
+from sqlalchemy import insert, select, update, and_
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 
+# from api.v1.projects.models import ProjectM, TaskM, CommentM
 from api.v1.users.models import UserM
 from api.v1.users.schemas import CreateUserS, ReadUserS, BaseUserS, FullUserS
 from api.v1.users.utils import get_hashed_password
 from errors import AlreadyExistsError, WasNotFoundError
 from database import db
+from logger import get_logger
+
+
+logger = get_logger('UserDAO')
 
 
 class UserDAO:
@@ -121,6 +126,7 @@ class UserDAO:
 
     @staticmethod
     def delete_by_id(user_id: int) -> None:
+        from api.v1.projects.dao import ProjectDAO
         stmt = update(
             UserM
         ).where(
@@ -129,7 +135,8 @@ class UserDAO:
             is_active=False
         )
 
-        db.session.execute(stmt)
-        db.session.commit()
+        transaction = db.session.begin()
+        transaction.session.execute(stmt)
+        ProjectDAO.delete_all_projects_with_user_id(user_id, transaction)
 
         return None
