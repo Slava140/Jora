@@ -1,4 +1,4 @@
-from sqlalchemy import insert
+from sqlalchemy import insert, select
 
 from media.models import MediaM
 from media.schemas import ReadMediaS, CreateMediaS
@@ -32,3 +32,15 @@ class MediaDAO:
             transaction.commit()
 
         return ReadMediaS(**result)
+
+    @staticmethod
+    def get_one_by_id_or_none(media_id: int) -> ReadMediaS | None:
+        query = select(
+            MediaM
+        ).where(
+            MediaM.id == media_id
+        )
+
+        result = db.session.execute(query).scalar_one_or_none()
+
+        return ReadMediaS(**result.to_dict()) if result is not None else None

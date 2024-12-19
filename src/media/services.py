@@ -1,12 +1,15 @@
+import os.path
+from pathlib import Path
+
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 
 from api.v1.projects.services import TaskService
 from config import settings
-from media.schemas import ReadMediaS, CreateMediaS
+from media.schemas import ReadMediaS, ReadMediaWithFilepathS, CreateMediaS
 from media.dao import MediaDAO
 
-from errors import WasNotFoundError, ExtensionsNotAllowedError
+from errors import WasNotFoundError, ExtensionsNotAllowedError, MustBePositiveError
 
 
 class MediaService:
@@ -41,3 +44,17 @@ class MediaService:
 
         return media
 
+    @classmethod
+    def get_media_by_id_or_none(cls, media_id: int) -> ReadMediaWithFilepathS | None:
+        media_metadata = MediaDAO.get_one_by_id_or_none(media_id)
+        if media_metadata is None:
+            return None
+
+        extension = cls.__get_file_extensions(media_metadata.filename)
+        task = TaskService.get_one_by_id_or_none(media_metadata.task_id)
+        filepath = settings.MEDIA_PATH / Path(f'project_id_{task.project_id}/task_id_{task.id}/{media_id}.{extension}')
+
+        if not filepath.exists():
+            return None
+
+        return ReadMediaWithFilepathS(filepath=filepath, **media_metadata.model_dump())

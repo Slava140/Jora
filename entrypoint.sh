@@ -1,7 +1,7 @@
 #!/bin/sh
 
 echo "Применение миграции"
-alembic upgrade 0
+alembic upgrade head
 
 echo "Запуск приложения"
 python src/main.py

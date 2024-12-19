@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from pydantic import BaseModel, NonNegativeInt
 
 from base_pydantic_types import Str500, UTCDatetime
@@ -20,3 +22,7 @@ class CreateMediaS(BaseMediaS):
 class ReadMediaS(BaseMediaS):
     id:         NonNegativeInt
     created_at: UTCDatetime
+
+
+class ReadMediaWithFilepathS(ReadMediaS):
+    filepath:   Path
