@@ -29,15 +29,11 @@ class UserService:
         return UserDAO.get_one_by_id_or_none(user_id)
 
     @staticmethod
-    def get_one_by_email_or_none(user_email: str) -> ReadUserS | None:
-        return UserDAO.get_one_by_email_or_none(user_email)
-
-    @staticmethod
     def login(data: LoginS) -> LoggedInS:
         """
         :except InvalidEmailOrPasswordError
         """
-        user = UserDAO.get_user_with_password(data.email)
+        user = UserDAO.get_user_with_password_or_none(data.email)
         if user is not None and is_correct_password(data.password, user.hashed_password):
             access_token = create_access_token(identity=str(user.id))
             return LoggedInS(**user.model_dump(), access_token=access_token)
@@ -46,6 +42,9 @@ class UserService:
 
     @staticmethod
     def signup(user: CreateUserS) -> LoggedInS:
+        """
+        :except AlreadyExistsError
+        """
         created_user = UserDAO.add(user)
         access_token = create_access_token(identity=str(created_user.id))
         return LoggedInS(**created_user.model_dump(), access_token=access_token)

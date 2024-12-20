@@ -1,16 +1,14 @@
 from typing import Any
 
-from sqlalchemy import insert, select, update, and_
+from sqlalchemy import insert, select, update
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 
-# from api.v1.projects.models import ProjectM, TaskM, CommentM
 from api.v1.users.models import UserM
 from api.v1.users.schemas import CreateUserS, ReadUserS, BaseUserS, FullUserS
 from api.v1.users.utils import get_hashed_password
 from errors import AlreadyExistsError, WasNotFoundError
 from database import db
 from logger import get_logger
-
 
 logger = get_logger('UserDAO')
 
@@ -19,19 +17,29 @@ class UserDAO:
     @staticmethod
     def _get_one_or_none(
             where: tuple[InstrumentedAttribute, Any],
-            exclude_where: tuple[InstrumentedAttribute, Any] | None = None) -> UserM | None:
+            exclude_where: tuple[InstrumentedAttribute, Any] | None = None,
+            is_active_state: bool | None = None
+    ) -> UserM | None:
+        """
+        :param where: Первый элемент - поле модели. Второй элемент - значение которому поле должно быть равно.
+        :param exclude_where: Аналогично where, но исключает поля.
+        :param is_active_state: None, чтобы игнорировать состояние, True/False выбрать записи с указанным состоянием.
+        """
 
-        if exclude_where is None:
-            query = select(UserM).where(where[0] == where[1]).limit(1)
-        else:
-            query = select(
-                UserM
-            ).where(
-                and_(
-                    where[0] == where[1],
-                    exclude_where[0].not_in([exclude_where[1]])
-                )
-            ).limit(1)
+        where_model_field, where_data = where
+        where_conditions = [where_model_field == where_data]
+
+        if exclude_where is not None:
+            excluded_where_model_field, excluded_where_data = exclude_where
+            where_conditions.append(
+                excluded_where_model_field.not_in([excluded_where_data])
+            )
+
+        if is_active_state is not None:
+            where_conditions.append(UserM.is_active.is_(is_active_state))
+
+        query = select(UserM).where(*where_conditions).limit(1)
+
         return db.session.execute(query).scalar_one_or_none()
 
     @staticmethod
@@ -61,7 +69,11 @@ class UserDAO:
 
     @staticmethod
     def get_many(limit: int, page: int) -> tuple[ReadUserS, ...]:
-        query = select(UserM).limit(limit).offset((page - 1) * limit)
+        query = select(
+            UserM
+        ).where(
+            UserM.is_active.is_(True)
+        ).limit(limit).offset((page - 1) * limit)
         result = db.session.execute(query).scalars().fetchall()
         return tuple(ReadUserS(**data.to_dict()) for data in result)
 
@@ -70,7 +82,8 @@ class UserDAO:
         query = select(
             UserM
         ).where(
-            UserM.id == user_id
+            UserM.id == user_id,
+            UserM.is_active.is_(True)
         )
 
         result = db.session.execute(query).scalar_one_or_none()
@@ -78,13 +91,8 @@ class UserDAO:
         return ReadUserS(**result.to_dict()) if result is not None else None
 
     @staticmethod
-    def get_one_by_email_or_none(user_email: str) -> ReadUserS | None:
-        user = UserDAO._get_one_or_none(where=(UserM.email == user_email))
-        return ReadUserS(**user.to_dict()) if user is not None else None
-
-    @staticmethod
-    def get_user_with_password(user_email: str) -> FullUserS:
-        user = UserDAO._get_one_or_none(where=(UserM.email, user_email))
+    def get_user_with_password_or_none(user_email: str) -> FullUserS | None:
+        user = UserDAO._get_one_or_none(where=(UserM.email, user_email), is_active_state=True)
         return FullUserS(**user.to_dict()) if user is not None else None
 
     @staticmethod
@@ -102,7 +110,7 @@ class UserDAO:
         ).returning('*')
 
         with db.session.begin() as transaction:
-            user = UserDAO._get_one_or_none(where=(UserM.id, user_id))
+            user = UserDAO._get_one_or_none(where=(UserM.id, user_id), is_active_state=True)
 
             if user is None:
                 raise WasNotFoundError(f'User with id {user_id}')
