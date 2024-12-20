@@ -5,7 +5,7 @@ from sqlalchemy.orm import SessionTransaction
 
 from api.v1.projects.models import ProjectM, TaskM, CommentM
 from api.v1.projects.schemas import (
-    CreateProjectS, ReadProjectS,
+    CreateProjectS, ReadProjectS, UpdateProjectS,
     CreateTaskS, ReadTaskS, UpdateTaskS,
     CreateCommentS, ReadCommentS
 )
@@ -39,7 +39,11 @@ class ProjectDAO:
 
     @staticmethod
     def get_many(limit: int, page: int) -> tuple[ReadProjectS, ...]:
-        query = select(ProjectM).limit(limit).offset((page - 1) * limit)
+        query = select(
+            ProjectM
+        ).where(
+            ProjectM.is_archived.is_(False)
+        ).limit(limit).offset((page - 1) * limit)
         result = db.session.execute(query).scalars().fetchall()
 
         return tuple(ReadProjectS(**data.to_dict()) for data in result)
@@ -49,7 +53,8 @@ class ProjectDAO:
         query = select(
             ProjectM
         ).where(
-            ProjectM.id == project_id
+            ProjectM.id == project_id,
+            ProjectM.is_archived.is_(False)
         )
 
         result = db.session.execute(query).scalar_one_or_none()
@@ -57,7 +62,7 @@ class ProjectDAO:
         return ReadProjectS(**result.to_dict()) if result is not None else None
 
     @staticmethod
-    def update_by_id(project_id: int, updated_project: CreateProjectS) -> ReadProjectS:
+    def update_by_id(project_id: int, updated_project: UpdateProjectS) -> ReadProjectS:
         """
         :except WasNotFoundError
         """
@@ -74,11 +79,6 @@ class ProjectDAO:
 
             if project is None:
                 raise WasNotFoundError(f'Project with id {project_id}')
-
-            owner_user = UserDAO.get_one_by_id_or_none(updated_project.owner_id)
-
-            if owner_user is None:
-                raise WasNotFoundError(f'Owner user with id {updated_project.owner_id}')
 
             result = db.session.execute(stmt).mappings().one()
             transaction.commit()
@@ -135,6 +135,7 @@ class TaskDAO:
         with db.session.begin() as transaction:
             if UserDAO.get_one_by_id_or_none(task.author_id) is None:
                 raise WasNotFoundError(f'Author user with id {task.author_id}')
+
             if ProjectDAO.get_one_by_id_or_none(task.project_id) is None:
                 raise WasNotFoundError(f'Project with id {task.project_id}')
 
@@ -145,7 +146,11 @@ class TaskDAO:
 
     @staticmethod
     def get_many(limit: int, page: int) -> tuple[ReadTaskS, ...]:
-        query = select(TaskM).limit(limit).offset((page - 1) * limit)
+        query = select(
+            TaskM
+        ).where(
+            TaskM.is_archived.is_(False)
+        ).limit(limit).offset((page - 1) * limit)
         result = db.session.execute(query).scalars().fetchall()
 
         return tuple(ReadTaskS(**data.to_dict()) for data in result)
@@ -155,7 +160,8 @@ class TaskDAO:
         query = select(
             TaskM
         ).where(
-            TaskM.id == task_id
+            TaskM.id == task_id,
+            TaskM.is_archived.is_(False)
         )
 
         result = db.session.execute(query).scalar_one_or_none()
@@ -254,7 +260,11 @@ class CommentDAO:
 
     @staticmethod
     def get_many(limit: int, page: int) -> tuple[ReadCommentS, ...]:
-        query = select(CommentM).limit(limit).offset((page - 1) * limit)
+        query = select(
+            CommentM
+        ).where(
+            CommentM.is_archived.is_(False)
+        ).limit(limit).offset((page - 1) * limit)
         result = db.session.execute(query).scalars().fetchall()
 
         return tuple(ReadCommentS(**model.to_dict()) for model in result)
@@ -264,7 +274,8 @@ class CommentDAO:
         query = select(
             CommentM
         ).where(
-            CommentM.id == comment_id
+            CommentM.id == comment_id,
+            CommentM.is_archived.is_(False)
         )
 
         result = db.session.execute(query).scalar_one_or_none()

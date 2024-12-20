@@ -1,6 +1,6 @@
 from api.v1.projects.dao import ProjectDAO, TaskDAO, CommentDAO
 from api.v1.projects.schemas import (
-    CreateProjectS, ReadProjectS,
+    CreateProjectS, ReadProjectS, UpdateProjectS,
     CreateTaskS, ReadTaskS, UpdateTaskS,
     CreateCommentS, ReadCommentS,
 )
@@ -29,7 +29,7 @@ class ProjectService:
         return ProjectDAO.get_one_by_id_or_none(project_id)
 
     @staticmethod
-    def update_by_id(project_id: int, updated_project: CreateProjectS) -> ReadProjectS:
+    def update_by_id(project_id: int, updated_project: UpdateProjectS) -> ReadProjectS:
         """
         :except WasNotFoundError
         """

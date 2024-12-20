@@ -27,6 +27,10 @@ class CreateProjectS(BaseProjectS):
     owner_id:       NonNegativeInt
 
 
+class UpdateProjectS(BaseProjectS):
+    ...
+
+
 ###########################
 # Схемы для модели задачи #
 ###########################

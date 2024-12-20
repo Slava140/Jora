@@ -5,7 +5,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from api.v1.projects.services import ProjectService, TaskService, CommentService
 from api.v1.projects.schemas import (
-    CreateProjectS, ReadProjectS, RequestBodyOfProjectS,
+    CreateProjectS, ReadProjectS, RequestBodyOfProjectS, UpdateProjectS,
     CreateTaskS, ReadTaskS, RequestBodyOfTaskS, UpdateTaskS,
     CreateCommentS, ReadCommentS, RequestBodyOfCommentS,
 )
@@ -60,7 +60,7 @@ def get_project_by_id(project_id: int) -> Union[
 @projects_router.put('/<int:project_id>/')
 @jwt_required()
 @validate()
-def update_project_by_id(project_id: int, body: CreateProjectS) -> Union[
+def update_project_by_id(project_id: int, body: UpdateProjectS) -> Union[
     Resp[ReadProjectS, 200],
     Resp[HTTPError, 404]
 ]:
