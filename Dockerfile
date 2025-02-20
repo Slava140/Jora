@@ -4,7 +4,8 @@ ENV PYTHONUNBUFFERED=1 \
     POETRY_NO_INTERACTION=1 \
     POETRY_VIRTUALENVS_CREATE=0 \
     POETRY_CACHE_DIR='/var/cache/pypoetry' \
-    POETRY_HOME='/usr/local'
+    POETRY_HOME='/usr/local' \
+    PATH="$PATH:$POETRY_HOME/bin"
 
 RUN apk add curl postgresql-dev
 
