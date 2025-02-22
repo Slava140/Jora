@@ -1,19 +1,18 @@
-from flask import Blueprint, request, jsonify, send_file
+from flask import request, jsonify, send_file
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_openapi3 import APIBlueprint
 
 from errors import FileIsNotAttachedError, WasNotFoundError
 from media.schemas import MediaQS, CreateMediaS
 from media.services import MediaService
+from security import security
 
-from validation_decorator import validate
 
-
-router = Blueprint(name='media', import_name=__name__, url_prefix='/media')
+router = APIBlueprint(name='media', import_name=__name__, url_prefix='/media', abp_security=security)
 
 
 @router.post('/')
 @jwt_required()
-@validate()
 def add_media(query: MediaQS):
     author_id = get_jwt_identity()
 
@@ -35,7 +34,6 @@ def add_media(query: MediaQS):
 
 @router.get('/<int:media_id>/')
 @jwt_required()
-@validate()
 def get_all_media_from_task(media_id: int):
     media_metadata = MediaService.get_media_by_id_or_none(media_id)
     if media_metadata is None:

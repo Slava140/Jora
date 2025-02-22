@@ -1,49 +1,34 @@
-from typing import Union
-
-from flask import Blueprint, jsonify
-from flask_jwt_extended import jwt_required, get_jwt
+from flask import jsonify
+from flask_jwt_extended import jwt_required
+from flask_openapi3 import APIBlueprint
 
 from api.v1.users.services import UserService
 from api.v1.users.schemas import CreateUserS, BaseUserS, ReadUserS, LoginS, LoggedInS
-from _types import Resp
-from validation_decorator import validate
 from errors import WasNotFoundError
-from global_schemas import HTTPError, EmptyResponse, PaginationQS
+from global_schemas import PaginationQS
+from security import security
+
+users_router = APIBlueprint(name='users', import_name=__name__, url_prefix='/api/v1/users', abp_security=security)
+auth_router = APIBlueprint(name='auth', import_name=__name__, url_prefix='/auth')
 
 
-router = Blueprint(name='users', import_name=__name__, url_prefix='/api/v1/users')
-auth_router = Blueprint(name='auth', import_name=__name__, url_prefix='/auth')
-
-
-@router.post('/')
+@users_router.post('/')
 @jwt_required()
-@validate()
-def add_user(body: CreateUserS) -> Union[
-    Resp[ReadUserS, 201],
-    Resp[HTTPError, 409]
-]:
+def add_user(body: CreateUserS):
     created_user = UserService.add(body)
     return jsonify(created_user.model_dump()), 201
 
 
-@router.get('/')
+@users_router.get('/')
 @jwt_required()
-@validate()
-def get_users(query: PaginationQS) -> Union[
-    Resp[ReadUserS, 200],
-    Resp[HTTPError, 400]
-]:
+def get_users(query: PaginationQS):
     users = UserService.get_many(query.limit, query.page)
     return jsonify([user.model_dump() for user in users]), 200
 
 
-@router.get('/<int:user_id>/')
+@users_router.get('/<int:user_id>/')
 @jwt_required()
-@validate()
-def get_user_by_id(user_id: int) -> Union[
-    Resp[ReadUserS, 200],
-    Resp[HTTPError, 404]
-]:
+def get_user_by_id(user_id: int):
     user = UserService.get_one_by_id_or_none(user_id)
     if user is None:
         raise WasNotFoundError(f'User with id {user_id}')
@@ -51,41 +36,27 @@ def get_user_by_id(user_id: int) -> Union[
     return jsonify(user.model_dump()), 200
 
 
-@router.put('/<int:user_id>/')
+@users_router.put('/<int:user_id>/')
 @jwt_required()
-@validate()
-def update_user_by_id(user_id: int, body: BaseUserS) -> Union[
-    Resp[ReadUserS, 200],
-    Resp[HTTPError, 404],
-    Resp[HTTPError, 409]
-]:
+def update_user_by_id(user_id: int, body: BaseUserS):
     user = UserService.update_by_id(user_id, body)
     return jsonify(user.model_dump()), 200
 
 
-@router.delete('/<int:user_id>/')
+@users_router.delete('/<int:user_id>/')
 @jwt_required()
-@validate()
-def delete_user_by_id(user_id: int) -> Resp[EmptyResponse, 204]:
+def delete_user_by_id(user_id: int):
     UserService.delete_by_id(user_id)
     return jsonify(), 204
 
 
 @auth_router.post('/login/')
-@validate()
-def login(body: LoginS) -> Union[
-    Resp[LoggedInS, 200],
-    Resp[HTTPError, 401]
-]:
+def login(body: LoginS):
     logged_in_user = UserService.login(body)
     return jsonify(logged_in_user.model_dump()), 200
 
 
 @auth_router.post('/signup/')
-@validate()
-def signup(body: CreateUserS) -> Union[
-    Resp[LoggedInS, 201],
-    Resp[HTTPError, 409]
-]:
+def signup(body: CreateUserS):
     logged_in_user = UserService.signup(body)
     return jsonify(logged_in_user.model_dump()), 201

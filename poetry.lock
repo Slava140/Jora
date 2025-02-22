@@ -192,6 +192,66 @@ Werkzeug = ">=0.14"
 asymmetric-crypto = ["cryptography (>=3.3.1)"]
 
 [[package]]
+name = "flask-openapi3"
+version = "4.1.0"
+description = "Generate REST API and OpenAPI documentation for your Flask project."
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+files = [
+    {file = "flask_openapi3-4.1.0-py3-none-any.whl", hash = "sha256:8058831774fa89c6af274f250f7b126bdef716e00a0eee9bb6b6dd3f152ce830"},
+    {file = "flask_openapi3-4.1.0.tar.gz", hash = "sha256:1f5efdbfeca3785d3389d1772127df9e0578130f12612ca3d2d04c90e3f8f4b4"},
+]
+
+[package.dependencies]
+flask = ">=2.0"
+flask-openapi3-scalar = {version = "*", optional = true, markers = "extra == \"scalar\""}
+flask-openapi3-swagger = {version = "*", optional = true, markers = "extra == \"swagger\""}
+pydantic = ">=2.4"
+
+[package.extras]
+async = ["asgiref (>=3.2)"]
+dotenv = ["python-dotenv"]
+elements = ["flask-openapi3-elements"]
+email = ["email-validator"]
+rapidoc = ["flask-openapi3-rapidoc"]
+rapipdf = ["flask-openapi3-rapipdf"]
+redoc = ["flask-openapi3-redoc"]
+scalar = ["flask-openapi3-scalar"]
+swagger = ["flask-openapi3-swagger"]
+yaml = ["pyyaml"]
+
+[[package]]
+name = "flask-openapi3-scalar"
+version = "1.25.122"
+description = "Provide Scalar UI for flask-openapi3."
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "flask_openapi3_scalar-1.25.122-py3-none-any.whl", hash = "sha256:ff256707832475ae0a88ad7192ef4f34006f0bf668ce416f1aab73303d7b836d"},
+    {file = "flask_openapi3_scalar-1.25.122.tar.gz", hash = "sha256:005a60d67bb14bac2184cb0495b42fae04b30d71f22618ed37421ac426383ea1"},
+]
+
+[package.dependencies]
+flask-openapi3 = "*"
+
+[[package]]
+name = "flask-openapi3-swagger"
+version = "5.19.0"
+description = "Provide Swagger UI for flask-openapi3."
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "flask_openapi3_swagger-5.19.0-py3-none-any.whl", hash = "sha256:c2f16b87cc2c9d89e2d5b89be08c03737834d9a8a1d948291c4d36e3eca47f2d"},
+    {file = "flask_openapi3_swagger-5.19.0.tar.gz", hash = "sha256:8d0a75224a2722572702329a9aef995b5a4d8ddcbf242e0ad02d31687352af8b"},
+]
+
+[package.dependencies]
+flask-openapi3 = "*"
+
+[[package]]
 name = "flask-sqlalchemy"
 version = "3.1.1"
 description = "Add SQLAlchemy support to your Flask application."
@@ -663,14 +723,14 @@ typing-extensions = ">=4.6.0,<4.7.0 || >4.7.0"
 
 [[package]]
 name = "pydantic-settings"
-version = "2.7.1"
+version = "2.8.0"
 description = "Settings management using Pydantic"
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
 files = [
-    {file = "pydantic_settings-2.7.1-py3-none-any.whl", hash = "sha256:590be9e6e24d06db33a4262829edef682500ef008565a969c73d39d5f8bfb3fd"},
-    {file = "pydantic_settings-2.7.1.tar.gz", hash = "sha256:10c9caad35e64bfb3c2fbf70a078c0e25cc92499782e5200747f942a065dec93"},
+    {file = "pydantic_settings-2.8.0-py3-none-any.whl", hash = "sha256:c782c7dc3fb40e97b238e713c25d26f64314aece2e91abcff592fcac15f71820"},
+    {file = "pydantic_settings-2.8.0.tar.gz", hash = "sha256:88e2ca28f6e68ea102c99c3c401d6c9078e68a5df600e97b43891c34e089500a"},
 ]
 
 [package.dependencies]
@@ -857,4 +917,4 @@ watchdog = ["watchdog (>=2.3)"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "f65b80b7261b5c15de70b99efc60f716377076b8611a6b2bb452acfb0d652909"
+content-hash = "601df928e5b663d2337af4920e9609dd752b329bcbef2b80c174bb6864f67d14"
