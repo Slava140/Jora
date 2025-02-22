@@ -1,13 +1,14 @@
+from datetime import datetime
 from typing import Sequence
 
-from sqlalchemy import insert, select, update
+from sqlalchemy import insert, select, update, and_
 from sqlalchemy.orm import SessionTransaction
 
 from api.v1.projects.models import ProjectM, TaskM, CommentM
 from api.v1.projects.schemas import (
     CreateProjectS, ReadProjectS, UpdateProjectS,
     CreateTaskS, ReadTaskS, UpdateTaskS,
-    CreateCommentS, ReadCommentS
+    CreateCommentS, ReadCommentS, FilterTaskQS
 )
 
 from api.v1.users.dao import UserDAO
@@ -145,12 +146,24 @@ class TaskDAO:
         return ReadTaskS(**result)
 
     @staticmethod
-    def get_many(limit: int, page: int) -> tuple[ReadTaskS, ...]:
+    def get_many(filter_schema: FilterTaskQS) -> tuple[ReadTaskS, ...]:
+        where_conditions = []
+        if filter_schema.project_id is not None: where_conditions.append(TaskM.project_id == filter_schema.project_id)
+        if filter_schema.status is not None: where_conditions.append(TaskM.status == filter_schema.status)
+        if filter_schema.author_id is not None: where_conditions.append(TaskM.author_id == filter_schema.author_id)
+        if filter_schema.assignee_id is not None: where_conditions.append(TaskM.assignee_id == filter_schema.assignee_id)
+        if filter_schema.title is not None: where_conditions.append(TaskM.title.ilike(filter_schema.title))
+        if filter_schema.from_ is not None and filter_schema.to is not None:
+            datetime_from = datetime.combine(filter_schema.from_, datetime.min.time())
+            datetime_to = datetime.combine(filter_schema.to, datetime.max.time())
+            where_conditions.append(TaskM.created_at.between(datetime_from, datetime_to))
+
         query = select(
             TaskM
         ).where(
-            TaskM.is_archived.is_(False)
-        ).limit(limit).offset((page - 1) * limit)
+            TaskM.is_archived.is_(False),
+            *where_conditions
+        ).limit(filter_schema.limit).offset((filter_schema.page - 1) * filter_schema.limit)
         result = db.session.execute(query).scalars().fetchall()
 
         return tuple(ReadTaskS(**data.to_dict()) for data in result)

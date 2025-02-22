@@ -6,7 +6,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from api.v1.projects.services import ProjectService, TaskService, CommentService
 from api.v1.projects.schemas import (
     CreateProjectS, ReadProjectS, RequestBodyOfProjectS, UpdateProjectS,
-    CreateTaskS, ReadTaskS, RequestBodyOfTaskS, UpdateTaskS,
+    CreateTaskS, ReadTaskS, RequestBodyOfTaskS, UpdateTaskS, FilterTaskQS,
     CreateCommentS, ReadCommentS, RequestBodyOfCommentS,
 )
 from _types import Resp
@@ -89,8 +89,8 @@ def add_task(body: RequestBodyOfTaskS) -> Resp[ReadTaskS, 201]:
 @tasks_router.get('/')
 @jwt_required()
 @validate()
-def get_tasks(query: PaginationQS) -> Resp[ReadTaskS, 200]:
-    tasks = TaskService.get_many(query.limit, query.page)
+def get_tasks(query: FilterTaskQS) -> Resp[ReadTaskS, 200]:
+    tasks = TaskService.get_many(query)
     return jsonify([task.model_dump() for task in tasks]), 200
 
 

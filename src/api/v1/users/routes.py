@@ -1,7 +1,7 @@
 from typing import Union
 
 from flask import Blueprint, jsonify
-from flask_jwt_extended import jwt_required, get_jwt
+from flask_jwt_extended import jwt_required, get_jwt, set_access_cookies
 
 from api.v1.users.services import UserService
 from api.v1.users.schemas import CreateUserS, BaseUserS, ReadUserS, LoginS, LoggedInS
@@ -78,7 +78,9 @@ def login(body: LoginS) -> Union[
     Resp[HTTPError, 401]
 ]:
     logged_in_user = UserService.login(body)
-    return jsonify(logged_in_user.model_dump()), 200
+    response = jsonify(logged_in_user.model_dump())
+    set_access_cookies(response, logged_in_user.access_token)
+    return response, 200
 
 
 @auth_router.post('/signup/')
@@ -88,4 +90,6 @@ def signup(body: CreateUserS) -> Union[
     Resp[HTTPError, 409]
 ]:
     logged_in_user = UserService.signup(body)
-    return jsonify(logged_in_user.model_dump()), 201
+    response = jsonify(logged_in_user.model_dump())
+    set_access_cookies(response, logged_in_user.access_token)
+    return response, 201

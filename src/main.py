@@ -113,13 +113,13 @@ def create_app():
     app.config["SQLALCHEMY_DATABASE_URI"] = settings.database_url_psycopg
     app.config["JWT_SECRET_KEY"] = settings.JWT_SECRET
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = settings.access_token_ttl_timedelta
-    app.config['JWT_TOKEN_LOCATION'] = ['headers']
+    app.config['JWT_TOKEN_LOCATION'] = ['headers', 'cookies']
 
     app.register_blueprint(main_router)
 
-    docs = Docs(title='Jora API', version='v1', app=app)
-    docs.add_routes()
-    docs.save(STATIC_DIR / 'docs.json')
+    # docs = Docs(title='Jora API', version='v1', app=app)
+    # docs.add_routes()
+    # docs.save(STATIC_DIR / 'docs.json')
 
     swagger_route = get_swaggerui_blueprint(base_url='/docs', api_url='/static/docs.json')
     app.register_blueprint(swagger_route)

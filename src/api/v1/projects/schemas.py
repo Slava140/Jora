@@ -1,6 +1,10 @@
-from pydantic import BaseModel, NonNegativeInt
+from datetime import datetime, date
+from typing import Optional
+
+from pydantic import BaseModel, NonNegativeInt, Field
 
 from base_pydantic_types import UTCDatetime, StrFrom3To255, Str500, StrTaskStatus
+from global_schemas import PaginationQS
 
 
 ############################
@@ -63,6 +67,16 @@ class CreateTaskS(RequestBodyOfTaskS):
 class UpdateTaskS(BaseModel):
     assignee_id:    NonNegativeInt | None = None
     status:         StrTaskStatus
+
+
+class FilterTaskQS(PaginationQS):
+    project_id:     NonNegativeInt | None = None
+    status:         StrTaskStatus | None = None
+    author_id:      NonNegativeInt | None = None
+    assignee_id:    NonNegativeInt | None = None
+    title:          str | None = None
+    from_:          date | None = Field(default=None, alias='from')
+    to:             date | None = None
 
 
 ################################
