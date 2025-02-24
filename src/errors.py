@@ -1,6 +1,3 @@
-from pyexpat.errors import messages
-
-
 class AppError(Exception):
     def __init__(self, message: str = 'Unknown error.', status_code: int = 500):
         self.message = message

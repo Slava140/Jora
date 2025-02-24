@@ -152,7 +152,7 @@ class TaskDAO:
         if filter_schema.status is not None: where_conditions.append(TaskM.status == filter_schema.status)
         if filter_schema.author_id is not None: where_conditions.append(TaskM.author_id == filter_schema.author_id)
         if filter_schema.assignee_id is not None: where_conditions.append(TaskM.assignee_id == filter_schema.assignee_id)
-        if filter_schema.title is not None: where_conditions.append(TaskM.title.ilike(filter_schema.title))
+        if filter_schema.title is not None: where_conditions.append(TaskM.title.ilike(f'%{filter_schema.title}%'))
         if filter_schema.from_ is not None and filter_schema.to is not None:
             datetime_from = datetime.combine(filter_schema.from_, datetime.min.time())
             datetime_to = datetime.combine(filter_schema.to, datetime.max.time())

@@ -1,5 +1,5 @@
 from flask import jsonify
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, set_access_cookies
 from flask_openapi3 import APIBlueprint
 
 from api.v1.users.services import UserService
@@ -53,10 +53,14 @@ def delete_user_by_id(user_id: int):
 @auth_router.post('/login/')
 def login(body: LoginS):
     logged_in_user = UserService.login(body)
-    return jsonify(logged_in_user.model_dump()), 200
+    response = jsonify(logged_in_user.model_dump())
+    set_access_cookies(response, logged_in_user.access_token)
+    return response, 200
 
 
 @auth_router.post('/signup/')
 def signup(body: CreateUserS):
     logged_in_user = UserService.signup(body)
-    return jsonify(logged_in_user.model_dump()), 201
+    response = jsonify(logged_in_user.model_dump())
+    set_access_cookies(response, logged_in_user.access_token)
+    return response, 201

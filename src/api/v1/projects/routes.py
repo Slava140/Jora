@@ -6,7 +6,7 @@ from api.v1.projects.services import ProjectService, TaskService, CommentService
 from api.v1.projects.schemas import (
     CreateProjectS, ReadProjectS, RequestBodyOfProjectS, UpdateProjectS,
     CreateTaskS, ReadTaskS, RequestBodyOfTaskS, UpdateTaskS,
-    CreateCommentS, ReadCommentS, RequestBodyOfCommentS,
+    CreateCommentS, ReadCommentS, RequestBodyOfCommentS, FilterTaskQS,
 )
 from errors import WasNotFoundError
 from global_schemas import PaginationQS
@@ -77,8 +77,8 @@ def add_task(body: RequestBodyOfTaskS):
 
 @tasks_router.get('/')
 @jwt_required()
-def get_tasks(query: PaginationQS):
-    tasks = TaskService.get_many(query.limit, query.page)
+def get_tasks(query: FilterTaskQS):
+    tasks = TaskService.get_many(query)
     return jsonify([task.model_dump() for task in tasks]), 200
 
 
