@@ -2,9 +2,9 @@ from api.v1.projects.dao import ProjectDAO, TaskDAO, CommentDAO
 from api.v1.projects.schemas import (
     CreateProjectS, ReadProjectS, UpdateProjectS,
     CreateTaskS, ReadTaskS, UpdateTaskS,
-    CreateCommentS, ReadCommentS,
+    CreateCommentS, ReadCommentS, FilterTaskQS,
 )
-from errors import MustBePositiveError
+from errors import MustBePositiveError, IncorrectRequestError
 
 
 class ProjectService:
@@ -49,13 +49,19 @@ class TaskService:
         return TaskDAO.add(task)
 
     @staticmethod
-    def get_many(limit: int, page: int) -> tuple[ReadTaskS, ...]:
+    def get_many(filter_schema: FilterTaskQS) -> tuple[ReadTaskS, ...]:
         """
         :except MustBePositiveError
+        :except IncorrectRequestError
         """
-        if limit <= 0 or page <= 0:
+        if filter_schema.limit <= 0 or filter_schema.page <= 0:
             raise MustBePositiveError('limit and page')
-        return TaskDAO.get_many(limit, page)
+
+        if (filter_schema.from_ is None and filter_schema.to is not None or
+            filter_schema.from_ is not None and filter_schema.to is None):
+            raise IncorrectRequestError('from and to parameters must be filled or empty')
+
+        return TaskDAO.get_many(filter_schema)
 
     @staticmethod
     def get_one_by_id_or_none(task_id: int) -> ReadTaskS | None:

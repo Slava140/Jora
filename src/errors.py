@@ -1,3 +1,6 @@
+from pyexpat.errors import messages
+
+
 class AppError(Exception):
     def __init__(self, message: str = 'Unknown error.', status_code: int = 500):
         self.message = message
@@ -37,4 +40,10 @@ class ExtensionsNotAllowedError(AppError):
 class FileIsNotAttachedError(AppError):
     def __init__(self):
         message = 'File is not attached'
+        super().__init__(message=message, status_code=400)
+
+
+class IncorrectRequestError(AppError):
+    def __init__(self, what: str | None = None):
+        message = f'Incorrect request: {what}.' if what is not None else 'Incorrect request'
         super().__init__(message=message, status_code=400)
