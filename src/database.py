@@ -28,6 +28,7 @@ datetime_utc_tz = Annotated[datetime, mapped_column(DateTime(timezone=True))]
 
 
 fk_user_id = Annotated[int, mapped_column(ForeignKey(column='users.id'))]
+fk_role_id = Annotated[int, mapped_column(ForeignKey(column='roles.id'))]
 fk_project_id = Annotated[int, mapped_column(ForeignKey(column='projects.id'))]
 fk_task_id = Annotated[int, mapped_column(ForeignKey(column='tasks.id'))]
 

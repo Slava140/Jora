@@ -44,3 +44,9 @@ class IncorrectRequestError(AppError):
     def __init__(self, what: str | None = None):
         message = f'Incorrect request: {what}.' if what is not None else 'Incorrect request'
         super().__init__(message=message, status_code=400)
+
+
+class ForbiddenError(AppError):
+    def __init__(self):
+        message = 'Forbidden'
+        super().__init__(message=message, status_code=403)

@@ -7,9 +7,11 @@ from flask import jsonify, request, Response
 from flask_openapi3 import OpenAPI, Info, APIBlueprint
 from flask_jwt_extended import JWTManager
 from flask_jwt_extended.exceptions import JWTExtendedException
+from flask_security import SQLAlchemyUserDatastore, Security
 from jwt.exceptions import PyJWTError
 from pydantic import ValidationError
 
+from api.v1.users.models import UserM, RoleM
 from api.v1.users.routes import auth_router, users_router
 from api.v1.projects.routes import projects_router, tasks_router, comments_router
 from media.routes import router as media_router
@@ -18,14 +20,14 @@ from config import settings
 from database import db
 from errors import AppError
 from logger import get_logger
-from security import jwt_schema, security
+from security import jwt_schema
 
 logger = get_logger('main')
 
 STATIC_DIR = Path(__file__).parent.parent / 'static'
 STATIC_DIR.mkdir(exist_ok=True)
 
-api = APIBlueprint(name='main', import_name=__name__, url_prefix='/', abp_security=security)
+api = APIBlueprint(name='main', import_name=__name__, url_prefix='/')
 api.register_api(auth_router)
 api.register_api(users_router)
 api.register_api(projects_router)
@@ -124,6 +126,9 @@ def create_app():
 
     with app.app_context():
         db.init_app(app)
+
+    user_datastore = SQLAlchemyUserDatastore(db, UserM, RoleM)
+    security = Security(app, user_datastore)
 
     JWTManager(app)
 

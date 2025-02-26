@@ -35,6 +35,9 @@ class UpdateProjectS(BaseProjectS):
     ...
 
 
+class ProjectPath(BaseModel):
+    project_id: int
+
 ###########################
 # Схемы для модели задачи #
 ###########################

@@ -8,8 +8,8 @@ from alembic import context
 from config import settings
 
 from database import Base
-from api.v1.users.models import UserM
-from api.v1.projects.models import ProjectM, TaskM
+from api.v1.users.models import UserM, RoleM, RoleUserM
+from api.v1.projects.models import ProjectM, TaskM, CommentM
 from media.models import MediaM
 
 # this is the Alembic Config object, which provides
