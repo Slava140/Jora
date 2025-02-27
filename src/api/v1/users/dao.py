@@ -5,7 +5,7 @@ from sqlalchemy.orm.attributes import InstrumentedAttribute
 
 from api.v1.users.models import UserM
 from api.v1.users.schemas import CreateUserS, ReadUserS, BaseUserS, FullUserS
-from api.v1.users.utils import get_hashed_password
+from security import get_hashed_password
 from errors import AlreadyExistsError, WasNotFoundError
 from database import db
 from logger import get_logger

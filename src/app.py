@@ -30,4 +30,5 @@ app.config['JWT_TOKEN_LOCATION'] = ['headers', 'cookies']
 with app.app_context():
     db.init_app(app)
 
+
 JWTManager(app)

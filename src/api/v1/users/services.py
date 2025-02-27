@@ -2,9 +2,8 @@ from flask_jwt_extended import create_access_token
 
 from api.v1.users.dao import UserDAO
 from api.v1.users.schemas import CreateUserS, ReadUserS, BaseUserS, LoginS, LoggedInS
-from api.v1.users.utils import is_correct_password, get_hashed_password
 from errors import InvalidEmailOrPasswordError, MustBePositiveError, AlreadyExistsError
-from security import security
+from security import security, get_hashed_password, is_correct_password
 
 
 class UserService:
