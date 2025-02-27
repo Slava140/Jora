@@ -2,9 +2,9 @@ from flask_jwt_extended import create_access_token
 
 from api.v1.users.dao import UserDAO
 from api.v1.users.schemas import CreateUserS, ReadUserS, BaseUserS, LoginS, LoggedInS
-from api.v1.users.utils import is_correct_password
-from config import settings
-from errors import InvalidEmailOrPasswordError, MustBePositiveError
+from api.v1.users.utils import is_correct_password, get_hashed_password
+from errors import InvalidEmailOrPasswordError, MustBePositiveError, AlreadyExistsError
+from security import security
 
 
 class UserService:
@@ -33,21 +33,47 @@ class UserService:
         """
         :except InvalidEmailOrPasswordError
         """
-        user = UserDAO.get_user_with_password_or_none(data.email)
-        if user is not None and is_correct_password(data.password, user.hashed_password):
-            access_token = create_access_token(identity=str(user.id))
-            return LoggedInS(**user.model_dump(), access_token=access_token)
-        else:
+        user = security.datastore.find_user(email=data.email)
+
+        if user is None or not is_correct_password(data.password, user.password):
             raise InvalidEmailOrPasswordError()
+
+        access_token = create_access_token(identity=str(user.id))
+        return LoggedInS(
+            id=user.id,
+            access_token=access_token,
+            email=user.email,
+            username=user.username,
+            create_datetime=user.create_datetime,
+            update_datetime=user.update_datetime,
+        )
+
 
     @staticmethod
     def signup(user: CreateUserS) -> LoggedInS:
         """
         :except AlreadyExistsError
         """
-        created_user = UserDAO.add(user)
+
+        existed_user = security.datastore.find_user(email=user.email)
+        if existed_user:
+            raise AlreadyExistsError('User with email')
+
+        user_data = user.model_dump()
+        user_data['password'] = get_hashed_password(user_data['password'])
+
+        created_user = security.datastore.create_user(**user_data)
+        security.datastore.commit()
+
         access_token = create_access_token(identity=str(created_user.id))
-        return LoggedInS(**created_user.model_dump(), access_token=access_token)
+        return LoggedInS(
+            id=created_user.id,
+            access_token=access_token,
+            email=created_user.email,
+            username=created_user.username,
+            create_datetime=created_user.create_datetime,
+            update_datetime=created_user.update_datetime,
+        )
 
     @staticmethod
     def update_by_id(user_id: int, updated_user: BaseUserS) -> ReadUserS:

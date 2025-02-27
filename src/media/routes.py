@@ -1,14 +1,14 @@
 from flask import request, jsonify, send_file
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import get_jwt_identity
 from flask_openapi3 import APIBlueprint
 
 from errors import FileIsNotAttachedError, WasNotFoundError
 from media.schemas import MediaQS, CreateMediaS
 from media.services import MediaService
-from security import security
+from global_schemas import security_schemas
+from security import jwt_required
 
-
-router = APIBlueprint(name='media', import_name=__name__, url_prefix='/media', abp_security=security)
+router = APIBlueprint(name='media', import_name=__name__, url_prefix='/media', abp_security=security_schemas)
 
 
 @router.post('/')

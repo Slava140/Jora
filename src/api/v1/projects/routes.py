@@ -1,5 +1,5 @@
 from flask import jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import get_jwt_identity
 from flask_openapi3 import APIBlueprint
 
 from api.v1.projects.services import ProjectService, TaskService, CommentService
@@ -9,20 +9,19 @@ from api.v1.projects.schemas import (
     CreateCommentS, ReadCommentS, RequestBodyOfCommentS, FilterTaskQS,
 )
 from errors import WasNotFoundError
-from global_schemas import PaginationQS
-from security import security
-
+from global_schemas import PaginationQS, security_schemas
+from security import jwt_required
 
 projects_router = APIBlueprint(
-    name='projects', import_name=__name__, url_prefix='/api/v1/projects', abp_security=security
+    name='projects', import_name=__name__, url_prefix='/api/v1/projects', abp_security=security_schemas
 )
 
 tasks_router = APIBlueprint(
-    name='tasks', import_name=__name__, url_prefix='/api/v1/tasks', abp_security=security
+    name='tasks', import_name=__name__, url_prefix='/api/v1/tasks', abp_security=security_schemas
 )
 
 comments_router = APIBlueprint(
-    name='comments', import_name=__name__, url_prefix='/api/v1/comments', abp_security=security
+    name='comments', import_name=__name__, url_prefix='/api/v1/comments', abp_security=security_schemas
 )
 
 
@@ -62,7 +61,6 @@ def update_project_by_id(path: ProjectPath, body: UpdateProjectS):
 @projects_router.delete('/<int:project_id>/')
 @jwt_required()
 def delete_project_by_id(path: ProjectPath):
-    # Может только владелец
     ProjectService.delete_by_id(path.project_id)
     return jsonify(), 204
 
@@ -70,7 +68,6 @@ def delete_project_by_id(path: ProjectPath):
 @tasks_router.post('/')
 @jwt_required()
 def add_task(body: RequestBodyOfTaskS):
-    # Может любой
     author_id = get_jwt_identity()
     task_schema_with_author = CreateTaskS(author_id=author_id, **body.model_dump())
     created_task = TaskService.add(task_schema_with_author)
@@ -80,7 +77,6 @@ def add_task(body: RequestBodyOfTaskS):
 @tasks_router.get('/')
 @jwt_required()
 def get_tasks(query: FilterTaskQS):
-    # Может любой
     tasks = TaskService.get_many(query)
     return jsonify([task.model_dump() for task in tasks]), 200
 
@@ -88,7 +84,6 @@ def get_tasks(query: FilterTaskQS):
 @tasks_router.get('/<int:task_id>/')
 @jwt_required()
 def get_task_by_id(task_id: int):
-    # Может любой
     task = TaskService.get_one_by_id_or_none(task_id)
     if task is None:
         raise WasNotFoundError(f'Task with id {task_id}')
@@ -99,7 +94,6 @@ def get_task_by_id(task_id: int):
 @tasks_router.put('/<int:task_id>/')
 @jwt_required()
 def update_task_by_id(task_id: int, body: UpdateTaskS):
-    # Владелец задачи
     task = TaskService.update_by_id(task_id, body)
     return jsonify(task.model_dump()), 200
 
@@ -107,7 +101,6 @@ def update_task_by_id(task_id: int, body: UpdateTaskS):
 @tasks_router.delete('/<int:task_id>/')
 @jwt_required()
 def delete_task_by_id(task_id: int):
-    # Владелец задачи
     TaskService.delete_by_id(task_id)
     return jsonify(), 204
 
@@ -115,7 +108,6 @@ def delete_task_by_id(task_id: int):
 @comments_router.post('/')
 @jwt_required()
 def add_comment(body: RequestBodyOfCommentS):
-    # Любой пользователь
     author_id = get_jwt_identity()
     comment_schema_with_author = CreateCommentS(author_id=author_id, **body.model_dump())
     created_comment = CommentService.add(comment_schema_with_author)

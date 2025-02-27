@@ -12,18 +12,13 @@ class CreateUserS(BaseUserS):
 
 
 class ReadUserS(BaseUserS):
-    id:             NonNegativeInt
-    created_at:     UTCDatetime
-    updated_at:     UTCDatetime
+    id:                 NonNegativeInt
+    create_datetime:    UTCDatetime
+    update_datetime:    UTCDatetime
 
 
 class FullUserS(ReadUserS):
     hashed_password:    str
-
-
-# class AccessTokenPayloadS(BaseModel):
-#     sub:    NonNegativeInt
-#     exp:    NonNegativeInt
 
 
 class LoginS(BaseModel):

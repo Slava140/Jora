@@ -36,7 +36,7 @@ class UserDAO:
             )
 
         if is_active_state is not None:
-            where_conditions.append(UserM.is_active.is_(is_active_state))
+            where_conditions.append(UserM.active.is_(is_active_state))
 
         query = select(UserM).where(*where_conditions).limit(1)
 
@@ -52,7 +52,7 @@ class UserDAO:
         ).values(
             email=user.email,
             username=user.username,
-            hashed_password=get_hashed_password(user.password)
+            password=get_hashed_password(user.password)
         ).returning('*')
 
         with db.session.begin() as transaction:
@@ -72,7 +72,7 @@ class UserDAO:
         query = select(
             UserM
         ).where(
-            UserM.is_active.is_(True)
+            UserM.active.is_(True)
         ).limit(limit).offset((page - 1) * limit)
         result = db.session.execute(query).scalars().fetchall()
         return tuple(ReadUserS(**data.to_dict()) for data in result)
@@ -83,7 +83,7 @@ class UserDAO:
             UserM
         ).where(
             UserM.id == user_id,
-            UserM.is_active.is_(True)
+            UserM.active.is_(True)
         )
 
         result = db.session.execute(query).scalar_one_or_none()
@@ -140,7 +140,7 @@ class UserDAO:
         ).where(
             UserM.id == user_id
         ).values(
-            is_active=False
+            active=False
         )
 
         transaction = db.session.begin()

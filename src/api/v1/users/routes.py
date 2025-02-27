@@ -1,14 +1,15 @@
 from flask import jsonify
-from flask_jwt_extended import jwt_required, set_access_cookies
+from flask_jwt_extended import set_access_cookies
 from flask_openapi3 import APIBlueprint
 
 from api.v1.users.services import UserService
 from api.v1.users.schemas import CreateUserS, BaseUserS, ReadUserS, LoginS, LoggedInS
 from errors import WasNotFoundError
 from global_schemas import PaginationQS
-from security import security
+from global_schemas import security_schemas
+from security import jwt_required
 
-users_router = APIBlueprint(name='users', import_name=__name__, url_prefix='/api/v1/users', abp_security=security)
+users_router = APIBlueprint(name='users', import_name=__name__, url_prefix='/api/v1/users', abp_security=security_schemas)
 auth_router = APIBlueprint(name='auth', import_name=__name__, url_prefix='/auth')
 
 
