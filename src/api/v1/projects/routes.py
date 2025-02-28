@@ -6,7 +6,7 @@ from api.v1.projects.services import ProjectService, TaskService, CommentService
 from api.v1.projects.schemas import (
     CreateProjectS, ReadProjectS, RequestBodyOfProjectS, UpdateProjectS, ProjectPath,
     CreateTaskS, ReadTaskS, RequestBodyOfTaskS, UpdateTaskS,
-    CreateCommentS, ReadCommentS, RequestBodyOfCommentS, FilterTaskQS,
+    CreateCommentS, ReadCommentS, RequestBodyOfCommentS, FilterTaskQS, TaskPath, CommentPath,
 )
 from errors import WasNotFoundError
 from global_schemas import PaginationQS, security_schemas
@@ -83,25 +83,25 @@ def get_tasks(query: FilterTaskQS):
 
 @tasks_router.get('/<int:task_id>/')
 @jwt_required()
-def get_task_by_id(task_id: int):
-    task = TaskService.get_one_by_id_or_none(task_id)
+def get_task_by_id(path: TaskPath):
+    task = TaskService.get_one_by_id_or_none(path.task_id)
     if task is None:
-        raise WasNotFoundError(f'Task with id {task_id}')
+        raise WasNotFoundError(f'Task with id {path.task_id}')
 
     return jsonify(task.model_dump()), 200
 
 
 @tasks_router.put('/<int:task_id>/')
 @jwt_required()
-def update_task_by_id(task_id: int, body: UpdateTaskS):
-    task = TaskService.update_by_id(task_id, body)
+def update_task_by_id(path: TaskPath, body: UpdateTaskS):
+    task = TaskService.update_by_id(path.task_id, body)
     return jsonify(task.model_dump()), 200
 
 
 @tasks_router.delete('/<int:task_id>/')
 @jwt_required()
-def delete_task_by_id(task_id: int):
-    TaskService.delete_by_id(task_id)
+def delete_task_by_id(path: TaskPath):
+    TaskService.delete_by_id(path.task_id)
     return jsonify(), 204
 
 
@@ -123,9 +123,9 @@ def get_comments(query: PaginationQS):
 
 @comments_router.get('/<int:comment_id>/')
 @jwt_required()
-def get_comment_by_id(comment_id: int):
-    comment = CommentService.get_one_by_id_or_none(comment_id)
+def get_comment_by_id(path: CommentPath):
+    comment = CommentService.get_one_by_id_or_none(path.comment_id)
     if comment is None:
-        raise WasNotFoundError(f'Comment with id {comment_id}')
+        raise WasNotFoundError(f'Comment with id {path.comment_id}')
 
     return jsonify(comment.model_dump()), 200

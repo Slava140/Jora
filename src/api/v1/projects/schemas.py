@@ -82,6 +82,9 @@ class FilterTaskQS(PaginationQS):
     to:             date | None = None
 
 
+class TaskPath(BaseModel):
+    task_id: int
+
 ################################
 # Схемы для модели комментария #
 ################################
@@ -103,3 +106,7 @@ class ReadCommentS(BaseCommentS):
     id:             NonNegativeInt
     created_at:     UTCDatetime
     author_id:      NonNegativeInt
+
+
+class CommentPath(BaseModel):
+    comment_id: int

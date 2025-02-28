@@ -7,10 +7,9 @@ from flask_security import Security, SQLAlchemyUserDatastore, login_user
 from sqlalchemy.exc import NoResultFound
 
 from api.v1.users.models import UserM, RoleM
-from config import settings
 from database import db
 from app import app
-from errors import WasNotFoundError, AlreadyExistsError
+from errors import WasNotFoundError
 
 
 def get_hashed_password(plain_password: str) -> str:
@@ -30,22 +29,10 @@ user_datastore = SQLAlchemyUserDatastore(db, UserM, RoleM)
 security = Security(app, user_datastore)
 
 with app.app_context():
-    security.datastore.find_or_create_role(name='admin', description='admin role')
-    security.datastore.find_or_create_role(name='user', description='user role')
-    security.datastore.commit()
-
-    user_with_admin_email = security.datastore.find_user(email=settings.ADMIN_EMAIL)
-    if user_with_admin_email is None:
-        security.datastore.create_user(
-            username=settings.ADMIN_USERNAME,
-            email=settings.ADMIN_EMAIL,
-            password=get_hashed_password(settings.ADMIN_PASSWORD),
-            roles=['admin']
-        )
-        security.datastore.commit()
-    elif 'admin' not in user_with_admin_email.roles:
-        raise AlreadyExistsError('User with ADMIN_EMAIL')
-
+    with db.session.begin():
+        security.datastore.find_or_create_role(name='admin', description='admin role')
+        security.datastore.find_or_create_role(name='user', description='user role')
+        # security.datastore.commit()
 
 
 def jwt_required(
@@ -64,7 +51,7 @@ def jwt_required(
             )
             user_id = int(get_jwt_identity())
             try:
-                user = db.session.get_one(UserM, user_id)
+                user = security.datastore.find_user(id=user_id)
                 login_user(user)
                 return fn(*args, **kwargs)
 

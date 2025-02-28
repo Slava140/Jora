@@ -64,6 +64,9 @@ config = {
         },
         'werkzeug': {
             'level': 'WARNING'
+        },
+        'sqlalchemy.engine': {
+            'level': 'INFO'
         }
     },
 }

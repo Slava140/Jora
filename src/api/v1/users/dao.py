@@ -1,5 +1,6 @@
 from typing import Any
 
+from flask import g
 from sqlalchemy import insert, select, update
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 
@@ -109,7 +110,7 @@ class UserDAO:
             **updated_user.model_dump()
         ).returning('*')
 
-        with db.session.begin() as transaction:
+        with db.session.begin(nested=True) as transaction:
             user = UserDAO._get_one_or_none(where=(UserM.id, user_id), is_active_state=True)
 
             if user is None:
@@ -127,8 +128,9 @@ class UserDAO:
             if not is_username_unique:
                 raise AlreadyExistsError(f'User with username {updated_user.username}')
 
-            result = db.session.execute(stmt).mappings().one()
-            transaction.commit()
+            result = transaction.session.execute(stmt).mappings().one()
+
+            # transaction.commit()
 
         return ReadUserS(**result)
 
@@ -143,8 +145,9 @@ class UserDAO:
             active=False
         )
 
-        transaction = db.session.begin()
+        transaction = db.session.begin(nested=True)
         transaction.session.execute(stmt)
         ProjectDAO.delete_all_projects_with_user_id(user_id, transaction)
+        db.session.commit()
 
         return None

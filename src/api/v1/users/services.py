@@ -1,4 +1,5 @@
 from flask_jwt_extended import create_access_token
+from flask_security import logout_user
 
 from api.v1.users.dao import UserDAO
 from api.v1.users.schemas import CreateUserS, ReadUserS, BaseUserS, LoginS, LoggedInS
@@ -56,12 +57,12 @@ class UserService:
 
         existed_user = security.datastore.find_user(email=user.email)
         if existed_user:
-            raise AlreadyExistsError('User with email')
+            raise AlreadyExistsError(f'User with email={user.email}')
 
         user_data = user.model_dump()
         user_data['password'] = get_hashed_password(user_data['password'])
 
-        created_user = security.datastore.create_user(**user_data)
+        created_user = security.datastore.create_user(roles=['user'], **user_data)
         security.datastore.commit()
 
         access_token = create_access_token(identity=str(created_user.id))
@@ -84,4 +85,8 @@ class UserService:
 
     @staticmethod
     def delete_by_id(user_id: int) -> None:
+        # user = security.datastore.find_user(id=user_id)
+        # security.datastore.deactivate_user(user)
+        # logout_user()
+        # security.datastore.commit()
         return UserDAO.delete_by_id(user_id)

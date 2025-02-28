@@ -29,12 +29,12 @@ class ProjectDAO:
             **project.model_dump()
         ).returning('*')
 
-        with db.session.begin() as transaction:
+        with db.session.begin(nested=True):
             if UserDAO.get_one_by_id_or_none(project.owner_id) is None:
                 raise WasNotFoundError(f'Owner user with id {project.owner_id}')
 
             result = db.session.execute(stmt).mappings().one()
-            transaction.commit()
+            db.session.commit()
 
         return ReadProjectS(**result)
 
@@ -75,14 +75,14 @@ class ProjectDAO:
             **updated_project.model_dump()
         ).returning('*')
 
-        with db.session.begin() as transaction:
+        with db.session.begin(nested=True):
             project = ProjectDAO.get_one_by_id_or_none(project_id)
 
             if project is None:
                 raise WasNotFoundError(f'Project with id {project_id}')
 
             result = db.session.execute(stmt).mappings().one()
-            transaction.commit()
+            db.session.commit()
 
         return ReadProjectS(**result)
 
@@ -100,11 +100,16 @@ class ProjectDAO:
             is_archived=True
         ).returning(ProjectM.id)
 
-        if transaction is None:
-            transaction = db.session.begin()
+        is_in_transaction = transaction is not None
+
+        if not is_in_transaction:
+            transaction = db.session.begin(nested=True)
 
         project_ids = transaction.session.execute(stmt).scalars().fetchall()
         TaskDAO.delete_all_tasks_with_project_ids(project_ids, transaction)
+
+        if not is_in_transaction:
+            db.session.commit()
 
     @staticmethod
     def delete_by_id(project_id: int) -> None:
@@ -116,9 +121,10 @@ class ProjectDAO:
             is_archived=True
         ).returning(ProjectM.id)
 
-        transaction = db.session.begin()
+        transaction = db.session.begin(nested=True)
         project_ids = transaction.session.execute(stmt).scalars().fetchall()
         TaskDAO.delete_all_tasks_with_project_ids(project_ids, transaction)
+        db.session.commit()
 
 
 class TaskDAO:
@@ -133,7 +139,7 @@ class TaskDAO:
             **task.model_dump()
         ).returning('*')
 
-        with db.session.begin() as transaction:
+        with db.session.begin(nested=True):
             if UserDAO.get_one_by_id_or_none(task.author_id) is None:
                 raise WasNotFoundError(f'Author user with id {task.author_id}')
 
@@ -141,7 +147,7 @@ class TaskDAO:
                 raise WasNotFoundError(f'Project with id {task.project_id}')
 
             result = db.session.execute(stmt).mappings().one()
-            transaction.commit()
+            db.session.commit()
 
         return ReadTaskS(**result)
 
@@ -194,17 +200,17 @@ class TaskDAO:
             **updated_task.model_dump()
         ).returning('*')
 
-        with db.session.begin() as transaction:
+        with db.session.begin(nested=True):
             task = TaskDAO.get_one_by_id_or_none(task_id)
             if task is None:
                 raise WasNotFoundError(f'Task with id {task_id}')
 
             assignee = UserDAO.get_one_by_id_or_none(updated_task.assignee_id)
             if assignee is None:
-                raise WasNotFoundError(f'Assignee user with id {updated_task.assignee_id}')
+                raise WasNotFoundError(f'User with id {updated_task.assignee_id}')
 
             result = db.session.execute(stmt).mappings().one()
-            transaction.commit()
+            db.session.commit()
 
         return ReadTaskS(**result)
 
@@ -214,10 +220,6 @@ class TaskDAO:
             transaction: SessionTransaction | None = None
     ) -> None:
 
-        if len(project_ids) == 0:
-            transaction.commit()
-            return None
-
         stmt = update(
             TaskM
         ).where(
@@ -226,11 +228,16 @@ class TaskDAO:
             is_archived=True
         ).returning(TaskM.id)
 
-        if transaction is None:
-            transaction = db.session.begin()
+        is_in_transaction = transaction is not None
+
+        if not is_in_transaction:
+            transaction = db.session.begin(nested=True)
 
         task_ids = transaction.session.execute(stmt).scalars().fetchall()
         CommentDAO.delete_all_comments_with_task_ids(task_ids, transaction)
+
+        if not is_in_transaction:
+            db.session.commit()
 
     @staticmethod
     def delete_by_id(task_id: int) -> None:
@@ -242,10 +249,10 @@ class TaskDAO:
             is_archived=True
         ).returning(TaskM.id)
 
-        transaction = db.session.begin()
+        transaction = db.session.begin(nested=True)
         task_ids = transaction.session.execute(stmt).scalars().fetchall()
         CommentDAO.delete_all_comments_with_task_ids(task_ids, transaction)
-
+        db.session.commit()
 
 class CommentDAO:
     @staticmethod
@@ -259,7 +266,7 @@ class CommentDAO:
             **comment.model_dump()
         ).returning('*')
 
-        with db.session.begin() as transaction:
+        with db.session.begin(nested=True):
             if UserDAO.get_one_by_id_or_none(comment.author_id) is None:
                 raise WasNotFoundError(f"Author user with id {comment.author_id}")
 
@@ -267,7 +274,7 @@ class CommentDAO:
                 raise WasNotFoundError(f"Task with id {comment.task_id}")
 
             result = db.session.execute(stmt).mappings().one()
-            transaction.commit()
+            db.session.commit()
 
         return ReadCommentS(**result)
 
@@ -301,10 +308,6 @@ class CommentDAO:
             transaction: SessionTransaction | None = None
     ) -> None:
 
-        if len(task_ids) == 0:
-            transaction.commit()
-            return None
-
         stmt = update(
             CommentM
         ).where(
@@ -313,8 +316,10 @@ class CommentDAO:
             is_archived=True
         )
 
-        if transaction is None:
-            transaction = db.session.begin()
+        is_in_transaction = transaction is not None
+
+        if is_in_transaction:
+            transaction = db.session.begin(nested=True)
 
         transaction.session.execute(stmt)
-        transaction.commit()
+        db.session.commit()

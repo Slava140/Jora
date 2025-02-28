@@ -28,3 +28,7 @@ class LoginS(BaseModel):
 
 class LoggedInS(ReadUserS):
     access_token:   str
+
+
+class UserPath(BaseModel):
+    user_id: int

@@ -24,10 +24,6 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_TTL:   int
     REFRESH_TOKEN_TTL:  int
 
-    ADMIN_USERNAME: str
-    ADMIN_EMAIL:    EmailStr
-    ADMIN_PASSWORD: PasswordStr
-
     SRC_PATH: Path = Path(__file__).parent
 
     @property
