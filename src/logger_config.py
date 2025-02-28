@@ -66,7 +66,7 @@ config = {
             'level': 'WARNING'
         },
         'sqlalchemy.engine': {
-            'level': 'INFO'
+            'level': 'WARNING'
         }
     },
 }

@@ -6,12 +6,14 @@ from flask import jsonify, request, Response
 from flask_jwt_extended.exceptions import JWTExtendedException
 from jwt.exceptions import PyJWTError
 from pydantic import ValidationError
+from flask_openapi3.request import request as oreq
 
 from api.v1.users.routes import auth_router, users_router
 from api.v1.projects.routes import projects_router, tasks_router, comments_router
 from media.routes import router as media_router
 
-from errors import AppError
+from config import settings
+from errors import AppError, IncorrectRequestError
 from logger import get_logger
 from app import app
 
@@ -80,7 +82,11 @@ def handle_app_error(error: AppError):
 
 @app.before_request
 def log_before_request():
-    view_func_name = request.url_rule.endpoint
+    rule = request.url_rule
+    if rule is None:
+        raise IncorrectRequestError()
+
+    view_func_name = rule.endpoint
     logger.info('Accepted by %s', view_func_name)
 
 
@@ -99,7 +105,7 @@ def ok():
 if __name__ == '__main__':
     logger.info('Start app...')
     try:
-        app.run(debug=True, port=8000, host='0.0.0.0')
+        app.run(debug=settings.APP_DEBUG, port=settings.APP_PORT, host=settings.APP_HOST)
         logger.info('App is running')
     except Exception as e:
         logger.error(str(e))

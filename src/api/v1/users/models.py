@@ -1,16 +1,12 @@
 from flask_security.models import fsqla
 from sqlalchemy.orm import Mapped
 
-from database import db, Base, pk_int, str_255, str_255_unique, created_at, updated_at, is_active
+from database import db, Base, pk_int, str_255_unique, created_at, updated_at, is_active
 
 fsqla.FsModels.set_db_info(db, user_table_name='users', role_table_name='roles')
 
-class RoleM(Base, fsqla.RoleMixin):
+class RoleM(Base, fsqla.FsRoleMixin):
     __tablename__ = 'roles'
-
-    id:             Mapped[pk_int]
-    name:           Mapped[str_255_unique]
-    description:    Mapped[str_255]
 
 
 class UserM(Base, fsqla.UserMixin):

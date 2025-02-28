@@ -23,10 +23,10 @@ app = OpenAPI(
 app.config['SECRET_KEY'] = settings.JWT_SECRET
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024
 app.config["SQLALCHEMY_DATABASE_URI"] = settings.database_url_psycopg
-app.config["SQLALCHEMY_ECHO"] = True
+app.config["SQLALCHEMY_ECHO"] = False
 app.config["JWT_SECRET_KEY"] = settings.JWT_SECRET
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = settings.access_token_ttl_timedelta
-app.config['JWT_TOKEN_LOCATION'] = ['headers', 'cookies']
+app.config['JWT_TOKEN_LOCATION'] = ['headers']
 
 with app.app_context():
     db.init_app(app)

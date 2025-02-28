@@ -18,11 +18,14 @@ class Settings(BaseSettings):
     DB_NAME: str
 
     JWT_SECRET: str
+    ACCESS_TOKEN_TTL: int
+
+    APP_DEBUG: bool
+    APP_HOST: str
+    APP_PORT: int
+
     MEDIA_PATH: Path
     ALLOWED_FILE_EXTENSIONS: set
-
-    ACCESS_TOKEN_TTL:   int
-    REFRESH_TOKEN_TTL:  int
 
     SRC_PATH: Path = Path(__file__).parent
 
