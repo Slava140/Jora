@@ -4,7 +4,8 @@ from api.v1.projects.schemas import (
     CreateTaskS, ReadTaskS, UpdateTaskS,
     CreateCommentS, ReadCommentS, FilterTaskQS,
 )
-from errors import MustBePositiveError, IncorrectRequestError
+from flask_security import current_user
+from errors import MustBePositiveError, IncorrectRequestError, ForbiddenError, WasNotFoundError
 
 
 class ProjectService:
@@ -69,14 +70,22 @@ class TaskService:
 
     @staticmethod
     def update_by_id(task_id: int, updated_task: UpdateTaskS) -> ReadTaskS:
-        """
-        :except WasNotFoundError
-        """
+        task = TaskDAO.get_one_by_id_or_none(task_id)
+
+        if task is None:
+            raise WasNotFoundError('Task')
+        if task.author_id != current_user.id and 'admin' not in current_user.roles:
+            raise ForbiddenError()
         return TaskDAO.update_by_id(task_id, updated_task)
 
     @staticmethod
-    def delete_by_id(project_id: int) -> None:
-        return TaskDAO.delete_by_id(project_id)
+    def delete_by_id(task_id: int) -> None:
+        task = TaskDAO.get_one_by_id_or_none(task_id)
+        if task is None:
+            return None
+        if task.author_id != current_user.id and 'admin' not in current_user.roles:
+            raise ForbiddenError()
+        return TaskDAO.delete_by_id(task_id)
 
 
 class CommentService:

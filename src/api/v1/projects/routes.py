@@ -1,6 +1,7 @@
 from flask import jsonify
 from flask_jwt_extended import get_jwt_identity
 from flask_openapi3 import APIBlueprint
+from flask_security import roles_accepted, current_user
 
 from api.v1.projects.services import ProjectService, TaskService, CommentService
 from api.v1.projects.schemas import (
@@ -27,15 +28,16 @@ comments_router = APIBlueprint(
 
 @projects_router.post('/')
 @jwt_required()
+@roles_accepted('admin')
 def add_project(body: RequestBodyOfProjectS):
-    owner_id = get_jwt_identity()
-    project_schema_with_owner = CreateProjectS(owner_id=owner_id, **body.model_dump())
+    project_schema_with_owner = CreateProjectS(owner_id=current_user.id, **body.model_dump())
     created_project = ProjectService.add(project_schema_with_owner)
     return jsonify(created_project.model_dump()), 201
 
 
 @projects_router.get('/')
 @jwt_required()
+@roles_accepted('admin', 'user')
 def get_projects(query: PaginationQS):
     projects = ProjectService.get_many(query.limit, query.page)
     return jsonify([project.model_dump() for project in projects]), 200
@@ -43,6 +45,7 @@ def get_projects(query: PaginationQS):
 
 @projects_router.get('/<int:project_id>/')
 @jwt_required()
+@roles_accepted('admin', 'user')
 def get_project_by_id(path: ProjectPath):
     project = ProjectService.get_one_by_id_or_none(path.project_id)
     if project is None:
@@ -53,6 +56,7 @@ def get_project_by_id(path: ProjectPath):
 
 @projects_router.put('/<int:project_id>/')
 @jwt_required()
+@roles_accepted('admin')
 def update_project_by_id(path: ProjectPath, body: UpdateProjectS):
     project = ProjectService.update_by_id(path.project_id, body)
     return jsonify(project.model_dump()), 200
@@ -60,6 +64,7 @@ def update_project_by_id(path: ProjectPath, body: UpdateProjectS):
 
 @projects_router.delete('/<int:project_id>/')
 @jwt_required()
+@roles_accepted('admin')
 def delete_project_by_id(path: ProjectPath):
     ProjectService.delete_by_id(path.project_id)
     return jsonify(), 204
@@ -67,15 +72,16 @@ def delete_project_by_id(path: ProjectPath):
 
 @tasks_router.post('/')
 @jwt_required()
+@roles_accepted('admin', 'user')
 def add_task(body: RequestBodyOfTaskS):
-    author_id = get_jwt_identity()
-    task_schema_with_author = CreateTaskS(author_id=author_id, **body.model_dump())
+    task_schema_with_author = CreateTaskS(author_id=current_user.id, **body.model_dump())
     created_task = TaskService.add(task_schema_with_author)
     return jsonify(**created_task.model_dump()), 201
 
 
 @tasks_router.get('/')
 @jwt_required()
+@roles_accepted('admin', 'user')
 def get_tasks(query: FilterTaskQS):
     tasks = TaskService.get_many(query)
     return jsonify([task.model_dump() for task in tasks]), 200
@@ -83,6 +89,7 @@ def get_tasks(query: FilterTaskQS):
 
 @tasks_router.get('/<int:task_id>/')
 @jwt_required()
+@roles_accepted('admin', 'user')
 def get_task_by_id(path: TaskPath):
     task = TaskService.get_one_by_id_or_none(path.task_id)
     if task is None:
@@ -93,6 +100,7 @@ def get_task_by_id(path: TaskPath):
 
 @tasks_router.put('/<int:task_id>/')
 @jwt_required()
+@roles_accepted('admin', 'user')
 def update_task_by_id(path: TaskPath, body: UpdateTaskS):
     task = TaskService.update_by_id(path.task_id, body)
     return jsonify(task.model_dump()), 200
@@ -100,6 +108,7 @@ def update_task_by_id(path: TaskPath, body: UpdateTaskS):
 
 @tasks_router.delete('/<int:task_id>/')
 @jwt_required()
+@roles_accepted('admin', 'user')
 def delete_task_by_id(path: TaskPath):
     TaskService.delete_by_id(path.task_id)
     return jsonify(), 204
@@ -107,15 +116,16 @@ def delete_task_by_id(path: TaskPath):
 
 @comments_router.post('/')
 @jwt_required()
+@roles_accepted('admin', 'user')
 def add_comment(body: RequestBodyOfCommentS):
-    author_id = get_jwt_identity()
-    comment_schema_with_author = CreateCommentS(author_id=author_id, **body.model_dump())
+    comment_schema_with_author = CreateCommentS(author_id=current_user.id, **body.model_dump())
     created_comment = CommentService.add(comment_schema_with_author)
     return jsonify(created_comment.model_dump()), 201
 
 
 @comments_router.get('/')
 @jwt_required()
+@roles_accepted('admin', 'user')
 def get_comments(query: PaginationQS):
     comments = CommentService.get_many(query.limit, query.page)
     return jsonify([comment.model_dump() for comment in comments]), 200
@@ -123,6 +133,7 @@ def get_comments(query: PaginationQS):
 
 @comments_router.get('/<int:comment_id>/')
 @jwt_required()
+@roles_accepted('admin', 'user')
 def get_comment_by_id(path: CommentPath):
     comment = CommentService.get_one_by_id_or_none(path.comment_id)
     if comment is None:

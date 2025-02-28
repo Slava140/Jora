@@ -1,6 +1,7 @@
 from flask import request, jsonify, send_file
 from flask_jwt_extended import get_jwt_identity
 from flask_openapi3 import APIBlueprint
+from flask_security import roles_accepted
 
 from errors import FileIsNotAttachedError, WasNotFoundError
 from media.schemas import MediaQS, CreateMediaS
@@ -13,6 +14,7 @@ router = APIBlueprint(name='media', import_name=__name__, url_prefix='/media', a
 
 @router.post('/')
 @jwt_required()
+@roles_accepted('admin', 'user')
 def add_media(query: MediaQS):
     author_id = get_jwt_identity()
 
@@ -34,6 +36,7 @@ def add_media(query: MediaQS):
 
 @router.get('/<int:media_id>/')
 @jwt_required()
+@roles_accepted('admin', 'user')
 def get_all_media_from_task(media_id: int):
     media_metadata = MediaService.get_media_by_id_or_none(media_id)
     if media_metadata is None:

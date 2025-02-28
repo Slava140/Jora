@@ -29,10 +29,9 @@ user_datastore = SQLAlchemyUserDatastore(db, UserM, RoleM)
 security = Security(app, user_datastore)
 
 with app.app_context():
-    with db.session.begin():
-        security.datastore.find_or_create_role(name='admin', description='admin role')
-        security.datastore.find_or_create_role(name='user', description='user role')
-        # security.datastore.commit()
+    security.datastore.find_or_create_role(name='admin', description='admin role')
+    security.datastore.find_or_create_role(name='user', description='user role')
+    security.datastore.commit()
 
 
 def jwt_required(
