@@ -1,5 +1,5 @@
 from flask import jsonify
-from flask_openapi3 import APIBlueprint
+from flask_openapi3 import APIBlueprint, Tag
 from flask_security import permissions_accepted, roles_accepted, current_user
 
 from api.v1.projects.services import ProjectService, TaskService, CommentService
@@ -9,23 +9,28 @@ from api.v1.projects.schemas import (
     CreateCommentS, ReadCommentS, RequestBodyOfCommentS, FilterTaskQS, TaskPath, CommentPath,
 )
 from errors import WasNotFoundError
-from global_schemas import PaginationQS, security_schemas
+from global_schemas import PaginationQS, security_schemas, ErrorS
 from security import jwt_required
 
+
 projects_router = APIBlueprint(
-    name='projects', import_name=__name__, url_prefix='/api/v1/projects', abp_security=security_schemas
+    name='projects', import_name=__name__, url_prefix='/api/v1/projects',
+    abp_security=security_schemas, abp_tags=[Tag(name='Projects')],
+    abp_responses={401: ErrorS, 403: ErrorS}
 )
-
 tasks_router = APIBlueprint(
-    name='tasks', import_name=__name__, url_prefix='/api/v1/tasks', abp_security=security_schemas
+    name='tasks', import_name=__name__, url_prefix='/api/v1/tasks',
+    abp_security=security_schemas, abp_tags=[Tag(name='Tasks')],
+    abp_responses={401: ErrorS, 403: ErrorS}
 )
-
 comments_router = APIBlueprint(
-    name='comments', import_name=__name__, url_prefix='/api/v1/comments', abp_security=security_schemas
+    name='comments', import_name=__name__, url_prefix='/api/v1/comments',
+    abp_security=security_schemas, abp_tags=[Tag(name='Comments')],
+    abp_responses={401: ErrorS, 403: ErrorS}
 )
 
 
-@projects_router.post('/')
+@projects_router.post('/', responses={201: ReadProjectS, 404: ErrorS})
 @jwt_required()
 @permissions_accepted('project-write')
 def add_project(body: RequestBodyOfProjectS):
@@ -34,7 +39,7 @@ def add_project(body: RequestBodyOfProjectS):
     return jsonify(created_project.model_dump()), 201
 
 
-@projects_router.get('/')
+@projects_router.get('/', responses={200: ReadProjectS, 400: ErrorS})
 @jwt_required()
 @permissions_accepted('project-read')
 def get_projects(query: PaginationQS):
@@ -42,7 +47,7 @@ def get_projects(query: PaginationQS):
     return jsonify([project.model_dump() for project in projects]), 200
 
 
-@projects_router.get('/<int:project_id>/')
+@projects_router.get('/<int:project_id>/', responses={200: ReadProjectS, 404: ErrorS})
 @jwt_required()
 @permissions_accepted('project-read')
 def get_project_by_id(path: ProjectPath):
@@ -53,7 +58,7 @@ def get_project_by_id(path: ProjectPath):
     return jsonify(project.model_dump()), 200
 
 
-@projects_router.put('/<int:project_id>/')
+@projects_router.put('/<int:project_id>/', responses={200: ReadProjectS, 404: ErrorS})
 @jwt_required()
 @permissions_accepted('project-write')
 def update_project_by_id(path: ProjectPath, body: UpdateProjectS):
@@ -61,7 +66,7 @@ def update_project_by_id(path: ProjectPath, body: UpdateProjectS):
     return jsonify(project.model_dump()), 200
 
 
-@projects_router.delete('/<int:project_id>/')
+@projects_router.delete('/<int:project_id>/', responses={204: None})
 @jwt_required()
 @permissions_accepted('project-write')
 def delete_project_by_id(path: ProjectPath):
@@ -69,7 +74,7 @@ def delete_project_by_id(path: ProjectPath):
     return jsonify(), 204
 
 
-@tasks_router.post('/')
+@tasks_router.post('/', responses={201: ReadTaskS, 404: ErrorS})
 @jwt_required()
 @permissions_accepted('task-write')
 def add_task(body: RequestBodyOfTaskS):
@@ -78,7 +83,7 @@ def add_task(body: RequestBodyOfTaskS):
     return jsonify(**created_task.model_dump()), 201
 
 
-@tasks_router.get('/')
+@tasks_router.get('/', responses={200: ReadTaskS, 400: ErrorS})
 @jwt_required()
 @permissions_accepted('task-read')
 def get_tasks(query: FilterTaskQS):
@@ -86,7 +91,7 @@ def get_tasks(query: FilterTaskQS):
     return jsonify([task.model_dump() for task in tasks]), 200
 
 
-@tasks_router.get('/<int:task_id>/')
+@tasks_router.get('/<int:task_id>/', responses={200: ReadTaskS, 404: ErrorS})
 @jwt_required()
 @permissions_accepted('task-read')
 def get_task_by_id(path: TaskPath):
@@ -97,7 +102,7 @@ def get_task_by_id(path: TaskPath):
     return jsonify(task.model_dump()), 200
 
 
-@tasks_router.put('/<int:task_id>/')
+@tasks_router.put('/<int:task_id>/', responses={201: ReadTaskS, 404: ErrorS})
 @jwt_required()
 @permissions_accepted('task-write')
 def update_task_by_id(path: TaskPath, body: UpdateTaskS):
@@ -105,7 +110,7 @@ def update_task_by_id(path: TaskPath, body: UpdateTaskS):
     return jsonify(task.model_dump()), 200
 
 
-@tasks_router.delete('/<int:task_id>/')
+@tasks_router.delete('/<int:task_id>/', responses={204: None})
 @jwt_required()
 @permissions_accepted('task-write')
 def delete_task_by_id(path: TaskPath):
@@ -113,7 +118,7 @@ def delete_task_by_id(path: TaskPath):
     return jsonify(), 204
 
 
-@comments_router.post('/')
+@comments_router.post('/', responses={201: ReadCommentS, 404: ErrorS})
 @jwt_required()
 @roles_accepted('admin', 'user')
 def add_comment(body: RequestBodyOfCommentS):
@@ -122,7 +127,7 @@ def add_comment(body: RequestBodyOfCommentS):
     return jsonify(created_comment.model_dump()), 201
 
 
-@comments_router.get('/')
+@comments_router.get('/', responses={200: ReadCommentS, 400: ErrorS})
 @jwt_required()
 @roles_accepted('admin', 'user')
 def get_comments(query: PaginationQS):
@@ -130,7 +135,7 @@ def get_comments(query: PaginationQS):
     return jsonify([comment.model_dump() for comment in comments]), 200
 
 
-@comments_router.get('/<int:comment_id>/')
+@comments_router.get('/<int:comment_id>/', responses={200: ReadCommentS, 404: ErrorS})
 @jwt_required()
 @roles_accepted('admin', 'user')
 def get_comment_by_id(path: CommentPath):

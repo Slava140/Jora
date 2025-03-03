@@ -6,7 +6,6 @@ from flask import jsonify, request, Response
 from flask_jwt_extended.exceptions import JWTExtendedException
 from jwt.exceptions import PyJWTError
 from pydantic import ValidationError
-from flask_openapi3.request import request as oreq
 
 from api.v1.users.routes import auth_router, users_router
 from api.v1.projects.routes import projects_router, tasks_router, comments_router
@@ -46,19 +45,6 @@ def handle_all_errors(error: Exception):
 def handle_flask_http_error(error: werkzeug.exceptions.HTTPException):
     """ Ловит ошибки генерируемые Flask-ом """
     return jsonify({'message': error.description}), error.code
-
-
-@app.errorhandler(ValidationError)
-def handle_validation_error(error: ValidationError):
-    errors = [
-        {
-            'loc': err['loc'],
-            'input': err['input'],
-            'msg': err['msg']
-        } for err in error.errors()
-    ]
-    logger.debug('Validation Error: %s', errors)
-    return jsonify(errors), 422
 
 
 @app.errorhandler(JWTExtendedException)
