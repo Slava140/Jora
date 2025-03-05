@@ -1,6 +1,6 @@
 import enum
 
-from sqlalchemy.orm import Mapped
+from sqlalchemy.orm import Mapped, relationship
 
 from database import (Base,
                       pk_int, fk_user_id, fk_project_id, fk_task_id,
@@ -8,6 +8,7 @@ from database import (Base,
                       created_at, updated_at, datetime_utc_tz,
                       task_status as status, is_archived
                       )
+from media.models import MediaM
 
 
 class Status(str, enum.Enum):
@@ -32,6 +33,8 @@ class TaskM(Base):
     project_id:     Mapped[fk_project_id]
     author_id:      Mapped[fk_user_id]
     assignee_id:    Mapped[fk_user_id | None]
+
+    media:          Mapped[list[MediaM]] = relationship()
 
 
 class ProjectM(Base):

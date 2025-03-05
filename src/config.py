@@ -2,10 +2,8 @@ from datetime import timedelta
 from pathlib import Path
 from os import path
 
-from pydantic import EmailStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from base_pydantic_types import PasswordStr
 
 env_path = Path(__file__).parent.parent / '.env'
 

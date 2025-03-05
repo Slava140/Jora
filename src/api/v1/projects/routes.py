@@ -6,7 +6,7 @@ from api.v1.projects.services import ProjectService, TaskService, CommentService
 from api.v1.projects.schemas import (
     CreateProjectS, ReadProjectS, RequestBodyOfProjectS, UpdateProjectS, ProjectPath,
     CreateTaskS, ReadTaskS, RequestBodyOfTaskS, UpdateTaskS,
-    CreateCommentS, ReadCommentS, RequestBodyOfCommentS, FilterTaskQS, TaskPath, CommentPath,
+    CreateCommentS, ReadCommentS, RequestBodyOfCommentS, FilterTaskQS, TaskPath, CommentPath, ReadTaskWithMedia,
 )
 from errors import WasNotFoundError
 from global_schemas import PaginationQS, security_schemas, ErrorS
@@ -91,7 +91,7 @@ def get_tasks(query: FilterTaskQS):
     return jsonify([task.model_dump() for task in tasks]), 200
 
 
-@tasks_router.get('/<int:task_id>/', responses={200: ReadTaskS, 404: ErrorS})
+@tasks_router.get('/<int:task_id>/', responses={200: ReadTaskWithMedia, 404: ErrorS})
 @jwt_required()
 @permissions_accepted('task-read')
 def get_task_by_id(path: TaskPath):

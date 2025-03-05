@@ -8,7 +8,7 @@ from api.v1.projects.models import ProjectM, TaskM, CommentM
 from api.v1.projects.schemas import (
     CreateProjectS, ReadProjectS, UpdateProjectS,
     CreateTaskS, ReadTaskS, UpdateTaskS,
-    CreateCommentS, ReadCommentS, FilterTaskQS
+    CreateCommentS, ReadCommentS, FilterTaskQS, ReadTaskWithMedia
 )
 
 from api.v1.users.dao import UserDAO
@@ -175,7 +175,7 @@ class TaskDAO:
         return tuple(ReadTaskS(**data.to_dict()) for data in result)
 
     @staticmethod
-    def get_one_by_id_or_none(task_id: int) -> ReadTaskS | None:
+    def get_one_by_id_or_none(task_id: int) -> ReadTaskWithMedia | None:
         query = select(
             TaskM
         ).where(
@@ -184,8 +184,10 @@ class TaskDAO:
         )
 
         result = db.session.execute(query).scalar_one_or_none()
+        result_dict = result.to_dict()
+        result_dict['media'] = [f'/media/{m.id}/' for m in result.media]
 
-        return ReadTaskS(**result.to_dict()) if result is not None else None
+        return ReadTaskWithMedia(**result_dict) if result is not None else None
 
     @staticmethod
     def update_by_id(task_id: int, updated_task: UpdateTaskS) -> ReadTaskS:

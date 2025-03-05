@@ -63,6 +63,10 @@ class ReadTaskS(BaseTaskS):
     author_id:      NonNegativeInt
 
 
+class ReadTaskWithMedia(ReadTaskS):
+    media: list[str]
+
+
 class CreateTaskS(RequestBodyOfTaskS):
     author_id:      NonNegativeInt
 

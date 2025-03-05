@@ -2,7 +2,7 @@ from api.v1.projects.dao import ProjectDAO, TaskDAO, CommentDAO
 from api.v1.projects.schemas import (
     CreateProjectS, ReadProjectS, UpdateProjectS,
     CreateTaskS, ReadTaskS, UpdateTaskS,
-    CreateCommentS, ReadCommentS, FilterTaskQS,
+    CreateCommentS, ReadCommentS, FilterTaskQS, ReadTaskWithMedia,
 )
 from flask_security import current_user
 from errors import MustBePositiveError, IncorrectRequestError, ForbiddenError, WasNotFoundError
@@ -65,7 +65,7 @@ class TaskService:
         return TaskDAO.get_many(filter_schema)
 
     @staticmethod
-    def get_one_by_id_or_none(task_id: int) -> ReadTaskS | None:
+    def get_one_by_id_or_none(task_id: int) -> ReadTaskWithMedia | None:
         return TaskDAO.get_one_by_id_or_none(task_id)
 
     @staticmethod

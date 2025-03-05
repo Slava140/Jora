@@ -1,23 +1,28 @@
 from pathlib import Path
 
+from flask_openapi3 import FileStorage
 from pydantic import BaseModel, NonNegativeInt
 
-from base_pydantic_types import Str500, UTCDatetime
+from base_pydantic_types import Str500, UTCDatetime, StrFileExtension
 
 
-class MediaQS(BaseModel):
-    task_id:    NonNegativeInt
+class UploadMediaS(BaseModel):
+    file:    FileStorage
+    task_id: NonNegativeInt
 
 
-class BaseMediaS(BaseModel):
-    filename:   Str500
-    task_id:    NonNegativeInt
-    author_id:  NonNegativeInt
+class MediaMetadataS(BaseModel):
+    task_id:   NonNegativeInt
+    author_id: NonNegativeInt
+
+
+class BaseMediaS(MediaMetadataS):
+    filename:  Str500
+    extension: StrFileExtension
 
 
 class CreateMediaS(BaseMediaS):
     ...
-
 
 class ReadMediaS(BaseMediaS):
     id:         NonNegativeInt
@@ -26,3 +31,7 @@ class ReadMediaS(BaseMediaS):
 
 class ReadMediaWithFilepathS(ReadMediaS):
     filepath:   Path
+
+
+class MediaPath(BaseModel):
+    media_id: NonNegativeInt

@@ -442,14 +442,14 @@ yaml = ["pyyaml"]
 
 [[package]]
 name = "flask-openapi3-scalar"
-version = "1.25.122"
+version = "1.25.126"
 description = "Provide Scalar UI for flask-openapi3."
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
 files = [
-    {file = "flask_openapi3_scalar-1.25.122-py3-none-any.whl", hash = "sha256:ff256707832475ae0a88ad7192ef4f34006f0bf668ce416f1aab73303d7b836d"},
-    {file = "flask_openapi3_scalar-1.25.122.tar.gz", hash = "sha256:005a60d67bb14bac2184cb0495b42fae04b30d71f22618ed37421ac426383ea1"},
+    {file = "flask_openapi3_scalar-1.25.126-py3-none-any.whl", hash = "sha256:49e5f58138bcef6ea5a0eb06d3ce318208ac97b13f66ca538f04d9ff22ab8daf"},
+    {file = "flask_openapi3_scalar-1.25.126.tar.gz", hash = "sha256:6518a6cd0dbad481a21ad92673e75a2063e68b5a330424e7d516006c3658bd94"},
 ]
 
 [package.dependencies]
