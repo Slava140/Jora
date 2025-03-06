@@ -3,7 +3,7 @@ from pathlib import Path
 from flask_openapi3 import FileStorage
 from pydantic import BaseModel, NonNegativeInt
 
-from base_pydantic_types import Str500, UTCDatetime, StrFileExtension
+from base_pydantic_types import UTCDatetime, StrFileWithExtension
 
 
 class UploadMediaS(BaseModel):
@@ -17,8 +17,7 @@ class MediaMetadataS(BaseModel):
 
 
 class BaseMediaS(MediaMetadataS):
-    filename:  Str500
-    extension: StrFileExtension
+    filename: StrFileWithExtension
 
 
 class CreateMediaS(BaseMediaS):

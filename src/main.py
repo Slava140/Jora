@@ -69,16 +69,14 @@ def handle_app_error(error: AppError):
 @app.before_request
 def log_before_request():
     rule = request.url_rule
-    if rule is None:
-        raise IncorrectRequestError()
-
-    view_func_name = rule.endpoint
+    view_func_name = '-' if rule is None else rule.endpoint
     logger.info('Accepted by %s', view_func_name)
 
 
 @app.after_request
 def log_after_request(response: Response):
-    view_func_name = request.url_rule.endpoint
+    rule = request.url_rule
+    view_func_name = '-' if rule is None else rule.endpoint
     logger.info('Completed by %s (%d)', view_func_name, response.status_code)
     return response
 

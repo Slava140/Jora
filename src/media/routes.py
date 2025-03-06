@@ -31,8 +31,8 @@ def add_media(form: UploadMediaS):
 @router.get('/<int:media_id>/')
 @jwt_required()
 @roles_accepted('admin', 'user')
-def get_all_media_from_task(path: MediaPath):
+def get_media_by_id(path: MediaPath):
     metadata = MediaService.get_media_by_id_or_none(path.media_id)
     if metadata is None:
         raise WasNotFoundError(f'Media with id {path.media_id}')
-    return send_file(metadata.filepath, download_name=f'{metadata.filename}.{metadata.extension}')
+    return send_file(metadata.filepath, download_name=metadata.filename)

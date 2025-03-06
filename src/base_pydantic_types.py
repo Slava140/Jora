@@ -1,5 +1,7 @@
 import re
 from datetime import datetime, timezone
+from fileinput import filename
+from pathlib import Path
 from typing import Annotated, Literal
 
 from pydantic import Field, AfterValidator, BeforeValidator, BaseModel
@@ -36,10 +38,11 @@ def password_validator(value: str) -> str:
 
 
 def extension_validator(value: str) -> str:
-    raw_extension = value.strip('.')
-    if raw_extension not in settings.ALLOWED_FILE_EXTENSIONS:
-        raise ExtensionsNotAllowedError(raw_extension)
-    return raw_extension
+    file_path = Path(value)
+    extension = file_path.suffix.strip('.')
+    if extension not in settings.ALLOWED_FILE_EXTENSIONS:
+        raise ExtensionsNotAllowedError(extension)
+    return file_path.name
 
 
 StrFrom3To255 = Annotated[str, Field(min_length=3, max_length=255)]
@@ -49,4 +52,4 @@ StrTaskStatus = Annotated[Literal['open', 'in_progress', 'finished'], Field(defa
 
 UTCDatetime = Annotated[datetime, BeforeValidator(is_utc_datetime_validator)]
 PasswordStr = Annotated[str, AfterValidator(password_validator)]
-StrFileExtension = Annotated[str, AfterValidator(extension_validator)]
+StrFileWithExtension = Annotated[str, AfterValidator(extension_validator)]

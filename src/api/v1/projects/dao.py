@@ -1,7 +1,8 @@
 from datetime import datetime
 from typing import Sequence
 
-from sqlalchemy import insert, select, update, and_
+from flask import url_for
+from sqlalchemy import insert, select, update
 from sqlalchemy.orm import SessionTransaction
 
 from api.v1.projects.models import ProjectM, TaskM, CommentM
@@ -185,7 +186,10 @@ class TaskDAO:
 
         result = db.session.execute(query).scalar_one_or_none()
         result_dict = result.to_dict()
-        result_dict['media'] = [f'/media/{m.id}/' for m in result.media]
+        result_dict['media'] = [
+            url_for('media.get_media_by_id', media_id=m.id)
+            for m in result.media
+        ]
 
         return ReadTaskWithMedia(**result_dict) if result is not None else None
 
