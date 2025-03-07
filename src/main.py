@@ -5,14 +5,14 @@ import werkzeug.exceptions
 from flask import jsonify, request, Response
 from flask_jwt_extended.exceptions import JWTExtendedException
 from jwt.exceptions import PyJWTError
-from pydantic import ValidationError
 
+from actors import test_actor
 from api.v1.users.routes import auth_router, users_router
 from api.v1.projects.routes import projects_router, tasks_router, comments_router
 from media.routes import router as media_router
 
 from config import settings
-from errors import AppError, IncorrectRequestError
+from errors import AppError
 from logger import get_logger
 from app import app
 
@@ -83,13 +83,14 @@ def log_after_request(response: Response):
 
 @app.get('/')
 def ok():
+    test_actor.send()
     return 'ok'
 
 
 if __name__ == '__main__':
     logger.info('Start app...')
     try:
-        app.run(debug=settings.APP_DEBUG, port=settings.APP_PORT, host=settings.APP_HOST)
+        app.run(debug=settings.APP_DEBUG, port=8000, host=settings.APP_HOST)
         logger.info('App is running')
     except Exception as e:
         logger.error(str(e))

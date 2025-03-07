@@ -7,24 +7,58 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql/data
     ports:
-      - "5433:5432"
+      - ${DB_PORT}:5432
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - ${REDIS_PORT}:6379
+    volumes:
+      - redis_data:${REDIS_DATA_PATH}
+    command: >
+      redis-server  --port 6379
+                    --save 20 1
+                    --loglevel warning
+                    --requirepass ${REDIS_PASS}
+
 
   app:
     container_name: app
     env_file:
       - .env
     environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       DB_HOST: postgres
       DB_PORT: 5432
     volumes:
       - media:${MEDIA_PATH}
     build:
       context: .
+    command: sh entrypoint.sh
     ports:
-      - "8000:8000"
+      - ${APP_PORT}:8000
     depends_on:
       - postgres
+      - redis
+
+  dramatiq:
+    container_name: dramatiq
+    env_file:
+      - .env
+    environment:
+      PYTHONPATH: 'src'
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    build:
+      context: .
+    command: dramatiq actors:broker --processes=1
+    depends_on:
+      - app
+      - redis
 
 volumes:
   pg_data:
   media:
+  redis_data:

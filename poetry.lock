@@ -2,23 +2,23 @@
 
 [[package]]
 name = "alembic"
-version = "1.14.1"
+version = "1.15.1"
 description = "A database migration tool for SQLAlchemy."
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "alembic-1.14.1-py3-none-any.whl", hash = "sha256:1acdd7a3a478e208b0503cd73614d5e4c6efafa4e73518bb60e4f2846a37b1c5"},
-    {file = "alembic-1.14.1.tar.gz", hash = "sha256:496e888245a53adf1498fcab31713a469c65836f8de76e01399aa1c3e90dd213"},
+    {file = "alembic-1.15.1-py3-none-any.whl", hash = "sha256:197de710da4b3e91cf66a826a5b31b5d59a127ab41bd0fc42863e2902ce2bbbe"},
+    {file = "alembic-1.15.1.tar.gz", hash = "sha256:e1a1c738577bca1f27e68728c910cd389b9a92152ff91d902da649c192e30c49"},
 ]
 
 [package.dependencies]
 Mako = "*"
-SQLAlchemy = ">=1.3.0"
-typing-extensions = ">=4"
+SQLAlchemy = ">=1.4.0"
+typing-extensions = ">=4.12"
 
 [package.extras]
-tz = ["backports.zoneinfo", "tzdata"]
+tz = ["tzdata"]
 
 [[package]]
 name = "annotated-types"
@@ -316,6 +316,31 @@ trio = ["trio (>=0.23)"]
 wmi = ["wmi (>=1.5.1)"]
 
 [[package]]
+name = "dramatiq"
+version = "1.17.1"
+description = "Background Processing for Python 3."
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "dramatiq-1.17.1-py3-none-any.whl", hash = "sha256:951cdc334478dff8e5150bb02a6f7a947d215ee24b5aedaf738eff20e17913df"},
+    {file = "dramatiq-1.17.1.tar.gz", hash = "sha256:2675d2f57e0d82db3a7d2a60f1f9c536365349db78c7f8d80a63e4c54697647a"},
+]
+
+[package.dependencies]
+prometheus-client = ">=0.2"
+redis = {version = ">=2.0,<6.0", optional = true, markers = "extra == \"redis\""}
+
+[package.extras]
+all = ["gevent (>=1.1)", "pika (>=1.0,<2.0)", "pylibmc (>=1.5,<2.0)", "redis (>=2.0,<6.0)", "watchdog (>=4.0)", "watchdog-gevent (>=0.2)"]
+dev = ["alabaster", "bumpversion", "flake8", "flake8-bugbear", "flake8-quotes", "gevent (>=1.1)", "hiredis", "isort", "mypy", "pika (>=1.0,<2.0)", "pylibmc (>=1.5,<2.0)", "pytest", "pytest-benchmark[histogram]", "pytest-cov", "redis (>=2.0,<6.0)", "sphinx", "sphinxcontrib-napoleon", "tox", "twine", "watchdog (>=4.0)", "watchdog-gevent (>=0.2)", "wheel"]
+gevent = ["gevent (>=1.1)"]
+memcached = ["pylibmc (>=1.5,<2.0)"]
+rabbitmq = ["pika (>=1.0,<2.0)"]
+redis = ["redis (>=2.0,<6.0)"]
+watch = ["watchdog (>=4.0)", "watchdog-gevent (>=0.2)"]
+
+[[package]]
 name = "email-validator"
 version = "2.2.0"
 description = "A robust email address syntax and deliverability validation library."
@@ -353,6 +378,21 @@ Werkzeug = ">=3.1"
 [package.extras]
 async = ["asgiref (>=3.2)"]
 dotenv = ["python-dotenv"]
+
+[[package]]
+name = "flask-dramatiq"
+version = "0.6.0"
+description = "Adds Dramatiq support to your Flask application"
+optional = false
+python-versions = ">=3.6,<4.0"
+groups = ["main"]
+files = [
+    {file = "flask-dramatiq-0.6.0.tar.gz", hash = "sha256:63709e73d7c8d2e5d9bc554d1e859d91c5c5c9a4ebc9461752655bf1e0b87420"},
+    {file = "flask_dramatiq-0.6.0-py3-none-any.whl", hash = "sha256:7d4a9289721577f726183f7c44c6713a16bbdff54b946f27abc2ffcc65768adf"},
+]
+
+[package.dependencies]
+dramatiq = ">=1.5,<2.0"
 
 [[package]]
 name = "flask-jwt-extended"
@@ -442,14 +482,14 @@ yaml = ["pyyaml"]
 
 [[package]]
 name = "flask-openapi3-scalar"
-version = "1.25.126"
+version = "1.25.127"
 description = "Provide Scalar UI for flask-openapi3."
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
 files = [
-    {file = "flask_openapi3_scalar-1.25.126-py3-none-any.whl", hash = "sha256:49e5f58138bcef6ea5a0eb06d3ce318208ac97b13f66ca538f04d9ff22ab8daf"},
-    {file = "flask_openapi3_scalar-1.25.126.tar.gz", hash = "sha256:6518a6cd0dbad481a21ad92673e75a2063e68b5a330424e7d516006c3658bd94"},
+    {file = "flask_openapi3_scalar-1.25.127-py3-none-any.whl", hash = "sha256:e14f0ba5a3673b8dbaa6b02ebd08d2cc6ae3bfa761b2dc532bfe197dfb2beacf"},
+    {file = "flask_openapi3_scalar-1.25.127.tar.gz", hash = "sha256:a2a421467024aa6893e7b68f5248516c0c3c4c5ac30efdae3afbaf92d7e75ef4"},
 ]
 
 [package.dependencies]
@@ -710,14 +750,14 @@ files = [
 
 [[package]]
 name = "jinja2"
-version = "3.1.5"
+version = "3.1.6"
 description = "A very fast and expressive template engine."
 optional = false
 python-versions = ">=3.7"
 groups = ["main"]
 files = [
-    {file = "jinja2-3.1.5-py3-none-any.whl", hash = "sha256:aba0f4dc9ed8013c424088f68a5c226f7d6097ed89b246d7749c2ec4175c6adb"},
-    {file = "jinja2-3.1.5.tar.gz", hash = "sha256:8fefff8dc3034e27bb80d67c671eb8a9bc424c0ef4c0826edbff304cceff43bb"},
+    {file = "jinja2-3.1.6-py3-none-any.whl", hash = "sha256:85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67"},
+    {file = "jinja2-3.1.6.tar.gz", hash = "sha256:0137fb05990d35f1275a587e9aee6d56da821fc83491a0fb838183be43f66d6d"},
 ]
 
 [package.dependencies]
@@ -852,6 +892,21 @@ argon2 = ["argon2-cffi (>=18.2.0)"]
 bcrypt = ["bcrypt (>=3.1.0)"]
 build-docs = ["cloud-sptheme (>=1.10.1)", "sphinx (>=1.6)", "sphinxcontrib-fulltoc (>=1.2.0)"]
 totp = ["cryptography"]
+
+[[package]]
+name = "prometheus-client"
+version = "0.21.1"
+description = "Python client for the Prometheus monitoring system."
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "prometheus_client-0.21.1-py3-none-any.whl", hash = "sha256:594b45c410d6f4f8888940fe80b5cc2521b305a1fafe1c58609ef715a001f301"},
+    {file = "prometheus_client-0.21.1.tar.gz", hash = "sha256:252505a722ac04b0456be05c05f75f45d760c2911ffc45f2a06bcaed9f3ae3fb"},
+]
+
+[package.extras]
+twisted = ["twisted"]
 
 [[package]]
 name = "psycopg"
@@ -1099,6 +1154,22 @@ files = [
 cli = ["click (>=5.0)"]
 
 [[package]]
+name = "redis"
+version = "5.2.1"
+description = "Python client for Redis database and key-value store"
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "redis-5.2.1-py3-none-any.whl", hash = "sha256:ee7e1056b9aea0f04c6c2ed59452947f34c4940ee025f5dd83e6a6418b6989e4"},
+    {file = "redis-5.2.1.tar.gz", hash = "sha256:16f2e22dff21d5125e8481515e386711a34cbec50f0e44413dd7d9c060a54e0f"},
+]
+
+[package.extras]
+hiredis = ["hiredis (>=3.0.0)"]
+ocsp = ["cryptography (>=36.0.1)", "pyopenssl (==23.2.1)", "requests (>=2.31.0)"]
+
+[[package]]
 name = "setuptools"
 version = "69.5.1"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
@@ -1316,4 +1387,4 @@ email = ["email-validator"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "8dca88d2d3b86e471f574eccad65a329524c5ee82249428fadcb14770698b170"
+content-hash = "ac9fff35c99a6f3e86343d7580b0eacc28d8fcba85432bc3ea987fb810778ceb"

@@ -21,5 +21,3 @@ RUN poetry config virtualenvs.create false
 RUN poetry install --no-interaction
 
 COPY . .
-
-CMD ["sh", "entrypoint.sh"]

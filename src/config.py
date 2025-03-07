@@ -15,6 +15,11 @@ class Settings(BaseSettings):
     DB_PASS: str
     DB_NAME: str
 
+    REDIS_HOST: str
+    REDIS_PORT: str
+    REDIS_PASS: str
+    REDIS_DATA_PATH: Path
+
     JWT_SECRET: str
     ACCESS_TOKEN_TTL: int
 
@@ -40,6 +45,15 @@ class Settings(BaseSettings):
     @property
     def access_token_ttl_timedelta(self):
         return timedelta(seconds=self.ACCESS_TOKEN_TTL)
+
+    @property
+    def redis_url(self):
+        return 'redis://{user}:{password}@{host}:{port}/0'.format(
+            user='',
+            password=self.REDIS_PASS,
+            host=self.REDIS_HOST,
+            port=self.REDIS_PORT
+        )
 
     @property
     def refresh_token_ttl_timedelta(self):
