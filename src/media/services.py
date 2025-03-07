@@ -5,6 +5,7 @@ from werkzeug.utils import secure_filename
 
 from api.v1.projects.services import TaskService
 from config import settings
+from errors import AppError
 from media.schemas import ReadMediaS, ReadMediaWithFilepathS, MediaMetadataS, CreateMediaS
 from media.dao import MediaDAO
 
@@ -16,6 +17,8 @@ class MediaService:
         :except WasNotFoundError
         :except ExtensionsNotAllowedError
         """
+        from database import db
+
         file_path = Path(secure_filename(file.filename))
         extension = file_path.suffix.strip('.')
 
@@ -24,10 +27,16 @@ class MediaService:
         )
         task = TaskService.get_one_by_id_or_none(media.task_id)
 
-        destination_dir = settings.MEDIA_PATH / f'project_id_{task.project_id}' / f'task_id_{task.id}'
-        destination_dir.mkdir(exist_ok=True, parents=True)
+        try:
+            destination_dir = settings.MEDIA_PATH / f'project_id_{task.project_id}' / f'task_id_{task.id}'
+            destination_dir.mkdir(exist_ok=True, parents=True)
 
-        file.save(destination_dir / f'{media.id}.{extension}')
+            file.save(destination_dir / f'{media.id}.{extension}')
+            db.session.commit()
+        except:
+            db.session.rollback()
+            raise AppError(message='An error occurred while saving the file.', status_code=500)
+
 
         return media
 

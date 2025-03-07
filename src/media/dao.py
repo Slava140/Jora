@@ -14,6 +14,10 @@ class MediaDAO:
     @staticmethod
     def add(media_metadata: CreateMediaS) -> ReadMediaS:
         """
+        Для завершения транзакции ОБЯЗАТЕЛЬНО нужно выполнить commit или rollback.
+        Транзакцию нельзя завершить внутри этого метода, потому что возможен сценарий при котором
+        запись добавлена в БД, а файл из-за ошибки не был сохранен в файловой системе.
+
         :except WasNotFoundError
         """
         stmt = insert(
@@ -29,7 +33,6 @@ class MediaDAO:
                 raise WasNotFoundError(f'Task with id {media_metadata.task_id}')
 
             result = db.session.execute(stmt).mappings().one()
-            db.session.commit()
 
         return ReadMediaS(**result)
 
