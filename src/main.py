@@ -6,7 +6,6 @@ from flask import jsonify, request, Response
 from flask_jwt_extended.exceptions import JWTExtendedException
 from jwt.exceptions import PyJWTError
 
-from actors import test_actor
 from api.v1.users.routes import auth_router, users_router
 from api.v1.projects.routes import projects_router, tasks_router, comments_router
 from media.routes import router as media_router
@@ -83,7 +82,6 @@ def log_after_request(response: Response):
 
 @app.get('/')
 def ok():
-    test_actor.send()
     return 'ok'
 
 

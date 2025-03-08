@@ -28,9 +28,10 @@ class Settings(BaseSettings):
     APP_PORT: int
 
     MEDIA_PATH: Path
-    ALLOWED_FILE_EXTENSIONS: set
+    ALLOWED_TEXT_FILE_EXTENSIONS: set
+    ALLOWED_IMAGE_FILE_EXTENSIONS: set
 
-    SRC_PATH: Path = Path(__file__).parent
+    src_path: Path = Path(__file__).parent
 
     @property
     def database_url_psycopg(self):
@@ -58,6 +59,11 @@ class Settings(BaseSettings):
     @property
     def refresh_token_ttl_timedelta(self):
         return timedelta(seconds=self.REFRESH_TOKEN_TTL)
+
+    @property
+    def allowed_file_extensions(self):
+        return (self.ALLOWED_TEXT_FILE_EXTENSIONS |
+                self.ALLOWED_IMAGE_FILE_EXTENSIONS)
 
     if path.exists(env_path):
         model_config = SettingsConfigDict(env_file=env_path)

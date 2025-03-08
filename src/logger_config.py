@@ -4,7 +4,7 @@ from flask import has_request_context, request
 
 from config import settings
 
-logs_dir = settings.SRC_PATH.parent / 'logs'
+logs_dir = settings.src_path.parent / 'logs'
 logs_dir.mkdir(exist_ok=True)
 
 

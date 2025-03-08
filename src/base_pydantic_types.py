@@ -1,10 +1,9 @@
 import re
 from datetime import datetime, timezone
-from fileinput import filename
 from pathlib import Path
 from typing import Annotated, Literal
 
-from pydantic import Field, AfterValidator, BeforeValidator, BaseModel
+from pydantic import Field, AfterValidator, BeforeValidator
 
 from api.v1.projects.models import Status
 from config import settings
@@ -40,7 +39,7 @@ def password_validator(value: str) -> str:
 def extension_validator(value: str) -> str:
     file_path = Path(value)
     extension = file_path.suffix.strip('.')
-    if extension not in settings.ALLOWED_FILE_EXTENSIONS:
+    if extension not in settings.allowed_file_extensions:
         raise ExtensionsNotAllowedError(extension)
     return file_path.name
 

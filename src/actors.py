@@ -1,12 +1,18 @@
-import time
+import os
+from pathlib import Path
 
 from app import dramatiq
+from config import settings
+from utils import compress_text
 
 broker = dramatiq.broker
 
 
 @dramatiq.actor()
-def test_actor():
-    print('Долгий процесс начался')
-    time.sleep(30)
-    print('Долгий процесс завершился')
+def postprocess_file_actor(file: str, remove_original: bool = False):
+    file = Path(file)
+    if file.suffix.strip('.') in settings.ALLOWED_TEXT_FILE_EXTENSIONS:
+        compress_text(file)
+
+        if remove_original:
+            os.remove(file)

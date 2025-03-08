@@ -7,8 +7,9 @@ from base_pydantic_types import UTCDatetime, StrFileWithExtension
 
 
 class UploadMediaS(BaseModel):
-    file:    FileStorage
-    task_id: NonNegativeInt
+    file:        FileStorage
+    compress_it: bool
+    task_id:     NonNegativeInt
 
 
 class MediaMetadataS(BaseModel):

@@ -3,16 +3,18 @@ from pathlib import Path
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 
+from actors import postprocess_file_actor
 from api.v1.projects.services import TaskService
 from config import settings
 from errors import AppError
 from media.schemas import ReadMediaS, ReadMediaWithFilepathS, MediaMetadataS, CreateMediaS
 from media.dao import MediaDAO
+from utils import decompress_text
 
 
 class MediaService:
     @classmethod
-    def save(cls, file: FileStorage, metadata: MediaMetadataS) -> ReadMediaS:
+    def save(cls, file: FileStorage, metadata: MediaMetadataS, compress_it: bool) -> ReadMediaS:
         """
         :except WasNotFoundError
         :except ExtensionsNotAllowedError
@@ -31,13 +33,14 @@ class MediaService:
             destination_dir = settings.MEDIA_PATH / f'project_id_{task.project_id}' / f'task_id_{task.id}'
             destination_dir.mkdir(exist_ok=True, parents=True)
 
-            file.save(destination_dir / f'{media.id}.{extension}')
+            destination_path = destination_dir / f'{media.id}.{extension}'
+            file.save(destination_path)
             db.session.commit()
         except:
             db.session.rollback()
-            raise AppError(message='An error occurred while saving the file.', status_code=500)
+            raise
 
-
+        postprocess_file_actor.send(file=str(destination_path), remove_original=compress_it)
         return media
 
     @classmethod
@@ -55,6 +58,10 @@ class MediaService:
         filepath = task_path / Path(f'{media_id}.{file_extension}')
 
         if not filepath.exists():
-            return None
+            compressed_file = Path(f'{filepath}.gz')
+            if compressed_file.exists():
+                decompress_text(compressed_file)
+            else:
+                return None
 
         return ReadMediaWithFilepathS(filepath=filepath, **metadata.model_dump())

@@ -51,6 +51,8 @@ services:
       PYTHONPATH: 'src'
       REDIS_HOST: redis
       REDIS_PORT: 6379
+    volumes:
+      - media:${MEDIA_PATH}
     build:
       context: .
     command: dramatiq actors:broker --processes=1

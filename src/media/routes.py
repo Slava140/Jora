@@ -23,7 +23,8 @@ def add_media(form: UploadMediaS):
         metadata=MediaMetadataS(
             author_id=current_user.id,
             task_id=form.task_id
-        )
+        ),
+        compress_it=form.compress_it
     )
     return jsonify(metadata.model_dump()), 201
 
