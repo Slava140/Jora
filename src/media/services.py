@@ -6,10 +6,8 @@ from werkzeug.utils import secure_filename
 from actors import postprocess_file_actor
 from api.v1.projects.services import TaskService
 from config import settings
-from errors import AppError
 from media.schemas import ReadMediaS, ReadMediaWithFilepathS, MediaMetadataS, CreateMediaS
 from media.dao import MediaDAO
-from utils import decompress_text
 
 
 class MediaService:
@@ -51,17 +49,17 @@ class MediaService:
 
         task = TaskService.get_one_by_id_or_none(metadata.task_id)
 
-        project_path = settings.MEDIA_PATH / Path(f'project_id_{task.project_id}')
-        task_path = project_path / Path(f'task_id_{task.id}')
+        task_path = settings.MEDIA_PATH / f'project_id_{task.project_id}' / f'task_id_{task.id}'
 
-        file_extension = Path(metadata.filename).suffix.strip('.')
-        filepath = task_path / Path(f'{media_id}.{file_extension}')
+        compressed_filepath = task_path / f'compressed_{media_id}'
+        compressed_text = compressed_filepath.with_suffix('.gz')
+        compressed_image = compressed_filepath.with_suffix('.jpg')
 
-        if not filepath.exists():
-            compressed_file = Path(f'{filepath}.gz')
-            if compressed_file.exists():
-                decompress_text(compressed_file)
-            else:
-                return None
+        if compressed_text.exists():
+            filepath = compressed_text
+        elif compressed_image.exists():
+            filepath = compressed_image
+        else:
+            return None
 
         return ReadMediaWithFilepathS(filepath=filepath, **metadata.model_dump())

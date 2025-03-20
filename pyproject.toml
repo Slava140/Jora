@@ -8,7 +8,7 @@ package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.12"
-sqlalchemy = "^2.0.36"
+sqlalchemy = "2.0.38"
 alembic = "^1.14.0"
 pydantic-settings = "^2.6.1"
 pydantic = {extras = ["email"], version = "^2.10.2"}
@@ -27,6 +27,7 @@ setuptools = "69.5.1"
 redis = "^5.2.1"
 dramatiq = {extras = ["redis"], version = "^1.17.1"}
 flask-dramatiq = {extras = ["redis"], version = "^0.6.0"}
+pillow = "^11.1.0"
 
 
 [build-system]

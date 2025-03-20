@@ -36,4 +36,10 @@ def get_media_by_id(path: MediaPath):
     metadata = MediaService.get_media_by_id_or_none(path.media_id)
     if metadata is None:
         raise WasNotFoundError(f'Media with id {path.media_id}')
-    return send_file(metadata.filepath, download_name=metadata.filename)
+
+    response = send_file(metadata.filepath, download_name=metadata.filename)
+
+    if metadata.filepath.suffix == '.gz':
+        response.headers['Content-Encoding'] = 'gzip'
+
+    return response
