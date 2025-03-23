@@ -35,3 +35,7 @@ class ReadMediaWithFilepathS(ReadMediaS):
 
 class MediaPath(BaseModel):
     media_id: NonNegativeInt
+
+
+class MediaQS(BaseModel):
+    original: bool = False

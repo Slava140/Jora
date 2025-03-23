@@ -42,7 +42,7 @@ class MediaService:
         return media
 
     @classmethod
-    def get_media_by_id_or_none(cls, media_id: int) -> ReadMediaWithFilepathS | None:
+    def get_media_by_id_or_none(cls, media_id: int, original: bool) -> ReadMediaWithFilepathS | None:
         metadata = MediaDAO.get_one_by_id_or_none(media_id)
         if metadata is None:
             return None
@@ -51,14 +51,23 @@ class MediaService:
 
         task_path = settings.MEDIA_PATH / f'project_id_{task.project_id}' / f'task_id_{task.id}'
 
+        original_filename = Path(metadata.filename)
         compressed_filepath = task_path / f'compressed_{media_id}'
+        original_filepath = task_path / f'{media_id}{original_filename.suffix}'
+
         compressed_text = compressed_filepath.with_suffix('.gz')
         compressed_image = compressed_filepath.with_suffix('.jpg')
 
         if compressed_text.exists():
             filepath = compressed_text
-        elif compressed_image.exists():
+
+        elif original and original_filepath.exists():
+            filepath = original_filepath
+
+        elif not original and compressed_image.exists():
             filepath = compressed_image
+            metadata.filename = original_filename.with_suffix('.jpg').name
+
         else:
             return None
 

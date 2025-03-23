@@ -3,7 +3,7 @@ from flask_openapi3 import APIBlueprint, Tag
 from flask_security import roles_accepted, current_user
 
 from errors import WasNotFoundError
-from media.schemas import MediaMetadataS, UploadMediaS, MediaPath
+from media.schemas import MediaMetadataS, UploadMediaS, MediaPath, MediaQS
 from media.services import MediaService
 from global_schemas import security_schemas
 from security import jwt_required
@@ -32,8 +32,8 @@ def add_media(form: UploadMediaS):
 @router.get('/<int:media_id>/')
 @jwt_required()
 @roles_accepted('admin', 'user')
-def get_media_by_id(path: MediaPath):
-    metadata = MediaService.get_media_by_id_or_none(path.media_id)
+def get_media_by_id(path: MediaPath, query: MediaQS):
+    metadata = MediaService.get_media_by_id_or_none(path.media_id, original=query.original)
     if metadata is None:
         raise WasNotFoundError(f'Media with id {path.media_id}')
 
