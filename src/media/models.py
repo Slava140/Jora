@@ -10,6 +10,7 @@ class MediaM(Base):
     filename:       Mapped[str_500]
     created_at:     Mapped[created_at]
     is_archived:    Mapped[is_archived]
+    has_original:   Mapped[bool]
 
     task_id:        Mapped[fk_task_id]
     author_id:      Mapped[fk_user_id]

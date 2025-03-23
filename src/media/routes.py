@@ -35,7 +35,7 @@ def add_media(form: UploadMediaS):
 def get_media_by_id(path: MediaPath, query: MediaQS):
     metadata = MediaService.get_media_by_id_or_none(path.media_id, original=query.original)
     if metadata is None:
-        raise WasNotFoundError(f'Media with id {path.media_id}')
+        raise WasNotFoundError(f'Media with id {path.media_id} and original={query.original}')
 
     response = send_file(metadata.filepath, download_name=metadata.filename)
 

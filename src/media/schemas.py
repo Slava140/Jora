@@ -18,7 +18,8 @@ class MediaMetadataS(BaseModel):
 
 
 class BaseMediaS(MediaMetadataS):
-    filename: StrFileWithExtension
+    filename:     StrFileWithExtension
+    has_original: bool
 
 
 class CreateMediaS(BaseMediaS):

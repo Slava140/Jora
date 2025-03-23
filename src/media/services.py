@@ -6,6 +6,7 @@ from werkzeug.utils import secure_filename
 from actors import postprocess_file_actor
 from api.v1.projects.services import TaskService
 from config import settings
+from errors import ExtensionsNotAllowedError
 from media.schemas import ReadMediaS, ReadMediaWithFilepathS, MediaMetadataS, CreateMediaS
 from media.dao import MediaDAO
 
@@ -22,8 +23,15 @@ class MediaService:
         file_path = Path(secure_filename(file.filename))
         extension = file_path.suffix.strip('.')
 
+        if extension in settings.ALLOWED_TEXT_FILE_EXTENSIONS:
+            has_original = True
+        elif extension in settings.ALLOWED_IMAGE_FILE_EXTENSIONS:
+            has_original = not compress_it
+        else:
+            raise ExtensionsNotAllowedError
+
         media = MediaDAO.add(
-            CreateMediaS(filename=file_path.name, **metadata.model_dump())
+            CreateMediaS(filename=file_path.name, has_original=has_original, **metadata.model_dump())
         )
         task = TaskService.get_one_by_id_or_none(media.task_id)
 

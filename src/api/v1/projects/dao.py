@@ -186,10 +186,19 @@ class TaskDAO:
 
         result = db.session.execute(query).scalar_one_or_none()
         result_dict = result.to_dict()
-        result_dict['media'] = [
-            url_for('media.get_media_by_id', media_id=m.id)
-            for m in result.media
-        ]
+
+        media_list = []
+        for m in result.media:
+            if m.has_original:
+                media_list.append(
+                    url_for('media.get_media_by_id', media_id=m.id, original=True)
+                )
+
+            media_list.append(
+                url_for('media.get_media_by_id', media_id=m.id, original=False)
+            )
+
+        result_dict['media'] = media_list
 
         return ReadTaskWithMedia(**result_dict) if result is not None else None
 
