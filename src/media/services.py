@@ -24,7 +24,7 @@ class MediaService:
         extension = file_path.suffix.strip('.')
 
         if extension in settings.ALLOWED_TEXT_FILE_EXTENSIONS:
-            has_original = True
+            has_original = False
         elif extension in settings.ALLOWED_IMAGE_FILE_EXTENSIONS:
             has_original = not compress_it
         else:
