@@ -1,3 +1,5 @@
+from flask import url_for
+
 from api.v1.projects.dao import ProjectDAO, TaskDAO, CommentDAO
 from api.v1.projects.schemas import (
     CreateProjectS, ReadProjectS, UpdateProjectS,
@@ -69,14 +71,26 @@ class TaskService:
         return TaskDAO.get_one_by_id_or_none(task_id)
 
     @staticmethod
-    def update_by_id(task_id: int, updated_task: UpdateTaskS) -> ReadTaskS:
+    def update_by_id(task_id: int, body: UpdateTaskS) -> ReadTaskS:
         task = TaskDAO.get_one_by_id_or_none(task_id)
 
         if task is None:
             raise WasNotFoundError('Task')
         if task.author_id != current_user.id and 'admin' not in current_user.roles:
             raise ForbiddenError()
-        return TaskDAO.update_by_id(task_id, updated_task)
+
+        updated_task = TaskDAO.update_by_id(task_id, body)
+
+        is_assignee_changed = updated_task.assignee_id != task.assignee_id
+        if updated_task.assignee_id is not None and is_assignee_changed:
+            from actors import send_notification_about_appointment_as_assignee_actor
+            send_notification_about_appointment_as_assignee_actor.send(
+                assignee_id=updated_task.assignee_id,
+                task_id=updated_task.id,
+                task_url=url_for('tasks.get_task_by_id', task_id=task_id, _external=True)
+            )
+
+        return updated_task
 
     @staticmethod
     def delete_by_id(task_id: int) -> None:

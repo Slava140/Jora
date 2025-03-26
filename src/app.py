@@ -13,6 +13,8 @@ from global_schemas import jwt_schema, ValidationErrorS
 
 STATIC_DIR = Path(__file__).parent.parent / 'static'
 STATIC_DIR.mkdir(exist_ok=True)
+TEMPLATES_DIR = Path(__file__).parent.parent / 'templates'
+TEMPLATES_DIR.mkdir(exist_ok=True)
 
 
 def validation_error_callback(error: ValidationError):
@@ -28,7 +30,8 @@ app = OpenAPI(
     security_schemes={"jwt": jwt_schema},
     validation_error_model=ValidationErrorS,
     validation_error_callback=validation_error_callback,
-    static_folder=STATIC_DIR, static_url_path='/static'
+    static_folder=STATIC_DIR, static_url_path='/static',
+    template_folder=TEMPLATES_DIR,
 )
 
 app.config['SECRET_KEY'] = settings.JWT_SECRET

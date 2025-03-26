@@ -1,6 +1,9 @@
 import gzip
 import shutil
+from email.mime.text import MIMEText
 from pathlib import Path
+from smtplib import SMTP
+from typing import Literal
 
 from PIL import Image
 
@@ -33,3 +36,12 @@ def compress_text(file: Path):
     with open(file, 'rb') as f_plain:
         with gzip.open(file_dir / f'compressed_{file.stem}.gz', 'wb') as f_compressed:
             shutil.copyfileobj(f_plain, f_compressed)
+
+def send_email(recipient: str, subject: str, content: str, content_type: Literal['plain', 'html']):
+    message = MIMEText(content, content_type)
+    message['Subject'] = subject
+
+    with SMTP(settings.MAIL_HOST, settings.MAIL_PORT) as server:
+        server.starttls()
+        server.login(settings.MAIL_USER, settings.MAIL_PASS)
+        server.sendmail(settings.MAIL_USER, recipient, message.as_string())

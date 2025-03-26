@@ -11,6 +11,8 @@ from errors import ExtensionsNotAllowedError
 
 
 def is_utc_datetime_validator(value: datetime) -> datetime:
+    if isinstance(value, str):
+        return datetime.strptime(value, '%d.%m.%Y %X%z').astimezone(timezone.utc)
     if isinstance(value, datetime):
         return value.astimezone(timezone.utc)
     else:

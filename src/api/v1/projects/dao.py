@@ -221,7 +221,8 @@ class TaskDAO:
                 raise WasNotFoundError(f'Task with id {task_id}')
 
             assignee = UserDAO.get_one_by_id_or_none(updated_task.assignee_id)
-            if assignee is None:
+            # Если исполнитель указан, но не найден
+            if assignee is None and updated_task.assignee_id is not None:
                 raise WasNotFoundError(f'User with id {updated_task.assignee_id}')
 
             result = db.session.execute(stmt).mappings().one()

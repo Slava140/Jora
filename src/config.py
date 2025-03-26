@@ -2,6 +2,7 @@ from datetime import timedelta
 from pathlib import Path
 from os import path
 
+from pydantic import EmailStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -19,6 +20,11 @@ class Settings(BaseSettings):
     REDIS_PORT: str
     REDIS_PASS: str
     REDIS_DATA_PATH: Path
+
+    MAIL_HOST: str
+    MAIL_PORT: int
+    MAIL_USER: EmailStr
+    MAIL_PASS: str
 
     JWT_SECRET: str
     ACCESS_TOKEN_TTL: int

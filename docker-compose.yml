@@ -51,6 +51,8 @@ services:
       PYTHONPATH: 'src'
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      DB_HOST: postgres
+      DB_PORT: 5432
     volumes:
       - media:${MEDIA_PATH}
     build:
