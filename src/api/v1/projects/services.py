@@ -1,6 +1,7 @@
 from flask import url_for
 
 from api.v1.projects.dao import ProjectDAO, TaskDAO, CommentDAO
+from api.v1.projects.models import Status
 from api.v1.projects.schemas import (
     CreateProjectS, ReadProjectS, UpdateProjectS,
     CreateTaskS, ReadTaskS, UpdateTaskS,
@@ -76,16 +77,29 @@ class TaskService:
 
         if task is None:
             raise WasNotFoundError('Task')
-        if task.author_id != current_user.id and 'admin' not in current_user.roles:
+
+        is_current_user_author_or_admin = current_user.id == task.author_id or 'admin' in current_user.roles
+        is_current_user_assignee = current_user.id == task.assignee_id
+        if not is_current_user_author_or_admin and not is_current_user_assignee:
             raise ForbiddenError()
 
         updated_task = TaskDAO.update_by_id(task_id, body)
 
         is_assignee_changed = updated_task.assignee_id != task.assignee_id
         if updated_task.assignee_id is not None and is_assignee_changed:
-            from actors import send_notification_about_appointment_as_assignee_actor
-            send_notification_about_appointment_as_assignee_actor.send(
-                assignee_id=updated_task.assignee_id,
+            from actors import send_notification_actor
+            send_notification_actor.send(
+                recipient_user_id=updated_task.assignee_id,
+                subject='Вы были назначены исполнителем.',
+                task_id=updated_task.id,
+                task_url=url_for('tasks.get_task_by_id', task_id=task_id, _external=True)
+            )
+
+        if Status(task.status) > Status(updated_task.status):
+            from actors import send_notification_actor
+            send_notification_actor.send(
+                recipient_user_id=updated_task.author_id,
+                subject='Изменен статус задачи.',
                 task_id=updated_task.id,
                 task_url=url_for('tasks.get_task_by_id', task_id=task_id, _external=True)
             )

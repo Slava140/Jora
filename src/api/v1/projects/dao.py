@@ -1,11 +1,11 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Sequence
 
 from flask import url_for
 from sqlalchemy import insert, select, update
 from sqlalchemy.orm import SessionTransaction
 
-from api.v1.projects.models import ProjectM, TaskM, CommentM
+from api.v1.projects.models import ProjectM, TaskM, CommentM, Status
 from api.v1.projects.schemas import (
     CreateProjectS, ReadProjectS, UpdateProjectS,
     CreateTaskS, ReadTaskS, UpdateTaskS,
@@ -207,6 +207,9 @@ class TaskDAO:
         """
         :except WasNotFoundError
         """
+        updated_task_dict = updated_task.model_dump()
+        if updated_task.status == Status.finished:
+            updated_task_dict['finished_at'] = datetime.now(tz=timezone.utc)
         stmt = update(
             TaskM
         ).where(

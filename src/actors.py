@@ -29,14 +29,14 @@ def postprocess_file_actor(file: str, remove_original: bool = True):
 
 
 @dramatiq.actor()
-def send_notification_about_appointment_as_assignee_actor(
-        assignee_id: int,
+def send_notification_actor(
+        recipient_user_id: int,
+        subject: str,
         task_id: int,
         task_url: str,
-        subject: str = 'Вы назначены исполнителем.',
-        template_name: str = 'assignee_changed.html'
+        template_name: str = 'notification.html'
 ):
-    assignee = security.datastore.find_user(id=assignee_id)
+    recipient = security.datastore.find_user(id=recipient_user_id)
     task = TaskService.get_one_by_id_or_none(task_id)
     project = ProjectService.get_one_by_id_or_none(task.project_id)
 
@@ -47,10 +47,11 @@ def send_notification_about_appointment_as_assignee_actor(
 
     email_content = render_template(
         template_name,
+        header=subject,
         task_status=task.status,
         task_title=task.title,
         due_date=due_date_str,
         project_title=project.title,
         task_url=task_url
     )
-    send_email(recipient=assignee.email, subject=subject, content=email_content, content_type='html')
+    send_email(recipient=recipient.email, subject=subject, content=email_content, content_type='html')
