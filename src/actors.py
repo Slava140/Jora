@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from smtplib import SMTPException
 
 from flask import render_template
 
@@ -12,7 +13,7 @@ from utils import compress_text, compress_image, send_email
 broker = dramatiq.broker
 
 
-@dramatiq.actor()
+@dramatiq.actor(max_retries=0)
 def postprocess_file_actor(file: str, remove_original: bool = True):
     file = Path(file)
     if not file.is_file():
@@ -28,7 +29,16 @@ def postprocess_file_actor(file: str, remove_original: bool = True):
             os.remove(file)
 
 
-@dramatiq.actor()
+def should_retry_notification_actor(retries, exception):
+    return retries < 3 and isinstance(exception, SMTPException)
+
+
+@dramatiq.actor(
+    retry_when=should_retry_notification_actor,
+    min_backoff=60_000,
+    max_backoff=10*60_000,
+    time_limit=20_000
+)
 def send_notification_actor(
         recipient_user_id: int,
         subject: str,
