@@ -28,6 +28,7 @@ services:
     env_file:
       - .env
     environment:
+      PYTHONPATH: 'src'
       REDIS_HOST: redis
       REDIS_PORT: 6379
       DB_HOST: postgres

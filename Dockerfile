@@ -8,7 +8,10 @@ ENV PYTHONUNBUFFERED=1 \
     POETRY_VERSION=2.1.1 \
     PATH="$PATH:$POETRY_HOME/bin"
 
-RUN apk add curl postgresql-dev
+
+RUN apk add curl postgresql-dev tzdata
+
+RUN ln -fs /usr/share/zoneinfo/Etc/UTC /etc/localtime
 
 RUN curl -sSL https://install.python-poetry.org | python3 -
 

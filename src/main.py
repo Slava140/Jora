@@ -10,10 +10,10 @@ from api.v1.users.routes import auth_router, users_router
 from api.v1.projects.routes import projects_router, tasks_router, comments_router
 from media.routes import router as media_router
 
-from config import settings
 from errors import AppError
 from logger import get_logger
 from app import app
+from scheduler import scheduler
 
 logger = get_logger('main')
 
@@ -84,13 +84,4 @@ def log_after_request(response: Response):
 def ok():
     return 'ok'
 
-
-if __name__ == '__main__':
-    logger.info('Start app...')
-    try:
-        app.run(debug=settings.APP_DEBUG, port=8000, host=settings.APP_HOST)
-        logger.info('App is running')
-    except Exception as e:
-        logger.error(str(e))
-        logger.debug(traceback.format_exc())
-        raise
+scheduler.start()

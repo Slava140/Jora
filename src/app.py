@@ -8,6 +8,7 @@ from pydantic import ValidationError
 
 from config import settings
 from database import db
+from scheduler import scheduler
 from global_schemas import jwt_schema, ValidationErrorS
 
 
@@ -45,6 +46,7 @@ app.config['DRAMATIQ_BROKER'] = 'dramatiq.brokers.redis:RedisBroker'
 app.config['DRAMATIQ_BROKER_URL'] = settings.redis_url
 
 db.init_app(app)
+scheduler.init_app(app)
 
 dramatiq = Dramatiq(app)
 JWTManager(app)
