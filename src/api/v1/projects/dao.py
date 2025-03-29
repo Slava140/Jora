@@ -12,7 +12,7 @@ from api.v1.projects.schemas import (
     CreateCommentS, ReadCommentS, FilterTaskQS, ReadTaskWithMedia
 )
 
-from api.v1.users.dao import UserDAO
+from api.v1.users.services import UserService
 from errors import WasNotFoundError
 from database import db
 
@@ -31,7 +31,7 @@ class ProjectDAO:
         ).returning('*')
 
         with db.session.begin(nested=True):
-            if UserDAO.get_one_by_id_or_none(project.owner_id) is None:
+            if UserService.get_one_by_id_or_none(project.owner_id) is None:
                 raise WasNotFoundError(f'Owner user with id {project.owner_id}')
 
             result = db.session.execute(stmt).mappings().one()
@@ -141,7 +141,7 @@ class TaskDAO:
         ).returning('*')
 
         with db.session.begin(nested=True):
-            if UserDAO.get_one_by_id_or_none(task.author_id) is None:
+            if UserService.get_one_by_id_or_none(task.author_id) is None:
                 raise WasNotFoundError(f'Author user with id {task.author_id}')
 
             if ProjectDAO.get_one_by_id_or_none(task.project_id) is None:
@@ -223,7 +223,7 @@ class TaskDAO:
             if task is None:
                 raise WasNotFoundError(f'Task with id {task_id}')
 
-            assignee = UserDAO.get_one_by_id_or_none(updated_task.assignee_id)
+            assignee = UserService.get_one_by_id_or_none(updated_task.assignee_id)
             # Если исполнитель указан, но не найден
             if assignee is None and updated_task.assignee_id is not None:
                 raise WasNotFoundError(f'User with id {updated_task.assignee_id}')
@@ -286,7 +286,7 @@ class CommentDAO:
         ).returning('*')
 
         with db.session.begin(nested=True):
-            if UserDAO.get_one_by_id_or_none(comment.author_id) is None:
+            if UserService.get_one_by_id_or_none(comment.author_id) is None:
                 raise WasNotFoundError(f"Author user with id {comment.author_id}")
 
             if TaskDAO.get_one_by_id_or_none(comment.task_id) is None:

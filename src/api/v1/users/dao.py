@@ -1,12 +1,10 @@
 from typing import Any
 
-from flask import g
 from sqlalchemy import insert, select, update
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 
 from api.v1.users.models import UserM
 from api.v1.users.schemas import CreateUserS, ReadUserS, BaseUserS, FullUserS
-from security import get_hashed_password
 from errors import AlreadyExistsError, WasNotFoundError
 from database import db
 from logger import get_logger
@@ -48,6 +46,8 @@ class UserDAO:
         """
         :except AlreadyExistsError
         """
+        from security import get_hashed_password
+
         stmt = insert(
             UserM
         ).values(

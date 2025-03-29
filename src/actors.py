@@ -8,7 +8,7 @@ from security import security
 from api.v1.projects.services import TaskService, ProjectService
 from app import dramatiq
 from config import settings
-from utils import compress_text, compress_image, send_email
+from utils import compress_text, compress_image, Mail
 
 broker = dramatiq.broker
 
@@ -64,4 +64,5 @@ def send_notification_actor(
         project_title=project.title,
         task_url=task_url
     )
-    send_email(recipient=recipient.email, subject=subject, content=email_content, content_type='html')
+    mail = Mail()
+    mail.send(recipient=recipient.email, subject=subject, content=email_content, content_type='html')

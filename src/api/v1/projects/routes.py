@@ -1,6 +1,6 @@
 from flask import jsonify
 from flask_openapi3 import APIBlueprint, Tag
-from flask_security import permissions_accepted, roles_accepted, current_user
+from flask_security import permissions_accepted, current_user
 
 from api.v1.projects.services import ProjectService, TaskService, CommentService
 from api.v1.projects.schemas import (
@@ -120,7 +120,7 @@ def delete_task_by_id(path: TaskPath):
 
 @comments_router.post('/', responses={201: ReadCommentS, 404: ErrorS})
 @jwt_required()
-@roles_accepted('admin', 'user')
+@permissions_accepted('comment-write')
 def add_comment(body: RequestBodyOfCommentS):
     comment_schema_with_author = CreateCommentS(author_id=current_user.id, **body.model_dump())
     created_comment = CommentService.add(comment_schema_with_author)
@@ -129,7 +129,7 @@ def add_comment(body: RequestBodyOfCommentS):
 
 @comments_router.get('/', responses={200: ReadCommentS, 400: ErrorS})
 @jwt_required()
-@roles_accepted('admin', 'user')
+@permissions_accepted('comment-read')
 def get_comments(query: PaginationQS):
     comments = CommentService.get_many(query.limit, query.page)
     return jsonify([comment.model_dump() for comment in comments]), 200
@@ -137,7 +137,7 @@ def get_comments(query: PaginationQS):
 
 @comments_router.get('/<int:comment_id>/', responses={200: ReadCommentS, 404: ErrorS})
 @jwt_required()
-@roles_accepted('admin', 'user')
+@permissions_accepted('comment-read')
 def get_comment_by_id(path: CommentPath):
     comment = CommentService.get_one_by_id_or_none(path.comment_id)
     if comment is None:

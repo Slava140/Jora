@@ -33,14 +33,21 @@ with app.app_context():
         description='admin role',
         permissions={'user-read', 'user-write',
                      'project-read', 'project-write',
-                     'task-read', 'task-write'}
+                     'task-read', 'task-write',
+                     'comment-read', 'comment-write'}
     )
     security.datastore.find_or_create_role(
         name='user',
         description='user role',
         permissions={'user-read',
                      'project-read',
-                     'task-read', 'task-write'}
+                     'task-read', 'task-write',
+                     'comment-read', 'comment-write'}
+    )
+    security.datastore.find_or_create_role(
+        name='bot',
+        description='bot role',
+        permissions={'task-write', 'comment-write'}
     )
     security.datastore.commit()
 

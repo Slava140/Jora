@@ -25,6 +25,9 @@ class Settings(BaseSettings):
     MAIL_PORT: int
     MAIL_USER: EmailStr
     MAIL_PASS: str
+    READ_MAILBOX: str
+    MAIL_PROJECT_ID: int
+    BOT_USER_ID: int
 
     JWT_SECRET: str
     ACCESS_TOKEN_TTL: int

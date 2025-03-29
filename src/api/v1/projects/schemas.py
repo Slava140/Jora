@@ -1,7 +1,6 @@
-from datetime import datetime, date
-from typing import Optional
+from datetime import date
 
-from pydantic import BaseModel, NonNegativeInt, Field
+from pydantic import BaseModel, NonNegativeInt, Field, EmailStr
 
 from base_pydantic_types import UTCDatetime, StrFrom3To255, Str500, StrTaskStatus
 from global_schemas import PaginationQS
@@ -69,6 +68,11 @@ class ReadTaskWithMedia(ReadTaskS):
 
 class CreateTaskS(RequestBodyOfTaskS):
     author_id:      NonNegativeInt
+
+
+class CreateTaskFromEmailS(CreateTaskS):
+    email_uid:      int
+    email_author:   EmailStr
 
 
 class UpdateTaskS(BaseModel):
