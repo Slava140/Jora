@@ -1,3 +1,4 @@
+import pprint
 from datetime import date
 
 from pydantic import BaseModel, NonNegativeInt, Field, EmailStr
@@ -32,6 +33,10 @@ class CreateProjectS(BaseProjectS):
 
 class UpdateProjectS(BaseProjectS):
     ...
+
+
+class ExportProjectS(CreateProjectS):
+    tasks: list["ExportTaskS"]
 
 
 class ProjectPath(BaseModel):
@@ -80,6 +85,17 @@ class UpdateTaskS(BaseModel):
     status:         StrTaskStatus
 
 
+class ExportTaskS(BaseModel):
+    title:          StrFrom3To255
+    description:    str
+    status:         StrTaskStatus
+    due_date:       UTCDatetime | None = None
+    author_id:      NonNegativeInt
+    assignee_id:    NonNegativeInt | None = None
+    media:          list[str]
+    comments:       list["ExportCommentS"]
+
+
 class FilterTaskQS(PaginationQS):
     project_id:     NonNegativeInt | None = None
     status:         StrTaskStatus | None = None
@@ -114,6 +130,16 @@ class ReadCommentS(BaseCommentS):
     id:             NonNegativeInt
     created_at:     UTCDatetime
     author_id:      NonNegativeInt
+
+
+class ExportCommentS(BaseModel):
+    content:    str
+    author_id:  NonNegativeInt
+
+
+class FilterCommentQS(PaginationQS):
+    task_id:    NonNegativeInt | None = None
+    author_id:  NonNegativeInt | None = None
 
 
 class CommentPath(BaseModel):

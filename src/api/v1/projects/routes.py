@@ -7,6 +7,7 @@ from api.v1.projects.schemas import (
     CreateProjectS, ReadProjectS, RequestBodyOfProjectS, UpdateProjectS, ProjectPath,
     CreateTaskS, ReadTaskS, RequestBodyOfTaskS, UpdateTaskS,
     CreateCommentS, ReadCommentS, RequestBodyOfCommentS, FilterTaskQS, TaskPath, CommentPath, ReadTaskWithMedia,
+    FilterCommentQS, ExportProjectS,
 )
 from errors import WasNotFoundError
 from global_schemas import PaginationQS, security_schemas, ErrorS
@@ -74,6 +75,15 @@ def delete_project_by_id(path: ProjectPath):
     return jsonify(), 204
 
 
+@projects_router.get('/<int:project_id>/export/', responses={200: ExportProjectS, 404: ErrorS})
+@jwt_required()
+@permissions_accepted('project-read')
+def export(path: ProjectPath):
+    exported_project = ProjectService.export(path.project_id)
+    return jsonify(**exported_project.model_dump()), 200
+
+
+
 @tasks_router.post('/', responses={201: ReadTaskS, 404: ErrorS})
 @jwt_required()
 @permissions_accepted('task-write')
@@ -130,8 +140,8 @@ def add_comment(body: RequestBodyOfCommentS):
 @comments_router.get('/', responses={200: ReadCommentS, 400: ErrorS})
 @jwt_required()
 @permissions_accepted('comment-read')
-def get_comments(query: PaginationQS):
-    comments = CommentService.get_many(query.limit, query.page)
+def get_comments(query: FilterCommentQS):
+    comments = CommentService.get_many(filter_schema=query)
     return jsonify([comment.model_dump() for comment in comments]), 200
 
 

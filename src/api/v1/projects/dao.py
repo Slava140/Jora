@@ -9,7 +9,7 @@ from api.v1.projects.models import ProjectM, TaskM, CommentM, Status
 from api.v1.projects.schemas import (
     CreateProjectS, ReadProjectS, UpdateProjectS,
     CreateTaskS, ReadTaskS, UpdateTaskS,
-    CreateCommentS, ReadCommentS, FilterTaskQS, ReadTaskWithMedia
+    CreateCommentS, ReadCommentS, FilterTaskQS, ReadTaskWithMedia, FilterCommentQS
 )
 
 from api.v1.users.services import UserService
@@ -153,7 +153,7 @@ class TaskDAO:
         return ReadTaskS(**result)
 
     @staticmethod
-    def get_many(filter_schema: FilterTaskQS) -> tuple[ReadTaskS, ...]:
+    def get_many(filter_schema: FilterTaskQS) -> list[ReadTaskWithMedia]:
         where_conditions = []
         if filter_schema.project_id is not None: where_conditions.append(TaskM.project_id == filter_schema.project_id)
         if filter_schema.status is not None: where_conditions.append(TaskM.status == filter_schema.status)
@@ -171,9 +171,27 @@ class TaskDAO:
             TaskM.is_archived.is_(False),
             *where_conditions
         ).limit(filter_schema.limit).offset((filter_schema.page - 1) * filter_schema.limit)
-        result = db.session.execute(query).scalars().fetchall()
 
-        return tuple(ReadTaskS(**data.to_dict()) for data in result)
+        result = db.session.execute(query).scalars().fetchall()
+        task_dicts = []
+        for task in result:
+            task_dict = task.to_dict()
+            media_list = []
+            for m in task.media:
+                if m.has_original:
+                    media_list.append(
+                        url_for('media.get_media_by_id', media_id=m.id, original=True)
+                    )
+
+                media_list.append(
+                    url_for('media.get_media_by_id', media_id=m.id, original=False)
+                )
+
+            task_dict['media'] = media_list
+            task_dicts.append(task_dict)
+
+
+        return [ReadTaskWithMedia(**task_dict) for task_dict in task_dicts]
 
     @staticmethod
     def get_one_by_id_or_none(task_id: int) -> ReadTaskWithMedia | None:
@@ -298,12 +316,17 @@ class CommentDAO:
         return ReadCommentS(**result)
 
     @staticmethod
-    def get_many(limit: int, page: int) -> tuple[ReadCommentS, ...]:
+    def get_many(filter_schema: FilterCommentQS) -> tuple[ReadCommentS, ...]:
+        where_conditions = []
+        if filter_schema.task_id is not None: where_conditions.append(CommentM.task_id == filter_schema.task_id)
+        if filter_schema.author_id is not None: where_conditions.append(CommentM.author_id == filter_schema.author_id)
+
         query = select(
             CommentM
         ).where(
-            CommentM.is_archived.is_(False)
-        ).limit(limit).offset((page - 1) * limit)
+            CommentM.is_archived.is_(False),
+            *where_conditions
+        ).limit(filter_schema.limit).offset((filter_schema.page - 1) * filter_schema.limit)
         result = db.session.execute(query).scalars().fetchall()
 
         return tuple(ReadCommentS(**model.to_dict()) for model in result)

@@ -5,7 +5,8 @@ from api.v1.projects.models import Status
 from api.v1.projects.schemas import (
     CreateProjectS, ReadProjectS, UpdateProjectS,
     CreateTaskS, ReadTaskS, UpdateTaskS,
-    CreateCommentS, ReadCommentS, FilterTaskQS, ReadTaskWithMedia,
+    CreateCommentS, ReadCommentS, FilterTaskQS, ReadTaskWithMedia, ExportProjectS, FilterCommentQS, ExportTaskS,
+    ExportCommentS,
 )
 from flask_security import current_user
 from errors import MustBePositiveError, IncorrectRequestError, ForbiddenError, WasNotFoundError
@@ -43,6 +44,21 @@ class ProjectService:
     def delete_by_id(project_id: int) -> None:
         return ProjectDAO.delete_by_id(project_id)
 
+    @staticmethod
+    def export(project_id: int) -> ExportProjectS:
+        project = ProjectDAO.get_one_by_id_or_none(project_id)
+        tasks = TaskService.get_many(filter_schema=FilterTaskQS(project_id=project_id))
+        exported_tasks = []
+        for task in tasks:
+            comments = CommentService.get_many(filter_schema=FilterCommentQS(task_id=task.id))
+            exported_task = ExportTaskS(
+                **task.model_dump(),
+                comments=[ExportCommentS(**comment.model_dump()) for comment in comments]
+            )
+            exported_tasks.append(exported_task)
+
+        return ExportProjectS(**project.model_dump(), tasks=exported_tasks)
+
 
 class TaskService:
     @staticmethod
@@ -53,7 +69,7 @@ class TaskService:
         return TaskDAO.add(task)
 
     @staticmethod
-    def get_many(filter_schema: FilterTaskQS) -> tuple[ReadTaskS, ...]:
+    def get_many(filter_schema: FilterTaskQS) -> list[ReadTaskWithMedia]:
         """
         :except MustBePositiveError
         :except IncorrectRequestError
@@ -125,13 +141,13 @@ class CommentService:
         return CommentDAO.add(comment)
 
     @staticmethod
-    def get_many(limit: int, page: int) -> tuple[ReadCommentS, ...]:
+    def get_many(filter_schema: FilterCommentQS) -> tuple[ReadCommentS, ...]:
         """
         :except MustBePositiveError
         """
-        if limit <= 0 or page <= 0:
+        if filter_schema.limit <= 0 or filter_schema.page <= 0:
             raise MustBePositiveError('limit and page')
-        return CommentDAO.get_many(limit, page)
+        return CommentDAO.get_many(filter_schema)
 
     @staticmethod
     def get_one_by_id_or_none(comment_id: int) -> ReadCommentS | None:
