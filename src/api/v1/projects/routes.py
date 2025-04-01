@@ -1,4 +1,6 @@
-from flask import jsonify
+from tempfile import NamedTemporaryFile
+
+from flask import jsonify, send_file
 from flask_openapi3 import APIBlueprint, Tag
 from flask_security import permissions_accepted, current_user
 
@@ -78,10 +80,13 @@ def delete_project_by_id(path: ProjectPath):
 @projects_router.get('/<int:project_id>/export/', responses={200: ExportProjectS, 404: ErrorS})
 @jwt_required()
 @permissions_accepted('project-read')
-def export(path: ProjectPath):
+def export_project(path: ProjectPath):
     exported_project = ProjectService.export(path.project_id)
-    return jsonify(**exported_project.model_dump()), 200
 
+    with NamedTemporaryFile() as tmp:
+        tmp.write(exported_project.model_dump_json(indent=2).encode())
+        tmp.seek(0)
+        return send_file(tmp.name, mimetype='application/json', as_attachment=True, download_name='project.json')
 
 
 @tasks_router.post('/', responses={201: ReadTaskS, 404: ErrorS})
