@@ -1,6 +1,6 @@
-import pprint
 from datetime import date
 
+from flask_openapi3 import FileStorage
 from pydantic import BaseModel, NonNegativeInt, Field, EmailStr
 
 from base_pydantic_types import UTCDatetime, StrFrom3To255, Str500, StrTaskStatus
@@ -35,8 +35,12 @@ class UpdateProjectS(BaseProjectS):
     ...
 
 
-class ExportProjectS(CreateProjectS):
+class ExportProjectS(BaseProjectS):
     tasks: list["ExportTaskS"]
+
+
+class ImportProjectForm(BaseModel):
+    file: FileStorage
 
 
 class ProjectPath(BaseModel):

@@ -9,7 +9,7 @@ from api.v1.projects.models import ProjectM, TaskM, CommentM, Status
 from api.v1.projects.schemas import (
     CreateProjectS, ReadProjectS, UpdateProjectS,
     CreateTaskS, ReadTaskS, UpdateTaskS,
-    CreateCommentS, ReadCommentS, FilterTaskQS, ReadTaskWithMedia, FilterCommentQS
+    CreateCommentS, ReadCommentS, FilterTaskQS, ReadTaskWithMedia, FilterCommentQS, ExportProjectS
 )
 
 from api.v1.users.services import UserService
@@ -127,6 +127,47 @@ class ProjectDAO:
         TaskDAO.delete_all_tasks_with_project_ids(project_ids, transaction)
         db.session.commit()
 
+    @staticmethod
+    def import_(owner_id: int, schema: ExportProjectS):
+        create_project_schema = CreateProjectS(**schema.model_dump(exclude={'tasks'}), owner_id=owner_id)
+        insert_project_stmt = insert(ProjectM
+        ).values(
+            **create_project_schema.model_dump()
+        ).returning('*')
+
+        insert_tasks_stmt_without_values = insert(TaskM).returning('*')
+        insert_comments_stmt_without_values = insert(CommentM).returning('*')
+
+        create_task_dicts = []
+        tasks_comments = []
+        create_comment_dicts = []
+
+        with db.session.begin(nested=True):
+            if UserService.get_one_by_id_or_none(owner_id) is None:
+                raise WasNotFoundError(f'Owner user with id {owner_id}')
+
+            inserted_project_id = db.session.execute(insert_project_stmt).scalar()
+
+            for task in schema.tasks:
+                create_task_dicts.append(dict(
+                    **task.model_dump(exclude={'media', 'comments'}),
+                    project_id=inserted_project_id)
+                )
+                tasks_comments.append(task.comments)
+
+            insert_tasks_stmt = insert_tasks_stmt_without_values.values(create_task_dicts)
+            inserted_tasks_id = db.session.execute(insert_tasks_stmt).scalars().fetchall()
+
+            for task_id, comments in zip(inserted_tasks_id, tasks_comments):
+                create_comment_dicts += [
+                    dict(**comment.model_dump(), task_id=task_id)
+                    for comment in comments
+                ]
+
+            insert_comments_stmt = insert_comments_stmt_without_values.values(create_comment_dicts)
+            db.session.execute(insert_comments_stmt).scalars().fetchall()
+
+            db.session.commit()
 
 class TaskDAO:
     @staticmethod

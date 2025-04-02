@@ -1,4 +1,11 @@
+import json
+import os
+import tempfile
+from pathlib import Path
+
 from flask import url_for
+from flask_openapi3 import FileStorage
+from werkzeug.utils import secure_filename
 
 from api.v1.projects.dao import ProjectDAO, TaskDAO, CommentDAO
 from api.v1.projects.models import Status
@@ -9,7 +16,9 @@ from api.v1.projects.schemas import (
     ExportCommentS,
 )
 from flask_security import current_user
-from errors import MustBePositiveError, IncorrectRequestError, ForbiddenError, WasNotFoundError
+
+from errors import MustBePositiveError, IncorrectRequestError, ForbiddenError, WasNotFoundError, \
+    ExtensionsNotAllowedError
 
 
 class ProjectService:
@@ -59,6 +68,21 @@ class ProjectService:
 
         return ExportProjectS(**project.model_dump(), tasks=exported_tasks)
 
+    @staticmethod
+    def import_(file: FileStorage):
+        tmp_path = Path(tempfile.gettempdir())
+        destination_path = tmp_path / secure_filename(file.filename)
+
+        if destination_path.suffix != '.json':
+            raise ExtensionsNotAllowedError
+
+        file.save(destination_path)
+        with open(destination_path, 'r', encoding='utf-8') as imported_json:
+            json_str = json.load(imported_json)
+            imported_project = ExportProjectS.model_validate(json_str)
+            os.remove(destination_path)
+
+        ProjectDAO.import_(owner_id=current_user.id, schema=imported_project)
 
 class TaskService:
     @staticmethod

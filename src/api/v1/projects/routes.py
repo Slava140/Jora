@@ -1,15 +1,18 @@
+import tempfile
+from pathlib import Path
 from tempfile import NamedTemporaryFile
 
 from flask import jsonify, send_file
 from flask_openapi3 import APIBlueprint, Tag
 from flask_security import permissions_accepted, current_user
+from werkzeug.utils import secure_filename
 
 from api.v1.projects.services import ProjectService, TaskService, CommentService
 from api.v1.projects.schemas import (
     CreateProjectS, ReadProjectS, RequestBodyOfProjectS, UpdateProjectS, ProjectPath,
     CreateTaskS, ReadTaskS, RequestBodyOfTaskS, UpdateTaskS,
     CreateCommentS, ReadCommentS, RequestBodyOfCommentS, FilterTaskQS, TaskPath, CommentPath, ReadTaskWithMedia,
-    FilterCommentQS, ExportProjectS,
+    FilterCommentQS, ExportProjectS, ImportProjectForm,
 )
 from errors import WasNotFoundError
 from global_schemas import PaginationQS, security_schemas, ErrorS
@@ -87,6 +90,13 @@ def export_project(path: ProjectPath):
         tmp.write(exported_project.model_dump_json(indent=2).encode())
         tmp.seek(0)
         return send_file(tmp.name, mimetype='application/json', as_attachment=True, download_name='project.json')
+
+@projects_router.post('/import/')
+@jwt_required()
+@permissions_accepted('project-write')
+def import_project(form: ImportProjectForm):
+    ProjectService.import_(form.file)
+    return jsonify(), 201
 
 
 @tasks_router.post('/', responses={201: ReadTaskS, 404: ErrorS})
