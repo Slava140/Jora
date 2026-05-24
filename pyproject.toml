@@ -29,6 +29,7 @@ dramatiq = {extras = ["redis"], version = "^1.17.1"}
 flask-dramatiq = {extras = ["redis"], version = "^0.6.0"}
 pillow = "^11.1.0"
 flask-apscheduler = "^1.13.1"
+flask-cors = "^6.0.2"
 
 
 [build-system]

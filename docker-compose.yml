@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:latest
+    image: postgres:17
     container_name: postgres
     environment:
       POSTGRES_PASSWORD: ${DB_PASS}
@@ -8,6 +8,11 @@ services:
       - pg_data:/var/lib/postgresql/data
     ports:
       - ${DB_PORT}:5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   redis:
     image: redis:latest
@@ -28,7 +33,7 @@ services:
     env_file:
       - .env
     environment:
-      PYTHONPATH: 'src'
+      PYTHONPATH: src
       REDIS_HOST: redis
       REDIS_PORT: 6379
       DB_HOST: postgres
@@ -49,7 +54,7 @@ services:
     env_file:
       - .env
     environment:
-      PYTHONPATH: 'src'
+      PYTHONPATH: src
       REDIS_HOST: redis
       REDIS_PORT: 6379
       DB_HOST: postgres

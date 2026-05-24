@@ -1,7 +1,7 @@
 from sqlalchemy import insert, select
 
 from media.models import MediaM
-from media.schemas import ReadMediaS, MediaMetadataS, CreateMediaS
+from media.schemas import ReadMediaS, CreateMediaS
 
 from api.v1.users.services import UserService
 from api.v1.projects.services import TaskService
