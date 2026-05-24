@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from flask import make_response
+from flask_cors import CORS
 from flask_dramatiq import Dramatiq
 from flask_jwt_extended import JWTManager
 from flask_openapi3 import OpenAPI, Info
@@ -44,6 +45,8 @@ app.config["JWT_ACCESS_TOKEN_EXPIRES"] = settings.access_token_ttl_timedelta
 app.config['JWT_TOKEN_LOCATION'] = ['headers']
 app.config['DRAMATIQ_BROKER'] = 'dramatiq.brokers.redis:RedisBroker'
 app.config['DRAMATIQ_BROKER_URL'] = settings.redis_url
+
+CORS(app, origins=[settings.FRONTEND_ORIGIN], supports_credentials=False)
 
 db.init_app(app)
 scheduler.init_app(app)

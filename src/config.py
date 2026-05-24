@@ -35,6 +35,7 @@ class Settings(BaseSettings):
     APP_DEBUG: bool
     APP_HOST: str
     APP_PORT: int
+    FRONTEND_ORIGIN: str
 
     MEDIA_PATH: Path
     ALLOWED_TEXT_FILE_EXTENSIONS: set

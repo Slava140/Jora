@@ -36,3 +36,40 @@
    docker-compose down
    docker-compose up -d --build
    ```
+
+---
+
+## Frontend (Vue 3 + Vite)
+
+Веб-интерфейс в папке `frontend/` покрывает все сценарии API: вход, регистрация, проекты, задачи, комментарии, медиа, управление пользователями (admin).
+
+### Запуск
+
+1. Убедитесь, что API доступен на `http://localhost:8000` (см. `APP_PORT` в `.env`).
+
+2. Установите зависимости и запустите dev-сервер:
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
+
+3. Откройте в браузере адрес из вывода Vite (обычно `http://localhost:5173`).
+
+### Конфигурация
+
+- По умолчанию запросы идут через **Vite proxy** на API (`/api`, `/auth`, `/media` → `localhost:5000`).
+- Для прямых запросов к API создайте `frontend/.env`:
+  ```
+  VITE_API_BASE_URL=http://localhost:5000
+  ```
+- В корневом `.env` задайте `FRONTEND_ORIGIN=http://localhost:5173` для CORS (если не используете proxy).
+
+### Сборка
+
+```bash
+cd frontend
+npm run build
+```
+
+Артефакты — в `frontend/dist/`.
