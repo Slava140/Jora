@@ -47,8 +47,16 @@ def send_notification_actor(
         template_name: str = 'notification.html'
 ):
     recipient = security.datastore.find_user(id=recipient_user_id)
+    if not recipient:
+        return None
+
     task = TaskService.get_one_by_id_or_none(task_id)
-    project = ProjectService.get_one_by_id_or_none(task.project_id)
+    if not task:
+        return None
+
+    project = ProjectService.get_one_by_id_or_none(user_id=recipient_user_id, project_id=task.project_id)
+    if not project:
+        return None
 
     if task.due_date:
         due_date_str = task.due_date.strftime('%d.%m.%Y %X (%Z)')

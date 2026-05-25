@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from typing import Sequence
 
 from flask import url_for
-from sqlalchemy import insert, select, update
+from sqlalchemy import insert, select, update, delete, and_, or_, text
 from sqlalchemy.orm import SessionTransaction
 
 from api.v1.projects.models import ProjectM, TaskM, CommentM, Status
@@ -11,9 +11,10 @@ from api.v1.projects.schemas import (
     CreateTaskS, ReadTaskS, UpdateTaskS,
     CreateCommentS, ReadCommentS, FilterTaskQS, ReadTaskWithMedia, FilterCommentQS, ExportProjectS
 )
+from api.v1.projects.sql import ProjectSQL
 
 from api.v1.users.services import UserService
-from errors import WasNotFoundError
+from errors import WasNotFoundError, ForbiddenError
 from database import db
 
 
@@ -40,12 +41,17 @@ class ProjectDAO:
         return ReadProjectS(**result)
 
     @staticmethod
-    def get_many(limit: int, page: int) -> tuple[ReadProjectS, ...]:
+    def get_many(user_id: int, limit: int, page: int) -> tuple[ReadProjectS, ...]:
         query = select(
             ProjectM
-        ).where(
-            ProjectM.is_archived.is_(False)
-        ).limit(limit).offset((page - 1) * limit)
+        ).from_statement(
+            ProjectSQL.get_many(
+                user_id=user_id,
+                limit=limit,
+                offset=(page - 1) * limit
+            )
+        )
+
         result = db.session.execute(query).scalars().fetchall()
 
         return tuple(ReadProjectS(**data.to_dict()) for data in result)
@@ -61,17 +67,25 @@ class ProjectDAO:
 
         result = db.session.execute(query).scalar_one_or_none()
 
-        return ReadProjectS(**result.to_dict()) if result is not None else None
+        return ReadProjectS(**result.to_dict()) if result else None
 
     @staticmethod
-    def update_by_id(project_id: int, updated_project: UpdateProjectS) -> ReadProjectS:
-        """
-        :except WasNotFoundError
-        """
+    def get_users(project_id: int) -> tuple[int, ...]:
+        result = db.session.execute(
+            ProjectSQL.get_users(project_id=project_id)
+        ).scalars().fetchall()
+
+        return tuple(result)
+
+    @staticmethod
+    def update_by_id(user_id: int, project_id: int, updated_project: UpdateProjectS) -> ReadProjectS | None:
         stmt = update(
             ProjectM
         ).where(
-            ProjectM.id == project_id
+            and_(
+                ProjectM.owner_id == user_id,
+                ProjectM.id == project_id,
+            )
         ).values(
             **updated_project.model_dump()
         ).returning('*')
@@ -79,10 +93,14 @@ class ProjectDAO:
         with db.session.begin(nested=True):
             project = ProjectDAO.get_one_by_id_or_none(project_id)
 
-            if project is None:
+            if not project:
                 raise WasNotFoundError(f'Project with id {project_id}')
 
-            result = db.session.execute(stmt).mappings().one()
+            if user_id != project.owner_id:
+                raise ForbiddenError()
+
+            result = db.session.execute(stmt).mappings().one_or_none()
+
             db.session.commit()
 
         return ReadProjectS(**result)
@@ -113,11 +131,12 @@ class ProjectDAO:
             db.session.commit()
 
     @staticmethod
-    def delete_by_id(project_id: int) -> None:
+    def delete_by_id(user_id: int, project_id: int) -> None:
         stmt = update(
             ProjectM
         ).where(
-            ProjectM.id == project_id
+            ProjectM.id == project_id,
+            ProjectM.owner_id == user_id,
         ).values(
             is_archived=True
         ).returning(ProjectM.id)
@@ -182,10 +201,10 @@ class TaskDAO:
         ).returning('*')
 
         with db.session.begin(nested=True):
-            if UserService.get_one_by_id_or_none(task.author_id) is None:
+            if not UserService.get_one_by_id_or_none(task.author_id):
                 raise WasNotFoundError(f'Author user with id {task.author_id}')
 
-            if ProjectDAO.get_one_by_id_or_none(task.project_id) is None:
+            if not ProjectDAO.get_one_by_id_or_none(task.project_id):
                 raise WasNotFoundError(f'Project with id {task.project_id}')
 
             result = db.session.execute(stmt).mappings().one()
@@ -194,7 +213,7 @@ class TaskDAO:
         return ReadTaskS(**result)
 
     @staticmethod
-    def get_many(filter_schema: FilterTaskQS) -> list[ReadTaskWithMedia]:
+    def get_many(user_id: int, filter_schema: FilterTaskQS) -> list[ReadTaskWithMedia]:
         where_conditions = []
         if filter_schema.project_id is not None: where_conditions.append(TaskM.project_id == filter_schema.project_id)
         if filter_schema.status is not None: where_conditions.append(TaskM.status == filter_schema.status)
@@ -210,6 +229,10 @@ class TaskDAO:
             TaskM
         ).where(
             TaskM.is_archived.is_(False),
+            or_(
+                TaskM.assignee_id == user_id,
+                TaskM.author_id == user_id,
+            ),
             *where_conditions
         ).limit(filter_schema.limit).offset((filter_schema.page - 1) * filter_schema.limit)
 
@@ -240,7 +263,7 @@ class TaskDAO:
             TaskM
         ).where(
             TaskM.id == task_id,
-            TaskM.is_archived.is_(False)
+            TaskM.is_archived.is_(False),
         )
 
         result = db.session.execute(query).scalar_one_or_none()
@@ -318,11 +341,13 @@ class TaskDAO:
             db.session.commit()
 
     @staticmethod
-    def delete_by_id(task_id: int) -> None:
+    def delete_by_id(user_id: int, task_id: int) -> None:
         stmt = update(
             TaskM
         ).where(
-            TaskM.id == task_id
+            TaskM.id == task_id,
+            or_(TaskM.author_id == user_id,
+                TaskM.assignee_id == user_id,)
         ).values(
             is_archived=True
         ).returning(TaskM.id)
@@ -406,3 +431,10 @@ class CommentDAO:
 
         transaction.session.execute(stmt)
         db.session.commit()
+
+
+if __name__ == '__main__':
+    from app import app
+
+    with app.app_context():
+        print(ProjectDAO().get_users())

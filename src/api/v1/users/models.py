@@ -21,4 +21,8 @@ class UserM(Base, fsqla.UserMixin):
     update_datetime:    Mapped[updated_at]
     fs_uniquifier:      Mapped[str_255_unique]
 
-    roles = db.relationship('RoleM', secondary='roles_users', backref=db.backref('users', lazy='dynamic'))
+    roles = db.relationship(
+        'RoleM',
+        secondary='roles_users',
+        backref=db.backref('users', lazy='dynamic')
+    )

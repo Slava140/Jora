@@ -30,28 +30,38 @@ class ProjectService:
         return ProjectDAO.add(project)
 
     @staticmethod
-    def get_many(limit: int, page: int) -> tuple[ReadProjectS, ...]:
+    def get_many(user_id: int, limit: int, page: int) -> tuple[ReadProjectS, ...]:
         """
         :except MustBePositiveError
         """
         if limit <= 0 or page <= 0:
             raise MustBePositiveError('limit and page')
-        return ProjectDAO.get_many(limit, page)
+
+        return ProjectDAO.get_many(user_id, limit, page)
 
     @staticmethod
-    def get_one_by_id_or_none(project_id: int) -> ReadProjectS | None:
-        return ProjectDAO.get_one_by_id_or_none(project_id)
+    def get_one_by_id_or_none(user_id: int, project_id: int) -> ReadProjectS | None:
+        project = ProjectDAO.get_one_by_id_or_none(project_id=project_id)
+        if not project:
+            return None
+
+        project_users = ProjectDAO.get_users(project_id=project_id)
+        if user_id not in project_users:
+            return None
+
+        return project
 
     @staticmethod
-    def update_by_id(project_id: int, updated_project: UpdateProjectS) -> ReadProjectS:
-        """
-        :except WasNotFoundError
-        """
-        return ProjectDAO.update_by_id(project_id, updated_project)
+    def update_by_id(user_id: int, project_id: int, updated_project: UpdateProjectS) -> ReadProjectS | None:
+        return ProjectDAO.update_by_id(
+            user_id=user_id,
+            project_id=project_id,
+            updated_project=updated_project,
+        )
 
     @staticmethod
-    def delete_by_id(project_id: int) -> None:
-        return ProjectDAO.delete_by_id(project_id)
+    def delete_by_id(user_id: int, project_id: int) -> None:
+        ProjectDAO.delete_by_id(user_id, project_id)
 
     @staticmethod
     def export(project_id: int) -> ExportProjectS:
@@ -86,14 +96,17 @@ class ProjectService:
 
 class TaskService:
     @staticmethod
-    def add(task: CreateTaskS) -> ReadTaskS:
+    def add(user_id: int, task: CreateTaskS) -> ReadTaskS:
         """
         :except WasNotFoundError
         """
-        return TaskDAO.add(task)
+        project_users = ProjectDAO.get_users(project_id=task.project_id)
+        if user_id not in project_users:
+            raise ForbiddenError()
+        return TaskDAO.add(task=task)
 
     @staticmethod
-    def get_many(filter_schema: FilterTaskQS) -> list[ReadTaskWithMedia]:
+    def get_many(user_id: int, filter_schema: FilterTaskQS) -> list[ReadTaskWithMedia]:
         """
         :except MustBePositiveError
         :except IncorrectRequestError
@@ -105,22 +118,30 @@ class TaskService:
             filter_schema.from_ is not None and filter_schema.to is None):
             raise IncorrectRequestError('from and to parameters must be filled or empty')
 
-        return TaskDAO.get_many(filter_schema)
+        return TaskDAO.get_many(user_id=user_id, filter_schema=filter_schema)
 
     @staticmethod
-    def get_one_by_id_or_none(task_id: int) -> ReadTaskWithMedia | None:
-        return TaskDAO.get_one_by_id_or_none(task_id)
-
-    @staticmethod
-    def update_by_id(task_id: int, body: UpdateTaskS) -> ReadTaskS:
+    def get_one_by_id_or_none(user_id: int, task_id: int) -> ReadTaskWithMedia | None:
         task = TaskDAO.get_one_by_id_or_none(task_id)
+        if not task:
+            return None
 
-        if task is None:
-            raise WasNotFoundError('Task')
+        if user_id in (task.author_id, task.assignee_id):
+            return task
+        else:
+            return None
 
-        is_current_user_author_or_admin = current_user.id == task.author_id or 'admin' in current_user.roles
-        is_current_user_assignee = current_user.id == task.assignee_id
-        if not is_current_user_author_or_admin and not is_current_user_assignee:
+    @staticmethod
+    def update_by_id(user_id: int, task_id: int, body: UpdateTaskS) -> ReadTaskS:
+        task = TaskDAO.get_one_by_id_or_none(task_id)
+        if not task:
+            raise WasNotFoundError(f'Task with id {task_id}')
+
+        project = ProjectDAO.get_one_by_id_or_none(task.project_id)
+        if not project:
+            raise WasNotFoundError(f'Project with id {task_id}')
+
+        if user_id not in (task.author_id, task.assignee_id, project.owner_id):
             raise ForbiddenError()
 
         updated_task = TaskDAO.update_by_id(task_id, body)
@@ -147,13 +168,8 @@ class TaskService:
         return updated_task
 
     @staticmethod
-    def delete_by_id(task_id: int) -> None:
-        task = TaskDAO.get_one_by_id_or_none(task_id)
-        if task is None:
-            return None
-        if task.author_id != current_user.id and 'admin' not in current_user.roles:
-            raise ForbiddenError()
-        return TaskDAO.delete_by_id(task_id)
+    def delete_by_id(user_id: int, task_id: int) -> None:
+        TaskDAO.delete_by_id(user_id=user_id, task_id=task_id)
 
 
 class CommentService:
@@ -176,3 +192,10 @@ class CommentService:
     @staticmethod
     def get_one_by_id_or_none(comment_id: int) -> ReadCommentS | None:
         return CommentDAO.get_one_by_id_or_none(comment_id)
+
+
+if __name__ == '__main__':
+    from app import app
+
+    with app.app_context():
+        print(ProjectService().get_one_by_id_or_none(2, 1))
