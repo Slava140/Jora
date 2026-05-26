@@ -14,6 +14,7 @@ from api.v1.projects.schemas import (
     CreateCommentS, ReadCommentS, RequestBodyOfCommentS, FilterTaskQS, TaskPath, CommentPath, ReadTaskWithMedia,
     FilterCommentQS, ExportProjectS, ImportProjectForm,
 )
+from api.v1.users.schemas import ReadUserS
 from errors import WasNotFoundError
 from global_schemas import PaginationQS, security_schemas, ErrorS
 from security import jwt_required
@@ -70,17 +71,14 @@ def get_project_by_id(path: ProjectPath):
     return jsonify(project.model_dump()), 200
 
 
-@projects_router.get('/<int:project_id>/users', responses={200: ReadProjectS, 404: ErrorS})
+@projects_router.get('/<int:project_id>/users', responses={200: ReadUserS, 404: ErrorS})
 @jwt_required()
 def get_project_users(path: ProjectPath):
     users = ProjectService.get_users(
         user_id=current_user.id,
         project_id=path.project_id,
     )
-    # if project is None:
-    #     raise WasNotFoundError(f'Project with id {path.project_id}')
-    #
-    # return jsonify(project.model_dump()), 200
+    return jsonify([u.model_dump() for u in users]), 200
 
 
 @projects_router.put('/<int:project_id>/', responses={200: ReadProjectS, 404: ErrorS})
