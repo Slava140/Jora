@@ -52,6 +52,16 @@ class ProjectService:
         return project
 
     @staticmethod
+    def get_users(user_id: int, project_id: int) -> tuple[int, ...]:
+        project_users = ProjectDAO.get_users(project_id=project_id)
+        if user_id in project_users:
+            return project_users
+
+        else:
+            raise ForbiddenError()
+
+
+    @staticmethod
     def update_by_id(user_id: int, project_id: int, updated_project: UpdateProjectS) -> ReadProjectS | None:
         return ProjectDAO.update_by_id(
             user_id=user_id,
@@ -174,24 +184,51 @@ class TaskService:
 
 class CommentService:
     @staticmethod
-    def add(comment: CreateCommentS) -> ReadCommentS:
+    def add(user_id: int, comment: CreateCommentS) -> ReadCommentS:
         """
         :except WasNotFoundError
         """
+        task = TaskDAO.get_one_by_id_or_none(task_id=comment.task_id)
+        if not task:
+            raise WasNotFoundError(f'Task with id {comment.task_id}')
+
+        project_users = ProjectDAO.get_users(project_id=task.project_id)
+
+        if user_id not in project_users:
+            raise ForbiddenError()
         return CommentDAO.add(comment)
 
     @staticmethod
-    def get_many(filter_schema: FilterCommentQS) -> tuple[ReadCommentS, ...]:
+    def get_many(user_id: int, filter_schema: FilterCommentQS) -> tuple[ReadCommentS, ...]:
         """
         :except MustBePositiveError
         """
         if filter_schema.limit <= 0 or filter_schema.page <= 0:
             raise MustBePositiveError('limit and page')
-        return CommentDAO.get_many(filter_schema)
+        return CommentDAO.get_many(
+            user_id=user_id,
+            filter_schema=filter_schema,
+        )
 
     @staticmethod
-    def get_one_by_id_or_none(comment_id: int) -> ReadCommentS | None:
-        return CommentDAO.get_one_by_id_or_none(comment_id)
+    def get_one_by_id_or_none(user_id: int, comment_id: int) -> ReadCommentS | None:
+        comment = CommentDAO.get_one_by_id_or_none(comment_id=comment_id)
+        if not comment:
+            return None
+
+        task = TaskService.get_one_by_id_or_none(user_id=user_id, task_id=comment.task_id)
+        if not task:
+            raise WasNotFoundError(f'Task with id {comment.task_id}')
+
+        project_users = ProjectService.get_users(
+            user_id=user_id,
+            project_id=task.project_id
+        )
+
+        if user_id not in project_users:
+            raise ForbiddenError()
+
+        return comment
 
 
 if __name__ == '__main__':

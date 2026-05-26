@@ -382,7 +382,7 @@ class CommentDAO:
         return ReadCommentS(**result)
 
     @staticmethod
-    def get_many(filter_schema: FilterCommentQS) -> tuple[ReadCommentS, ...]:
+    def get_many(user_id: int, filter_schema: FilterCommentQS) -> tuple[ReadCommentS, ...]:
         where_conditions = []
         if filter_schema.task_id is not None: where_conditions.append(CommentM.task_id == filter_schema.task_id)
         if filter_schema.author_id is not None: where_conditions.append(CommentM.author_id == filter_schema.author_id)
@@ -391,6 +391,10 @@ class CommentDAO:
             CommentM
         ).where(
             CommentM.is_archived.is_(False),
+            or_(
+                TaskM.assignee_id == user_id,
+                TaskM.author_id == user_id,
+            ),
             *where_conditions
         ).limit(filter_schema.limit).offset((filter_schema.page - 1) * filter_schema.limit)
         result = db.session.execute(query).scalars().fetchall()

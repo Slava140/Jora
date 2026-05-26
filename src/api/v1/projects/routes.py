@@ -115,7 +115,6 @@ def import_project(form: ImportProjectForm):
 
 @tasks_router.post('/', responses={201: ReadTaskS, 404: ErrorS})
 @jwt_required()
-# @permissions_accepted('task-write')
 def add_task(body: RequestBodyOfTaskS):
     task_schema_with_author = CreateTaskS(author_id=current_user.id, **body.model_dump())
     created_task = TaskService.add(
@@ -127,7 +126,6 @@ def add_task(body: RequestBodyOfTaskS):
 
 @tasks_router.get('/', responses={200: ReadTaskS, 400: ErrorS})
 @jwt_required()
-# @permissions_accepted('task-read')
 def get_tasks(query: FilterTaskQS):
     tasks = TaskService.get_many(user_id=current_user.id, filter_schema=query)
     return jsonify([task.model_dump() for task in tasks]), 200
@@ -135,7 +133,6 @@ def get_tasks(query: FilterTaskQS):
 
 @tasks_router.get('/<int:task_id>/', responses={200: ReadTaskWithMedia, 404: ErrorS})
 @jwt_required()
-# @permissions_accepted('task-read')
 def get_task_by_id(path: TaskPath):
     task = TaskService.get_one_by_id_or_none(
         user_id=current_user.id,
@@ -149,7 +146,6 @@ def get_task_by_id(path: TaskPath):
 
 @tasks_router.put('/<int:task_id>/', responses={201: ReadTaskS, 404: ErrorS})
 @jwt_required()
-# @permissions_accepted('task-write')
 def update_task_by_id(path: TaskPath, body: UpdateTaskS):
     task = TaskService.update_by_id(
         user_id=current_user.id,
@@ -161,7 +157,6 @@ def update_task_by_id(path: TaskPath, body: UpdateTaskS):
 
 @tasks_router.delete('/<int:task_id>/', responses={204: None})
 @jwt_required()
-# @permissions_accepted('task-write')
 def delete_task_by_id(path: TaskPath):
     TaskService.delete_by_id(
         user_id=current_user.id,
@@ -172,26 +167,32 @@ def delete_task_by_id(path: TaskPath):
 
 @comments_router.post('/', responses={201: ReadCommentS, 404: ErrorS})
 @jwt_required()
-@permissions_accepted('comment-write')
 def add_comment(body: RequestBodyOfCommentS):
     comment_schema_with_author = CreateCommentS(author_id=current_user.id, **body.model_dump())
-    created_comment = CommentService.add(comment_schema_with_author)
+    created_comment = CommentService.add(
+        user_id=current_user.id,
+        comment=comment_schema_with_author
+    )
     return jsonify(created_comment.model_dump()), 201
 
 
 @comments_router.get('/', responses={200: ReadCommentS, 400: ErrorS})
 @jwt_required()
-@permissions_accepted('comment-read')
 def get_comments(query: FilterCommentQS):
-    comments = CommentService.get_many(filter_schema=query)
+    comments = CommentService.get_many(
+        user_id=current_user.id,
+        filter_schema=query
+    )
     return jsonify([comment.model_dump() for comment in comments]), 200
 
 
 @comments_router.get('/<int:comment_id>/', responses={200: ReadCommentS, 404: ErrorS})
 @jwt_required()
-@permissions_accepted('comment-read')
 def get_comment_by_id(path: CommentPath):
-    comment = CommentService.get_one_by_id_or_none(path.comment_id)
+    comment = CommentService.get_one_by_id_or_none(
+        user_id=current_user.id,
+        comment_id=path.comment_id
+    )
     if comment is None:
         raise WasNotFoundError(f'Comment with id {path.comment_id}')
 
