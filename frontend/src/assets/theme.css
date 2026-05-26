@@ -1,0 +1,27 @@
+:root {
+  --jora-bg: #f4f5f7;
+  --jora-surface: #ffffff;
+  --jora-border: #dfe1e6;
+  --jora-text: #172b4d;
+  --jora-text-muted: #5e6c84;
+  --jora-primary: #0052cc;
+  --jora-primary-hover: #0747a6;
+  --jora-radius: 8px;
+  --jora-shadow: 0 1px 2px rgba(9, 30, 66, 0.12);
+  --jora-status-open: #dfe1e6;
+  --jora-status-progress: #deebff;
+  --jora-status-finished: #e3fcef;
+  --el-color-primary: #0052cc;
+}
+
+body {
+  background: var(--jora-bg);
+  color: var(--jora-text);
+}
+
+.jora-card {
+  background: var(--jora-surface);
+  border: 1px solid var(--jora-border);
+  border-radius: var(--jora-radius);
+  box-shadow: var(--jora-shadow);
+}
