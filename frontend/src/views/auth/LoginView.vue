@@ -32,8 +32,12 @@ async function submit() {
 
 <template>
   <div class="auth-page">
+    <div class="auth-brand">
+      <span class="auth-logo">Jora</span>
+      <p>Управление проектами и задачами</p>
+    </div>
     <el-card class="auth-card">
-      <h1>Вход в Jora</h1>
+      <h1>Вход</h1>
       <el-form label-position="top" @submit.prevent="submit">
         <el-form-item label="Email">
           <el-input v-model="form.email" type="email" autocomplete="email" />
@@ -46,7 +50,7 @@ async function submit() {
             autocomplete="current-password"
           />
         </el-form-item>
-        <el-button type="primary" native-type="submit" :loading="loading" style="width: 100%">
+        <el-button type="primary" native-type="submit" :loading="loading" class="submit-btn">
           Войти
         </el-button>
       </el-form>
@@ -61,21 +65,44 @@ async function submit() {
 .auth-page {
   min-height: 100vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  background: var(--jora-bg);
+  padding: 2rem;
+}
+.auth-brand {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+.auth-logo {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--jora-primary);
+}
+.auth-brand p {
+  margin: 0.5rem 0 0;
+  color: var(--jora-text-muted);
+  font-size: 0.875rem;
 }
 .auth-card {
-  width: 400px;
-  padding: 0.5rem;
+  width: 100%;
+  max-width: 400px;
 }
 .auth-card h1 {
   margin: 0 0 1.5rem;
   text-align: center;
+  font-size: 1.25rem;
+}
+.submit-btn {
+  width: 100%;
 }
 .link {
   text-align: center;
   margin-top: 1rem;
   font-size: 0.875rem;
+}
+.link a {
+  color: var(--jora-primary);
 }
 </style>

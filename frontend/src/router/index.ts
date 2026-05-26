@@ -29,51 +29,47 @@ const router = createRouter({
       component: () => import('@/views/projects/ProjectFormView.vue'),
     },
     {
-      path: '/projects/:id',
-      name: 'project-detail',
-      component: () => import('@/views/projects/ProjectDetailView.vue'),
+      path: '/projects/:projectId',
+      name: 'project-board',
+      component: () => import('@/views/projects/ProjectBoardView.vue'),
       props: true,
     },
     {
-      path: '/projects/:id/edit',
+      path: '/projects/:projectId/edit',
       name: 'project-edit',
       component: () => import('@/views/projects/ProjectFormView.vue'),
       props: true,
     },
     {
-      path: '/tasks',
-      name: 'tasks',
-      component: () => import('@/views/tasks/TaskListView.vue'),
-    },
-    {
-      path: '/tasks/new',
+      path: '/projects/:projectId/tasks/new',
       name: 'task-new',
       component: () => import('@/views/tasks/TaskFormView.vue'),
+      props: true,
     },
     {
-      path: '/tasks/:id',
+      path: '/projects/:projectId/tasks/:taskId',
       name: 'task-detail',
       component: () => import('@/views/tasks/TaskDetailView.vue'),
       props: true,
     },
     {
-      path: '/users',
-      name: 'users',
-      component: () => import('@/views/users/UserListView.vue'),
-      meta: { requiresUserWrite: true },
+      path: '/my-tasks',
+      name: 'my-tasks',
+      component: () => import('@/views/tasks/MyTasksView.vue'),
     },
     {
-      path: '/users/new',
-      name: 'user-new',
-      component: () => import('@/views/users/UserFormView.vue'),
-      meta: { requiresUserWrite: true },
+      path: '/tasks',
+      redirect: '/my-tasks',
     },
     {
-      path: '/users/:id/edit',
-      name: 'user-edit',
-      component: () => import('@/views/users/UserFormView.vue'),
+      path: '/tasks/new',
+      redirect: () => ({ name: 'projects' }),
+    },
+    {
+      path: '/tasks/:id',
+      name: 'task-legacy-redirect',
+      component: () => import('@/views/tasks/TaskLegacyRedirectView.vue'),
       props: true,
-      meta: { requiresUserWrite: true },
     },
   ],
 })
@@ -95,9 +91,6 @@ router.beforeEach(async (to) => {
     await caps.probe()
   }
 
-  if (to.meta.requiresUserWrite && !caps.canManageUsers) {
-    return { path: '/projects' }
-  }
   return true
 })
 

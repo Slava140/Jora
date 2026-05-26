@@ -1,54 +1,50 @@
 <script setup lang="ts">
-import { reactive, ref, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { reactive, ref, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import AppLayout from '@/components/AppLayout.vue'
+import AppShell from '@/components/layout/AppShell.vue'
+import PageHeader from '@/components/common/PageHeader.vue'
 import * as tasksApi from '@/api/tasks'
 import * as projectsApi from '@/api/projects'
 import { fromDateInputValue } from '@/utils/datetime'
 import { getErrorMessage } from '@/utils/errors'
 import type { Project, TaskStatus } from '@/types'
 
-const route = useRoute()
+const props = defineProps<{ projectId: string }>()
 const router = useRouter()
 
-const projects = ref<Project[]>([])
+const projectIdNum = computed(() => parseInt(props.projectId, 10))
+const project = ref<Project | null>(null)
 const saving = ref(false)
 
 const form = reactive({
   title: '',
   description: '',
   status: 'open' as TaskStatus,
-  project_id: null as number | null,
   due_date_local: '',
 })
 
 async function load() {
-  projects.value = await projectsApi.getProjects({ page: 1, limit: 100 })
-  const qProject = route.query.project_id
-  if (qProject) {
-    form.project_id = parseInt(String(qProject), 10)
-  } else if (projects.value.length) {
-    form.project_id = projects.value[0].id
+  try {
+    project.value = await projectsApi.getProjectById(projectIdNum.value)
+  } catch (e) {
+    ElMessage.error(getErrorMessage(e))
+    router.push('/projects')
   }
 }
 
 async function save() {
-  if (!form.project_id) {
-    ElMessage.warning('Выберите проект')
-    return
-  }
   saving.value = true
   try {
     const created = await tasksApi.createTask({
       title: form.title,
       description: form.description,
       status: form.status,
-      project_id: form.project_id,
+      project_id: projectIdNum.value,
       due_date: fromDateInputValue(form.due_date_local),
     })
     ElMessage.success('Задача создана')
-    router.push(`/tasks/${created.id}`)
+    router.push(`/projects/${projectIdNum.value}/tasks/${created.id}`)
   } catch (e) {
     ElMessage.error(getErrorMessage(e))
   } finally {
@@ -60,15 +56,21 @@ onMounted(load)
 </script>
 
 <template>
-  <AppLayout>
-    <el-card>
-      <h1>Новая задача</h1>
+  <AppShell>
+    <PageHeader v-if="project" title="Новая задача">
+      <template #breadcrumbs>
+        <router-link to="/projects">Проекты</router-link>
+        <span> / </span>
+        <router-link :to="`/projects/${projectIdNum}`">{{ project.title }}</router-link>
+        <span> / Создание</span>
+      </template>
+      <template #actions>
+        <el-button @click="router.push(`/projects/${projectIdNum}`)">Отмена</el-button>
+      </template>
+    </PageHeader>
+
+    <el-card class="form-card">
       <el-form label-position="top" @submit.prevent="save">
-        <el-form-item label="Проект" required>
-          <el-select v-model="form.project_id" placeholder="Проект" style="width: 100%">
-            <el-option v-for="p in projects" :key="p.id" :label="p.title" :value="p.id" />
-          </el-select>
-        </el-form-item>
         <el-form-item label="Название" required>
           <el-input v-model="form.title" minlength="3" maxlength="255" />
         </el-form-item>
@@ -94,15 +96,14 @@ onMounted(load)
         </el-form-item>
         <el-form-item>
           <el-button type="primary" native-type="submit" :loading="saving">Создать</el-button>
-          <el-button @click="router.back()">Отмена</el-button>
         </el-form-item>
       </el-form>
     </el-card>
-  </AppLayout>
+  </AppShell>
 </template>
 
 <style scoped>
-h1 {
-  margin: 0 0 1rem;
+.form-card {
+  max-width: 640px;
 }
 </style>

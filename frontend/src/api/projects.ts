@@ -1,5 +1,5 @@
 import { apiClient } from './client'
-import type { CreateProjectBody, PaginationParams, Project } from '@/types'
+import type { CreateProjectBody, PaginationParams, Project, User } from '@/types'
 
 export async function getProjects(params: PaginationParams = {}): Promise<Project[]> {
   const { data } = await apiClient.get<Project[]>('/api/v1/projects/', { params })
@@ -8,6 +8,11 @@ export async function getProjects(params: PaginationParams = {}): Promise<Projec
 
 export async function getProjectById(projectId: number): Promise<Project> {
   const { data } = await apiClient.get<Project>(`/api/v1/projects/${projectId}/`)
+  return data
+}
+
+export async function getProjectUsers(projectId: number): Promise<User[]> {
+  const { data } = await apiClient.get<User[]>(`/api/v1/projects/${projectId}/users`)
   return data
 }
 

@@ -12,11 +12,17 @@ import { RouterView } from 'vue-router'
 }
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  color: #0f172a;
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    sans-serif;
 }
 a {
-  color: #2563eb;
+  color: var(--jora-primary);
   text-decoration: none;
 }
 a:hover {

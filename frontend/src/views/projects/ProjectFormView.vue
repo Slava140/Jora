@@ -2,18 +2,19 @@
 import { reactive, ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import AppLayout from '@/components/AppLayout.vue'
+import AppShell from '@/components/layout/AppShell.vue'
+import PageHeader from '@/components/common/PageHeader.vue'
 import * as projectsApi from '@/api/projects'
 import { useAuthStore } from '@/stores/auth'
 import { getErrorMessage } from '@/utils/errors'
 
-const props = defineProps<{ id?: string }>()
+const props = defineProps<{ projectId?: string }>()
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
 
 const projectId = computed(() => {
-  const raw = props.id ?? route.params.id
+  const raw = props.projectId ?? route.params.projectId
   return raw ? parseInt(String(raw), 10) : null
 })
 const isEdit = computed(() => projectId.value != null)
@@ -78,9 +79,18 @@ onMounted(load)
 </script>
 
 <template>
-  <AppLayout>
-    <el-card v-loading="loading">
-      <h1>{{ isEdit ? 'Редактирование проекта' : 'Новый проект' }}</h1>
+  <AppShell>
+    <PageHeader :title="isEdit ? 'Настройки проекта' : 'Новый проект'">
+      <template #breadcrumbs>
+        <router-link to="/projects">Проекты</router-link>
+        <span v-if="isEdit"> / Настройки</span>
+      </template>
+      <template #actions>
+        <el-button @click="router.back()">Отмена</el-button>
+      </template>
+    </PageHeader>
+
+    <el-card v-loading="loading" class="form-card">
       <el-form label-position="top" @submit.prevent="save">
         <el-form-item label="Название" required>
           <el-input v-model="form.title" minlength="3" maxlength="255" />
@@ -90,16 +100,15 @@ onMounted(load)
         </el-form-item>
         <el-form-item>
           <el-button type="primary" native-type="submit" :loading="saving">Сохранить</el-button>
-          <el-button @click="router.back()">Отмена</el-button>
-          <el-button v-if="isEdit" type="danger" @click="remove">Удалить</el-button>
+          <el-button v-if="isEdit" type="danger" @click="remove">Удалить проект</el-button>
         </el-form-item>
       </el-form>
     </el-card>
-  </AppLayout>
+  </AppShell>
 </template>
 
 <style scoped>
-h1 {
-  margin: 0 0 1rem;
+.form-card {
+  max-width: 640px;
 }
 </style>

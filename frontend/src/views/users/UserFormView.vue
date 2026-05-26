@@ -2,7 +2,8 @@
 import { reactive, ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import AppLayout from '@/components/AppLayout.vue'
+import AppShell from '@/components/layout/AppShell.vue'
+import PageHeader from '@/components/common/PageHeader.vue'
 import * as usersApi from '@/api/users'
 import { getErrorMessage } from '@/utils/errors'
 import { validatePassword } from '@/utils/password'
@@ -85,9 +86,18 @@ onMounted(load)
 </script>
 
 <template>
-  <AppLayout>
-    <el-card v-loading="loading">
-      <h1>{{ isEdit ? 'Редактирование пользователя' : 'Новый пользователь' }}</h1>
+  <AppShell>
+    <PageHeader :title="isEdit ? 'Профиль пользователя' : 'Новый пользователь'">
+      <template #breadcrumbs>
+        <router-link to="/users">Пользователи</router-link>
+        <span v-if="isEdit"> / {{ form.username || '…' }}</span>
+      </template>
+      <template #actions>
+        <el-button @click="router.back()">Отмена</el-button>
+      </template>
+    </PageHeader>
+
+    <el-card v-loading="loading" class="form-card">
       <el-form label-position="top" @submit.prevent="save">
         <el-form-item label="Имя пользователя" required>
           <el-input v-model="form.username" minlength="3" maxlength="255" />
@@ -100,16 +110,15 @@ onMounted(load)
         </el-form-item>
         <el-form-item>
           <el-button type="primary" native-type="submit" :loading="saving">Сохранить</el-button>
-          <el-button @click="router.back()">Отмена</el-button>
           <el-button v-if="isEdit" type="danger" @click="remove">Удалить</el-button>
         </el-form-item>
       </el-form>
     </el-card>
-  </AppLayout>
+  </AppShell>
 </template>
 
 <style scoped>
-h1 {
-  margin: 0 0 1rem;
+.form-card {
+  max-width: 640px;
 }
 </style>
