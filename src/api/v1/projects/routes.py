@@ -70,6 +70,19 @@ def get_project_by_id(path: ProjectPath):
     return jsonify(project.model_dump()), 200
 
 
+@projects_router.get('/<int:project_id>/users', responses={200: ReadProjectS, 404: ErrorS})
+@jwt_required()
+def get_project_users(path: ProjectPath):
+    users = ProjectService.get_users(
+        user_id=current_user.id,
+        project_id=path.project_id,
+    )
+    # if project is None:
+    #     raise WasNotFoundError(f'Project with id {path.project_id}')
+    #
+    # return jsonify(project.model_dump()), 200
+
+
 @projects_router.put('/<int:project_id>/', responses={200: ReadProjectS, 404: ErrorS})
 @jwt_required()
 def update_project_by_id(path: ProjectPath, body: UpdateProjectS):

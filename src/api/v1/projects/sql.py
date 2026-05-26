@@ -39,8 +39,9 @@ class ProjectSQL:
                                                 inner join tasks t on p.id = t.project_id
                                        where p.id = :project_id)
 
-                    select *
-                    from cte_users
-                    where user_id is not null""").bindparams(
+                    select u.*
+                    from cte_users cte
+                        inner join users u on u.id = cte.user_id
+                    where cte.user_id is not null""").bindparams(
             project_id=project_id,
         )

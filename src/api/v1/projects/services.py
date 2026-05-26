@@ -17,6 +17,7 @@ from api.v1.projects.schemas import (
 )
 from flask_security import current_user
 
+from api.v1.users.schemas import ReadUserS
 from errors import MustBePositiveError, IncorrectRequestError, ForbiddenError, WasNotFoundError, \
     ExtensionsNotAllowedError
 
@@ -46,13 +47,13 @@ class ProjectService:
             return None
 
         project_users = ProjectDAO.get_users(project_id=project_id)
-        if user_id not in project_users:
+        if user_id not in [u.id for u in project_users]:
             return None
 
         return project
 
     @staticmethod
-    def get_users(user_id: int, project_id: int) -> tuple[int, ...]:
+    def get_users(user_id: int, project_id: int) -> list[ReadUserS]:
         project_users = ProjectDAO.get_users(project_id=project_id)
         if user_id in project_users:
             return project_users
@@ -111,7 +112,7 @@ class TaskService:
         :except WasNotFoundError
         """
         project_users = ProjectDAO.get_users(project_id=task.project_id)
-        if user_id not in project_users:
+        if user_id not in [u.id for u in project_users]:
             raise ForbiddenError()
         return TaskDAO.add(task=task)
 
@@ -194,7 +195,7 @@ class CommentService:
 
         project_users = ProjectDAO.get_users(project_id=task.project_id)
 
-        if user_id not in project_users:
+        if user_id not in [u.id for u in project_users]:
             raise ForbiddenError()
         return CommentDAO.add(comment)
 
@@ -225,7 +226,7 @@ class CommentService:
             project_id=task.project_id
         )
 
-        if user_id not in project_users:
+        if user_id not in [u.id for u in project_users]:
             raise ForbiddenError()
 
         return comment

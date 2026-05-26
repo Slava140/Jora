@@ -12,10 +12,11 @@ from api.v1.projects.schemas import (
     CreateCommentS, ReadCommentS, FilterTaskQS, ReadTaskWithMedia, FilterCommentQS, ExportProjectS
 )
 from api.v1.projects.sql import ProjectSQL
+from api.v1.users.schemas import ReadUserS
 
-from api.v1.users.services import UserService
 from errors import WasNotFoundError, ForbiddenError
 from database import db
+from utils import get_user
 
 
 class ProjectDAO:
@@ -32,7 +33,7 @@ class ProjectDAO:
         ).returning('*')
 
         with db.session.begin(nested=True):
-            if UserService.get_one_by_id_or_none(project.owner_id) is None:
+            if not get_user(project.owner_id):
                 raise WasNotFoundError(f'Owner user with id {project.owner_id}')
 
             result = db.session.execute(stmt).mappings().one()
@@ -70,12 +71,12 @@ class ProjectDAO:
         return ReadProjectS(**result.to_dict()) if result else None
 
     @staticmethod
-    def get_users(project_id: int) -> tuple[int, ...]:
+    def get_users(project_id: int) -> list[ReadUserS]:
         result = db.session.execute(
             ProjectSQL.get_users(project_id=project_id)
-        ).scalars().fetchall()
+        ).mappings().fetchall()
 
-        return tuple(result)
+        return [ReadUserS.model_validate(u) for u in result]
 
     @staticmethod
     def update_by_id(user_id: int, project_id: int, updated_project: UpdateProjectS) -> ReadProjectS | None:
@@ -162,7 +163,7 @@ class ProjectDAO:
         create_comment_dicts = []
 
         with db.session.begin(nested=True):
-            if UserService.get_one_by_id_or_none(owner_id) is None:
+            if not get_user(owner_id):
                 raise WasNotFoundError(f'Owner user with id {owner_id}')
 
             inserted_project_id = db.session.execute(insert_project_stmt).scalar()
@@ -201,7 +202,7 @@ class TaskDAO:
         ).returning('*')
 
         with db.session.begin(nested=True):
-            if not UserService.get_one_by_id_or_none(task.author_id):
+            if not get_user(task.author_id):
                 raise WasNotFoundError(f'Author user with id {task.author_id}')
 
             if not ProjectDAO.get_one_by_id_or_none(task.project_id):
@@ -305,10 +306,10 @@ class TaskDAO:
             if task is None:
                 raise WasNotFoundError(f'Task with id {task_id}')
 
-            assignee = UserService.get_one_by_id_or_none(updated_task.assignee_id)
-            # Если исполнитель указан, но не найден
-            if assignee is None and updated_task.assignee_id is not None:
-                raise WasNotFoundError(f'User with id {updated_task.assignee_id}')
+            if updated_task.assignee_id:
+                assignee = get_user(updated_task.assignee_id)
+                if not assignee:
+                    raise WasNotFoundError(f'User with id {updated_task.assignee_id}')
 
             result = db.session.execute(stmt).mappings().one()
             db.session.commit()
@@ -370,7 +371,7 @@ class CommentDAO:
         ).returning('*')
 
         with db.session.begin(nested=True):
-            if UserService.get_one_by_id_or_none(comment.author_id) is None:
+            if not get_user(comment.author_id):
                 raise WasNotFoundError(f"Author user with id {comment.author_id}")
 
             if TaskDAO.get_one_by_id_or_none(comment.task_id) is None:
@@ -441,4 +442,4 @@ if __name__ == '__main__':
     from app import app
 
     with app.app_context():
-        print(ProjectDAO().get_users())
+        print(ProjectDAO().get_users(1))
