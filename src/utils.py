@@ -16,14 +16,10 @@ from PIL import Image
 
 from api.v1.users.schemas import ReadUserS
 from api.v1.users.services import UserService
-from api.v1.projects.services import ProjectService
 from api.v1.projects.models import Status
 from api.v1.projects.schemas import CreateTaskFromEmailS
 from config import settings
 
-
-def get_project_users(user_id: int, project_id: int) -> list[ReadUserS]:
-    return ProjectService.get_users(user_id=user_id, project_id=project_id)
 
 
 def get_user(user_id: int) -> ReadUserS | None:

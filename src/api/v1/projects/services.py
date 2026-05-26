@@ -55,11 +55,9 @@ class ProjectService:
     @staticmethod
     def get_users(user_id: int, project_id: int) -> list[ReadUserS]:
         project_users = ProjectDAO.get_users(project_id=project_id)
-        if user_id in project_users:
-            return project_users
-
-        else:
+        if user_id not in [u.id for u in project_users]:
             raise ForbiddenError()
+        return project_users
 
 
     @staticmethod
@@ -236,4 +234,4 @@ if __name__ == '__main__':
     from app import app
 
     with app.app_context():
-        print(ProjectService().get_one_by_id_or_none(2, 1))
+        print(ProjectService().get_one_by_id_or_none(1, 2))

@@ -22,21 +22,21 @@ class ProjectSQL:
         return text("""
                     with cte_users as (select p.owner_id as user_id
                                        from projects p
-                                                inner join tasks t on p.id = t.project_id
+                                                left join tasks t on p.id = t.project_id
                                        where p.id = :project_id
 
                                        union
 
                                        select t.assignee_id
                                        from projects p
-                                                inner join tasks t on p.id = t.project_id
+                                                left join tasks t on p.id = t.project_id
                                        where p.id = :project_id
 
                                        union
 
                                        select t.author_id
                                        from projects p
-                                                inner join tasks t on p.id = t.project_id
+                                                left join tasks t on p.id = t.project_id
                                        where p.id = :project_id)
 
                     select u.*

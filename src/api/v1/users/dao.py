@@ -69,14 +69,14 @@ class UserDAO:
         return ReadUserS(**result)
 
     @staticmethod
-    def get_many(limit: int, page: int) -> tuple[ReadUserS, ...]:
+    def get_many(limit: int, page: int) -> list[ReadUserS, ...]:
         query = select(
             UserM
         ).where(
             UserM.active.is_(True)
         ).limit(limit).offset((page - 1) * limit)
         result = db.session.execute(query).scalars().fetchall()
-        return tuple(ReadUserS(**data.to_dict()) for data in result)
+        return list(ReadUserS(**data.to_dict()) for data in result)
 
     @staticmethod
     def get_one_by_id_or_none(user_id: int) -> ReadUserS | None:
