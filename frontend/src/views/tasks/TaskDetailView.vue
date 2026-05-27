@@ -12,7 +12,7 @@ import * as tasksApi from '@/api/tasks'
 import * as projectsApi from '@/api/projects'
 import * as usersApi from '@/api/users'
 import { useAuthStore } from '@/stores/auth'
-import { formatDisplayDatetime } from '@/utils/datetime'
+import { formatDisplayDatetime, parseApiDatetime, formatApiDatetime } from '@/utils/datetime'
 import { getErrorMessage } from '@/utils/errors'
 import type { Project, TaskStatus, TaskWithMedia, User } from '@/types'
 
@@ -31,6 +31,31 @@ const saving = ref(false)
 
 const editStatus = ref<TaskStatus>('open')
 const editAssignee = ref<number | null>(null)
+const editDescription = ref('')
+const editDueDateTs = ref<number | null>(null)
+const savingDescription = ref(false)
+
+function buildUpdateBody(
+  overrides: Partial<{
+    status: TaskStatus
+    assignee_id: number | null
+    description: string
+    due_date: string | null
+  }> = {},
+) {
+  return {
+    status: overrides.status ?? editStatus.value,
+    assignee_id:
+      overrides.assignee_id !== undefined ? overrides.assignee_id : editAssignee.value,
+    description: overrides.description ?? editDescription.value,
+    due_date:
+      overrides.due_date !== undefined
+        ? overrides.due_date
+        : editDueDateTs.value !== null
+          ? formatApiDatetime(new Date(editDueDateTs.value))
+          : null,
+  }
+}
 
 const usersMap = computed(() => {
   const map = Object.fromEntries(projectUsers.value.map((u) => [u.id, u.username]))
@@ -77,6 +102,8 @@ async function load() {
     projectUsers.value = users
     editStatus.value = t.status
     editAssignee.value = t.assignee_id
+    editDescription.value = t.description ?? ''
+    editDueDateTs.value = t.due_date ? parseApiDatetime(t.due_date).getTime() : null
   } catch (e) {
     ElMessage.error(getErrorMessage(e))
     router.push(`/projects/${projectIdNum.value}`)
@@ -89,16 +116,34 @@ async function saveUpdate() {
   if (!task.value) return
   saving.value = true
   try {
-    const updated = await tasksApi.updateTask(taskIdNum.value, {
-      status: editStatus.value,
-      assignee_id: editAssignee.value,
-    })
+    const updated = await tasksApi.updateTask(taskIdNum.value, buildUpdateBody())
     task.value = { ...task.value, ...updated, media: task.value.media }
     ElMessage.success('Задача обновлена')
   } catch (e) {
     ElMessage.error(getErrorMessage(e))
   } finally {
     saving.value = false
+  }
+}
+
+async function saveDescription() {
+  if (!task.value) return
+  savingDescription.value = true
+  try {
+    const updated = await tasksApi.updateTask(
+      taskIdNum.value,
+      buildUpdateBody({
+        status: task.value.status,
+        assignee_id: task.value.assignee_id,
+        description: editDescription.value,
+      }),
+    )
+    task.value = { ...task.value, ...updated, media: task.value.media }
+    ElMessage.success('Описание сохранено')
+  } catch (e) {
+    ElMessage.error(getErrorMessage(e))
+  } finally {
+    savingDescription.value = false
   }
 }
 
@@ -149,7 +194,20 @@ onMounted(load)
                 <h2>Описание</h2>
                 <TaskStatusBadge :status="task.status" />
               </div>
-              <p class="description">{{ task.description || 'Без описания' }}</p>
+              <el-input
+                v-model="editDescription"
+                type="textarea"
+                :rows="6"
+                placeholder="Добавьте описание задачи"
+              />
+              <el-button
+                type="primary"
+                class="save-description"
+                :loading="savingDescription"
+                @click="saveDescription"
+              >
+                Сохранить описание
+              </el-button>
             </section>
 
             <section class="jora-card section">
@@ -173,12 +231,12 @@ onMounted(load)
             </section>
 
             <section class="jora-card section">
-              <CommentList :task-id="taskIdNum" :users-map="usersMap" />
+              <MediaUpload :task-id="taskIdNum" @uploaded="onMediaUploaded" />
+              <MediaGallery ref="galleryRef" :media="task.media ?? []" />
             </section>
 
             <section class="jora-card section">
-              <MediaUpload :task-id="taskIdNum" @uploaded="onMediaUploaded" />
-              <MediaGallery ref="galleryRef" :media-urls="task.media ?? []" />
+              <CommentList :task-id="taskIdNum" :users-map="usersMap" />
             </section>
           </div>
 
@@ -206,6 +264,16 @@ onMounted(load)
                     :value="u.id"
                   />
                 </el-select>
+              </el-form-item>
+              <el-form-item label="Срок выполнения">
+                <el-date-picker
+                  v-model="editDueDateTs"
+                  type="datetime"
+                  value-format="x"
+                  placeholder="Не указан"
+                  clearable
+                  style="width: 100%"
+                />
               </el-form-item>
               <el-button type="primary" native-type="submit" :loading="saving" style="width: 100%">
                 Сохранить
@@ -263,10 +331,8 @@ onMounted(load)
 .section-head h2 {
   margin: 0;
 }
-.description {
-  margin: 0;
-  white-space: pre-wrap;
-  line-height: 1.5;
+.save-description {
+  margin-top: 0.75rem;
 }
 .meta-grid {
   display: grid;

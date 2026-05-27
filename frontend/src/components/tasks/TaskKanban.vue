@@ -50,8 +50,9 @@ const tasksByStatus = computed(() => {
 <style scoped>
 .kanban-board {
   display: flex;
-  gap: 1rem;
-  overflow-x: auto;
+  gap: 1.5rem;
+  width: 100%;
+  min-height: calc(100vh - 220px);
   padding-bottom: 0.5rem;
 }
 </style>

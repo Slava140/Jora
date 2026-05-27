@@ -15,7 +15,7 @@ class UserService:
         return UserDAO.add(user)
 
     @staticmethod
-    def get_many(limit: int, page: int) -> tuple[ReadUserS, ...]:
+    def get_many(limit: int, page: int) -> list[ReadUserS]:
         """
         :except MustBePositiveError
         """

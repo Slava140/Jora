@@ -31,7 +31,7 @@ class ProjectService:
         return ProjectDAO.add(project)
 
     @staticmethod
-    def get_many(user_id: int, limit: int, page: int) -> tuple[ReadProjectS, ...]:
+    def get_many(user_id: int, limit: int, page: int) -> list[ReadProjectS]:
         """
         :except MustBePositiveError
         """
@@ -135,7 +135,8 @@ class TaskService:
         if not task:
             return None
 
-        if user_id in (task.author_id, task.assignee_id):
+        project_users = ProjectDAO.get_users(project_id=task.project_id)
+        if user_id in [u.id for u in project_users]:
             return task
         else:
             return None
@@ -198,14 +199,22 @@ class CommentService:
         return CommentDAO.add(comment)
 
     @staticmethod
-    def get_many(user_id: int, filter_schema: FilterCommentQS) -> tuple[ReadCommentS, ...]:
+    def get_many(user_id: int, filter_schema: FilterCommentQS) -> list[ReadCommentS]:
         """
         :except MustBePositiveError
         """
         if filter_schema.limit <= 0 or filter_schema.page <= 0:
             raise MustBePositiveError('limit and page')
+
+        task = TaskService.get_one_by_id_or_none(user_id=user_id, task_id=filter_schema.task_id)
+        if not task:
+            return list()
+
+        project_users = ProjectDAO.get_users(project_id=task.project_id)
+        if user_id not in [u.id for u in project_users]:
+            raise ForbiddenError()
+
         return CommentDAO.get_many(
-            user_id=user_id,
             filter_schema=filter_schema,
         )
 
@@ -234,4 +243,4 @@ if __name__ == '__main__':
     from app import app
 
     with app.app_context():
-        print(ProjectService().get_one_by_id_or_none(1, 2))
+        print(TaskService().get_one_by_id_or_none(1, 3))

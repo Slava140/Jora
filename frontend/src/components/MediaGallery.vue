@@ -1,16 +1,19 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 import { ElMessage } from 'element-plus'
-import { extractMediaId, fetchAuthenticatedBlob } from '@/utils/blob'
+import { fetchAuthenticatedBlob } from '@/utils/blob'
+import { uniqueTaskMedia } from '@/utils/media'
 import { getErrorMessage } from '@/utils/errors'
+import type { TaskMedia } from '@/types'
 
 const props = defineProps<{
-  mediaUrls: string[]
+  media: TaskMedia[]
 }>()
 
-const items = ref<{ id: number; url: string; filename: string }[]>([])
-const useOriginal = ref(false)
+const items = ref<{ id: number; url: string; filename: string; previewUrl: string }[]>([])
 const loading = ref(false)
+
+const mediaItems = computed(() => uniqueTaskMedia(props.media))
 
 const blobUrls: string[] = []
 
@@ -24,14 +27,16 @@ async function load() {
   items.value = []
   loading.value = true
   try {
-    for (const mediaUrl of props.mediaUrls) {
-      const id = extractMediaId(mediaUrl)
-      if (id == null) continue
-      const blob = await fetchAuthenticatedBlob(id, useOriginal.value)
-      const url = URL.createObjectURL(blob)
-      blobUrls.push(url)
-      const filename = mediaUrl.split('/').pop()?.split('?')[0] ?? `media-${id}`
-      items.value.push({ id, url, filename })
+    for (const m of mediaItems.value) {
+      const blob = await fetchAuthenticatedBlob(m.id, true)
+      const previewUrl = URL.createObjectURL(blob)
+      blobUrls.push(previewUrl)
+      items.value.push({
+        id: m.id,
+        url: m.url,
+        filename: m.filename,
+        previewUrl,
+      })
     }
   } catch (e) {
     ElMessage.error(getErrorMessage(e))
@@ -40,13 +45,13 @@ async function load() {
   }
 }
 
-async function downloadItem(id: number) {
+async function downloadItem(item: { id: number; filename: string }) {
   try {
-    const blob = await fetchAuthenticatedBlob(id, useOriginal.value)
+    const blob = await fetchAuthenticatedBlob(item.id, true)
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `media-${id}`
+    a.download = item.filename
     a.click()
     URL.revokeObjectURL(url)
   } catch (e) {
@@ -54,7 +59,11 @@ async function downloadItem(id: number) {
   }
 }
 
-watch(() => [props.mediaUrls, useOriginal.value], load, { deep: true })
+function isImageFilename(filename: string): boolean {
+  return /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(filename)
+}
+
+watch(() => props.media, load, { deep: true })
 onMounted(load)
 onUnmounted(revokeAll)
 
@@ -63,63 +72,83 @@ defineExpose({ reload: load })
 
 <template>
   <div class="gallery">
-    <div class="gallery-header">
-      <h3>Медиа</h3>
-      <el-switch
-        v-model="useOriginal"
-        active-text="Оригинал"
-        inactive-text="Сжатый"
-      />
-    </div>
+    <h3 class="gallery-title">Файлы</h3>
     <el-skeleton v-if="loading" :rows="2" animated />
     <el-empty v-else-if="items.length === 0" description="Нет вложений" />
-    <div v-else class="grid">
-      <div v-for="item in items" :key="item.id" class="grid-item">
-        <img
-          v-if="item.url.startsWith('blob:') && /\.(jpg|jpeg|png|gif|bmp)/i.test(item.filename)"
-          :src="item.url"
-          :alt="item.filename"
-          class="preview"
-        />
-        <div v-else class="file-placeholder">{{ item.filename }}</div>
-        <el-button size="small" @click="downloadItem(item.id)">Скачать</el-button>
-      </div>
-    </div>
+    <ul v-else class="file-list">
+      <li v-for="item in items" :key="item.id" class="file-item">
+        <div class="file-preview">
+          <img
+            v-if="isImageFilename(item.filename)"
+            :src="item.previewUrl"
+            :alt="item.filename"
+            class="preview-img"
+          />
+          <div v-else class="file-icon" aria-hidden="true">📄</div>
+        </div>
+        <div class="file-info">
+          <span class="file-name" :title="item.filename">{{ item.filename }}</span>
+          <el-button size="small" @click="downloadItem(item)">Скачать</el-button>
+        </div>
+      </li>
+    </ul>
   </div>
 </template>
 
 <style scoped>
-.gallery-header {
+.gallery-title {
+  margin: 0 0 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+.file-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.file-item {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.75rem;
+  background: var(--jora-bg);
+  border: 1px solid var(--jora-border);
+  border-radius: var(--jora-radius);
+}
+.file-preview {
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1rem;
+  justify-content: center;
+  background: var(--jora-surface);
+  border-radius: 4px;
+  overflow: hidden;
 }
-.gallery-header h3 {
-  margin: 0;
-}
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 1rem;
-}
-.grid-item {
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 0.5rem;
-  text-align: center;
-}
-.preview {
+.preview-img {
   max-width: 100%;
-  max-height: 120px;
+  max-height: 100%;
   object-fit: contain;
-  margin-bottom: 0.5rem;
 }
-.file-placeholder {
-  padding: 2rem 0.5rem;
-  font-size: 0.8rem;
-  color: #64748b;
+.file-icon {
+  font-size: 1.75rem;
+}
+.file-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+.file-name {
+  font-size: 0.875rem;
+  font-weight: 500;
   word-break: break-all;
+  color: var(--jora-text);
 }
 </style>

@@ -49,8 +49,8 @@ function onDrop(e: DragEvent) {
 
 <style scoped>
 .kanban-column {
-  flex: 0 0 300px;
-  min-width: 280px;
+  flex: 1 1 0;
+  min-width: 0;
   background: #ebecf0;
   border-radius: var(--jora-radius);
   display: flex;

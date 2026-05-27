@@ -9,7 +9,9 @@ class ProjectSQL:
                             left join tasks t on t.project_id = p.id
                     where not p.is_archived
                       and (not t.is_archived or t.is_archived is null)
-                      and (p.owner_id = :user_id or t.assignee_id = :user_id)
+                      and (p.owner_id = :user_id 
+                            or t.assignee_id = :user_id 
+                            or t.author_id = :user_id)
                     limit :limit
                     offset :offset""").bindparams(
             user_id=user_id,

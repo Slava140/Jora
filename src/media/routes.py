@@ -33,7 +33,11 @@ def add_media(form: UploadMediaS):
 @jwt_required()
 @roles_accepted('admin', 'user')
 def get_media_by_id(path: MediaPath, query: MediaQS):
-    metadata = MediaService.get_media_by_id_or_none(path.media_id, original=query.original)
+    metadata = MediaService.get_media_by_id_or_none(
+        user_id=current_user.id,
+        media_id=path.media_id,
+        original=query.original
+    )
     if metadata is None:
         raise WasNotFoundError(f'Media with id {path.media_id} and original={query.original}')
 

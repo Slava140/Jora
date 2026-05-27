@@ -1,10 +1,14 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { TaskWithMedia } from '@/types'
+import { taskMediaCount } from '@/utils/media'
 
-defineProps<{
+const props = defineProps<{
   task: TaskWithMedia
   assigneeName?: string
 }>()
+
+const attachmentCount = computed(() => taskMediaCount(props.task.media))
 
 const emit = defineEmits<{
   click: []
@@ -32,8 +36,8 @@ function onDragStart(e: DragEvent) {
     <h4 class="task-title">{{ task.title }}</h4>
     <div class="task-meta">
       <span v-if="assigneeName" class="assignee">{{ assigneeName }}</span>
-      <span v-if="task.media?.length" class="attachments" title="Вложения">
-        📎 {{ task.media.length }}
+      <span v-if="attachmentCount" class="attachments" title="Вложения">
+        📎 {{ attachmentCount }}
       </span>
     </div>
   </article>

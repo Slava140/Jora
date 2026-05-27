@@ -60,6 +60,8 @@ async function onDropTask(taskId: number, newStatus: TaskStatus) {
     await tasksApi.updateTask(taskId, {
       status: newStatus,
       assignee_id: task.assignee_id,
+      description: task.description,
+      due_date: task.due_date,
     })
   } catch (e) {
     task.status = prevStatus
@@ -84,7 +86,7 @@ onMounted(load)
 </script>
 
 <template>
-  <AppShell>
+  <AppShell full-width>
     <div v-loading="loading">
       <PageHeader v-if="project" :title="project.title" :subtitle="project.description || undefined">
         <template #breadcrumbs>

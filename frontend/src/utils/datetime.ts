@@ -25,7 +25,7 @@ export function formatApiDatetime(date: Date): string {
   const sign = offsetMin >= 0 ? '+' : '-'
   const abs = Math.abs(offsetMin)
   const tz = `${sign}${pad(Math.floor(abs / 60))}${pad(abs % 60)}`
-  return `${pad(date.getUTCDate())}.${pad(date.getUTCMonth() + 1)}.${date.getUTCFullYear()} ${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}:${pad(date.getUTCSeconds())}${tz}`
+  return `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}${tz}`
 }
 
 export function formatDisplayDatetime(value: string | null): string {

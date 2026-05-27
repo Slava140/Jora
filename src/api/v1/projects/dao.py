@@ -42,7 +42,7 @@ class ProjectDAO:
         return ReadProjectS(**result)
 
     @staticmethod
-    def get_many(user_id: int, limit: int, page: int) -> tuple[ReadProjectS, ...]:
+    def get_many(user_id: int, limit: int, page: int) -> list[ReadProjectS]:
         query = select(
             ProjectM
         ).from_statement(
@@ -244,13 +244,17 @@ class TaskDAO:
             media_list = []
             for m in task.media:
                 if m.has_original:
-                    media_list.append(
-                        url_for('media.get_media_by_id', media_id=m.id, original=True)
-                    )
+                    media_list.append({
+                        'id': m.id,
+                        'url': url_for('media.get_media_by_id', media_id=m.id, original=True),
+                        'filename': m.filename,
+                    })
 
-                media_list.append(
-                    url_for('media.get_media_by_id', media_id=m.id, original=False)
-                )
+                media_list.append({
+                    'id': m.id,
+                    'url': url_for('media.get_media_by_id', media_id=m.id, original=False),
+                    'filename': m.filename,
+                })
 
             task_dict['media'] = media_list
             task_dicts.append(task_dict)
@@ -268,18 +272,25 @@ class TaskDAO:
         )
 
         result = db.session.execute(query).scalar_one_or_none()
+        if not result:
+            return None
+
         result_dict = result.to_dict()
 
         media_list = []
         for m in result.media:
             if m.has_original:
-                media_list.append(
-                    url_for('media.get_media_by_id', media_id=m.id, original=True)
-                )
+                media_list.append({
+                    'id': m.id,
+                    'url': url_for('media.get_media_by_id', media_id=m.id, original=True),
+                    'filename': m.filename,
+                })
 
-            media_list.append(
-                url_for('media.get_media_by_id', media_id=m.id, original=False)
-            )
+            media_list.append({
+                'id': m.id,
+                'url': url_for('media.get_media_by_id', media_id=m.id, original=False),
+                'filename': m.filename,
+            })
 
         result_dict['media'] = media_list
 
@@ -383,24 +394,20 @@ class CommentDAO:
         return ReadCommentS(**result)
 
     @staticmethod
-    def get_many(user_id: int, filter_schema: FilterCommentQS) -> tuple[ReadCommentS, ...]:
+    def get_many(filter_schema: FilterCommentQS) -> list[ReadCommentS]:
         where_conditions = []
-        if filter_schema.task_id is not None: where_conditions.append(CommentM.task_id == filter_schema.task_id)
         if filter_schema.author_id is not None: where_conditions.append(CommentM.author_id == filter_schema.author_id)
 
         query = select(
             CommentM
         ).where(
             CommentM.is_archived.is_(False),
-            or_(
-                TaskM.assignee_id == user_id,
-                TaskM.author_id == user_id,
-            ),
+            CommentM.task_id == filter_schema.task_id,
             *where_conditions
         ).limit(filter_schema.limit).offset((filter_schema.page - 1) * filter_schema.limit)
         result = db.session.execute(query).scalars().fetchall()
 
-        return tuple(ReadCommentS(**model.to_dict()) for model in result)
+        return list(ReadCommentS(**model.to_dict()) for model in result)
 
     @staticmethod
     def get_one_by_id_or_none(comment_id: int) -> ReadCommentS | None:

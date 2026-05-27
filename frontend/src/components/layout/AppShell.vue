@@ -4,6 +4,10 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useCapabilitiesStore } from '@/stores/capabilities'
 
+defineProps<{
+  fullWidth?: boolean
+}>()
+
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
@@ -48,7 +52,7 @@ function logout() {
         <el-button text type="danger" @click="logout">Выйти</el-button>
       </div>
     </header>
-    <main class="main">
+    <main class="main" :class="{ 'main--full': fullWidth }">
       <slot />
     </main>
   </div>
@@ -123,5 +127,8 @@ function logout() {
   max-width: 1400px;
   width: 100%;
   margin: 0 auto;
+}
+.main--full {
+  max-width: none;
 }
 </style>

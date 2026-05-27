@@ -6,7 +6,7 @@ import AppShell from '@/components/layout/AppShell.vue'
 import PageHeader from '@/components/common/PageHeader.vue'
 import * as tasksApi from '@/api/tasks'
 import * as projectsApi from '@/api/projects'
-import { fromDateInputValue } from '@/utils/datetime'
+import { formatApiDatetime } from '@/utils/datetime'
 import { getErrorMessage } from '@/utils/errors'
 import type { Project, TaskStatus } from '@/types'
 
@@ -21,7 +21,7 @@ const form = reactive({
   title: '',
   description: '',
   status: 'open' as TaskStatus,
-  due_date_local: '',
+  due_date_ts: null as number | null,
 })
 
 async function load() {
@@ -41,7 +41,7 @@ async function save() {
       description: form.description,
       status: form.status,
       project_id: projectIdNum.value,
-      due_date: fromDateInputValue(form.due_date_local),
+      due_date: form.due_date_ts !== null ? formatApiDatetime(new Date(form.due_date_ts)) : null,
     })
     ElMessage.success('Задача создана')
     router.push(`/projects/${projectIdNum.value}/tasks/${created.id}`)
@@ -86,9 +86,9 @@ onMounted(load)
         </el-form-item>
         <el-form-item label="Срок">
           <el-date-picker
-            v-model="form.due_date_local"
+            v-model="form.due_date_ts"
             type="datetime"
-            value-format="YYYY-MM-DDTHH:mm"
+            value-format="x"
             placeholder="Не указан"
             clearable
             style="width: 100%"

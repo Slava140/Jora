@@ -8,14 +8,16 @@ import ProjectGrid from '@/components/projects/ProjectGrid.vue'
 import PaginationBar from '@/components/PaginationBar.vue'
 import ImportProjectDialog from '@/components/ImportProjectDialog.vue'
 import * as projectsApi from '@/api/projects'
+import * as tasksApi from '@/api/tasks'
 import { useAuthStore } from '@/stores/auth'
 import { getErrorMessage } from '@/utils/errors'
-import type { Project } from '@/types'
+import type { Project, TaskWithMedia } from '@/types'
 
 const router = useRouter()
 const auth = useAuthStore()
 
 const projects = ref<Project[]>([])
+const tasksByProject = ref<Record<number, TaskWithMedia[]>>({})
 const loading = ref(false)
 const page = ref(1)
 const limit = ref(12)
@@ -24,7 +26,20 @@ const importVisible = ref(false)
 async function load() {
   loading.value = true
   try {
-    projects.value = await projectsApi.getProjects({ page: page.value, limit: limit.value })
+    const list = await projectsApi.getProjects({ page: page.value, limit: limit.value })
+    projects.value = list
+
+    const previews = await Promise.all(
+      list.map(async (p) => {
+        try {
+          const tasks = await tasksApi.getTasks({ project_id: p.id, page: 1, limit: 3 })
+          return [p.id, tasks] as const
+        } catch {
+          return [p.id, []] as const
+        }
+      }),
+    )
+    tasksByProject.value = Object.fromEntries(previews)
   } catch (e) {
     ElMessage.error(getErrorMessage(e))
   } finally {
@@ -52,6 +67,7 @@ onMounted(load)
       :projects="projects"
       :loading="loading"
       :current-user-id="auth.user?.id"
+      :tasks-by-project="tasksByProject"
       @open="openProject"
     >
       <template #empty-action>

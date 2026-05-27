@@ -27,9 +27,13 @@ class MediaDAO:
         ).returning('*')
 
         with db.session.begin(nested=True):
-            if UserService.get_one_by_id_or_none(media_metadata.author_id) is None:
+            if not UserService.get_one_by_id_or_none(media_metadata.author_id):
                 raise WasNotFoundError(f'Author user with id {media_metadata.author_id}')
-            if TaskService.get_one_by_id_or_none(media_metadata.task_id) is None:
+
+            if not TaskService.get_one_by_id_or_none(
+                    user_id=media_metadata.author_id,
+                    task_id=media_metadata.task_id
+            ):
                 raise WasNotFoundError(f'Task with id {media_metadata.task_id}')
 
             result = db.session.execute(stmt).mappings().one()

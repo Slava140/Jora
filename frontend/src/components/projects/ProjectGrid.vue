@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Project } from '@/types'
+import type { Project, TaskWithMedia } from '@/types'
 import ProjectCard from './ProjectCard.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 
@@ -7,6 +7,7 @@ defineProps<{
   projects: Project[]
   loading?: boolean
   currentUserId?: number
+  tasksByProject?: Record<number, TaskWithMedia[]>
 }>()
 
 const emit = defineEmits<{ open: [id: number] }>()
@@ -20,6 +21,7 @@ const emit = defineEmits<{ open: [id: number] }>()
         :key="p.id"
         :project="p"
         :is-owner="currentUserId === p.owner_id"
+        :preview-tasks="tasksByProject?.[p.id] ?? []"
         @click="emit('open', p.id)"
       />
     </div>

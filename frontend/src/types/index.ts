@@ -35,8 +35,14 @@ export interface Task {
   author_id: number
 }
 
+export interface TaskMedia {
+  id: number
+  url: string
+  filename: string
+}
+
 export interface TaskWithMedia extends Task {
-  media: string[]
+  media: TaskMedia[]
 }
 
 export interface Comment {
@@ -119,6 +125,8 @@ export interface CreateTaskBody {
 export interface UpdateTaskBody {
   assignee_id?: number | null
   status: TaskStatus
+  description: string
+  due_date?: string | null
 }
 
 export interface CreateCommentBody {

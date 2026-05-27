@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from werkzeug.datastructures import FileStorage
@@ -7,9 +8,11 @@ from actors import postprocess_file_actor
 from api.v1.projects.services import TaskService
 from config import settings
 from errors import ExtensionsNotAllowedError
+from logger import get_logger
 from media.schemas import ReadMediaS, ReadMediaWithFilepathS, MediaMetadataS, CreateMediaS
 from media.dao import MediaDAO
 
+logger = get_logger(__name__)
 
 class MediaService:
     @classmethod
@@ -20,8 +23,11 @@ class MediaService:
         """
         from database import db
 
-        file_path = Path(secure_filename(file.filename))
-        extension = file_path.suffix.strip('.')
+        filename = file.filename
+        if not filename:
+            raise ExtensionsNotAllowedError
+
+        extension = Path(filename).suffix.strip('.')
 
         if extension in settings.ALLOWED_TEXT_FILE_EXTENSIONS:
             has_original = False
@@ -31,9 +37,12 @@ class MediaService:
             raise ExtensionsNotAllowedError
 
         media = MediaDAO.add(
-            CreateMediaS(filename=file_path.name, has_original=has_original, **metadata.model_dump())
+            CreateMediaS(filename=filename, has_original=has_original, **metadata.model_dump())
         )
-        task = TaskService.get_one_by_id_or_none(media.task_id)
+        task = TaskService.get_one_by_id_or_none(
+            user_id=metadata.author_id,
+            task_id=media.task_id,
+        )
 
         try:
             destination_dir = settings.MEDIA_PATH / f'project_id_{task.project_id}' / f'task_id_{task.id}'
@@ -50,12 +59,23 @@ class MediaService:
         return media
 
     @classmethod
-    def get_media_by_id_or_none(cls, media_id: int, original: bool) -> ReadMediaWithFilepathS | None:
+    def get_media_by_id_or_none(
+            cls,
+            user_id: int,
+            media_id: int,
+            original: bool
+    ) -> ReadMediaWithFilepathS | None:
         metadata = MediaDAO.get_one_by_id_or_none(media_id)
         if metadata is None:
             return None
 
-        task = TaskService.get_one_by_id_or_none(metadata.task_id)
+        task = TaskService.get_one_by_id_or_none(
+            user_id=user_id,
+            task_id=metadata.task_id
+        )
+
+        if not task:
+            return None
 
         task_path = settings.MEDIA_PATH / f'project_id_{task.project_id}' / f'task_id_{task.id}'
 

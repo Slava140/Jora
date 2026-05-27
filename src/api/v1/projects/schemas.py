@@ -71,8 +71,13 @@ class ReadTaskS(BaseTaskS):
     author_id:      NonNegativeInt
 
 
+class TaskMediaS(BaseModel):
+    id: NonNegativeInt
+    url: str
+    filename: str
+
 class ReadTaskWithMedia(ReadTaskS):
-    media: list[str]
+    media: list[TaskMediaS]
 
 
 class CreateTaskS(RequestBodyOfTaskS):
@@ -87,6 +92,8 @@ class CreateTaskFromEmailS(CreateTaskS):
 class UpdateTaskS(BaseModel):
     assignee_id:    NonNegativeInt | None = None
     status:         StrTaskStatus
+    description:    str
+    due_date:       UTCDatetime | None = None
 
 
 class ExportTaskS(BaseModel):
@@ -142,7 +149,7 @@ class ExportCommentS(BaseModel):
 
 
 class FilterCommentQS(PaginationQS):
-    task_id:    NonNegativeInt | None = None
+    task_id:    NonNegativeInt
     author_id:  NonNegativeInt | None = None
 
 
