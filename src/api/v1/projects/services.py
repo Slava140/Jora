@@ -21,6 +21,9 @@ from api.v1.users.schemas import ReadUserS
 from errors import MustBePositiveError, IncorrectRequestError, ForbiddenError, WasNotFoundError, \
     ExtensionsNotAllowedError
 from extentions import security
+from logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class ProjectService:
@@ -74,12 +77,25 @@ class ProjectService:
         ProjectDAO.delete_by_id(user_id, project_id)
 
     @staticmethod
-    def export(project_id: int) -> ExportProjectS:
+    def export(
+            user_id: int,
+            project_id: int
+    ) -> ExportProjectS:
         project = ProjectDAO.get_one_by_id_or_none(project_id)
-        tasks = TaskService.get_many(filter_schema=FilterTaskQS(project_id=project_id))
+
+        if not project:
+            raise WasNotFoundError('Project')
+
+        tasks = TaskService.get_many(
+            user_id=user_id,
+            filter_schema=FilterTaskQS(project_id=project_id)
+        )
         exported_tasks = []
         for task in tasks:
-            comments = CommentService.get_many(filter_schema=FilterCommentQS(task_id=task.id))
+            comments = CommentService.get_many(
+                user_id=user_id,
+                filter_schema=FilterCommentQS(task_id=task.id)
+            )
             exported_task = ExportTaskS(
                 **task.model_dump(),
                 comments=[ExportCommentS(**comment.model_dump()) for comment in comments]

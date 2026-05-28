@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import AppShell from '@/components/layout/AppShell.vue'
@@ -31,6 +31,7 @@ const saving = ref(false)
 
 const editStatus = ref<TaskStatus>('open')
 const editAssignee = ref<number | null>(null)
+const editAssigneeEmail = ref('')
 const editDescription = ref('')
 const editDueDateTs = ref<number | null>(null)
 const savingDescription = ref(false)
@@ -39,14 +40,27 @@ function buildUpdateBody(
   overrides: Partial<{
     status: TaskStatus
     assignee_id: number | null
+    assignee_email: string | null
     description: string
     due_date: string | null
   }> = {},
 ) {
-  return {
+  const assigneeId =
+    overrides.assignee_id !== undefined ? overrides.assignee_id : editAssignee.value
+  const assigneeEmail =
+    overrides.assignee_email !== undefined
+      ? overrides.assignee_email
+      : editAssigneeEmail.value.trim() || null
+
+  const body: {
+    status: TaskStatus
+    assignee_id: number | null
+    assignee_email?: string | null
+    description: string
+    due_date: string | null
+  } = {
     status: overrides.status ?? editStatus.value,
-    assignee_id:
-      overrides.assignee_id !== undefined ? overrides.assignee_id : editAssignee.value,
+    assignee_id: assigneeId,
     description: overrides.description ?? editDescription.value,
     due_date:
       overrides.due_date !== undefined
@@ -54,6 +68,39 @@ function buildUpdateBody(
         : editDueDateTs.value !== null
           ? formatApiDatetime(new Date(editDueDateTs.value))
           : null,
+  }
+
+  if (assigneeId != null) {
+    return body
+  }
+  if (assigneeEmail) {
+    body.assignee_id = null
+    body.assignee_email = assigneeEmail
+  } else {
+    body.assignee_id = null
+  }
+  return body
+}
+
+watch(editAssignee, (id) => {
+  if (id != null) {
+    editAssigneeEmail.value = ''
+  }
+})
+
+watch(editAssigneeEmail, (email) => {
+  if (email.trim()) {
+    editAssignee.value = null
+  }
+})
+
+async function ensureUserInProjectUsers(userId: number) {
+  if (projectUsers.value.some((u) => u.id === userId)) return
+  try {
+    const user = await usersApi.getUserById(userId)
+    projectUsers.value = [...projectUsers.value, user]
+  } catch {
+    /* ignore */
   }
 }
 
@@ -102,6 +149,7 @@ async function load() {
     projectUsers.value = users
     editStatus.value = t.status
     editAssignee.value = t.assignee_id
+    editAssigneeEmail.value = ''
     editDescription.value = t.description ?? ''
     editDueDateTs.value = t.due_date ? parseApiDatetime(t.due_date).getTime() : null
   } catch (e) {
@@ -118,6 +166,11 @@ async function saveUpdate() {
   try {
     const updated = await tasksApi.updateTask(taskIdNum.value, buildUpdateBody())
     task.value = { ...task.value, ...updated, media: task.value.media }
+    editAssignee.value = updated.assignee_id
+    editAssigneeEmail.value = ''
+    if (updated.assignee_id) {
+      await ensureUserInProjectUsers(updated.assignee_id)
+    }
     ElMessage.success('Задача обновлена')
   } catch (e) {
     ElMessage.error(getErrorMessage(e))
@@ -260,10 +313,17 @@ onMounted(load)
                   <el-option
                     v-for="u in projectUsers"
                     :key="u.id"
-                    :label="u.username"
+                    :label="`${u.username} (${u.email})`"
                     :value="u.id"
                   />
                 </el-select>
+                <el-input
+                  v-model="editAssigneeEmail"
+                  type="email"
+                  placeholder="Или укажите email зарегистрированного пользователя"
+                  clearable
+                  style="width: 100%; margin-top: 0.5rem"
+                />
               </el-form-item>
               <el-form-item label="Срок выполнения">
                 <el-date-picker

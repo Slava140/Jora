@@ -17,6 +17,10 @@ from api.v1.users.schemas import ReadUserS
 from errors import WasNotFoundError, ForbiddenError
 from extentions import db
 from utils import get_user
+from logger import get_logger
+
+
+logger = get_logger(__name__)
 
 
 class ProjectDAO:
@@ -150,7 +154,8 @@ class ProjectDAO:
     @staticmethod
     def import_(owner_id: int, schema: ExportProjectS):
         create_project_schema = CreateProjectS(**schema.model_dump(exclude={'tasks'}), owner_id=owner_id)
-        insert_project_stmt = insert(ProjectM
+        insert_project_stmt = insert(
+            ProjectM
         ).values(
             **create_project_schema.model_dump()
         ).returning('*')
@@ -159,7 +164,6 @@ class ProjectDAO:
         insert_comments_stmt_without_values = insert(CommentM).returning('*')
 
         create_task_dicts = []
-        tasks_comments = []
         create_comment_dicts = []
 
         with db.session.begin(nested=True):
@@ -168,15 +172,25 @@ class ProjectDAO:
 
             inserted_project_id = db.session.execute(insert_project_stmt).scalar()
 
+            if not schema.tasks:
+                db.session.commit()
+                return
+
+            tasks_comments = []
             for task in schema.tasks:
                 create_task_dicts.append(dict(
                     **task.model_dump(exclude={'media', 'comments'}),
-                    project_id=inserted_project_id)
-                )
-                tasks_comments.append(task.comments)
+                    project_id=inserted_project_id
+                ))
+                if task.comments:
+                    tasks_comments.append(task.comments)
 
             insert_tasks_stmt = insert_tasks_stmt_without_values.values(create_task_dicts)
             inserted_tasks_id = db.session.execute(insert_tasks_stmt).scalars().fetchall()
+
+            if not tasks_comments:
+                db.session.commit()
+                return
 
             for task_id, comments in zip(inserted_tasks_id, tasks_comments):
                 create_comment_dicts += [

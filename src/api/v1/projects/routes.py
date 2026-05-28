@@ -1,11 +1,9 @@
-import tempfile
-from pathlib import Path
 from tempfile import NamedTemporaryFile
 
 from flask import jsonify, send_file
 from flask_openapi3 import APIBlueprint, Tag
-from flask_security import permissions_accepted, current_user
-from werkzeug.utils import secure_filename
+from flask_security import current_user
+
 
 from api.v1.projects.services import ProjectService, TaskService, CommentService
 from api.v1.projects.schemas import (
@@ -107,9 +105,11 @@ def delete_project_by_id(path: ProjectPath):
 
 @projects_router.get('/<int:project_id>/export/', responses={200: ExportProjectS, 404: ErrorS})
 @jwt_required()
-@permissions_accepted('project-read')
 def export_project(path: ProjectPath):
-    exported_project = ProjectService.export(path.project_id)
+    exported_project = ProjectService.export(
+        user_id=current_user.id,
+        project_id=path.project_id
+    )
 
     with NamedTemporaryFile() as tmp:
         tmp.write(exported_project.model_dump_json(indent=2).encode())
@@ -118,7 +118,6 @@ def export_project(path: ProjectPath):
 
 @projects_router.post('/import/')
 @jwt_required()
-@permissions_accepted('project-write')
 def import_project(form: ImportProjectForm):
     ProjectService.import_(form.file)
     return jsonify(), 201

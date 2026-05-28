@@ -124,6 +124,7 @@ export interface CreateTaskBody {
 
 export interface UpdateTaskBody {
   assignee_id?: number | null
+  assignee_email?: string | null
   status: TaskStatus
   description: string
   due_date?: string | null
