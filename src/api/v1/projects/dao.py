@@ -15,7 +15,7 @@ from api.v1.projects.sql import ProjectSQL
 from api.v1.users.schemas import ReadUserS
 
 from errors import WasNotFoundError, ForbiddenError
-from database import db
+from extentions import db
 from utils import get_user
 
 
@@ -301,7 +301,7 @@ class TaskDAO:
         """
         :except WasNotFoundError
         """
-        updated_task_dict = updated_task.model_dump()
+        updated_task_dict = updated_task.model_dump(exclude={'assignee_email'})
         if updated_task.status == Status.finished:
             updated_task_dict['finished_at'] = datetime.now(tz=timezone.utc)
         stmt = update(
@@ -309,7 +309,7 @@ class TaskDAO:
         ).where(
             TaskM.id == task_id
         ).values(
-            **updated_task.model_dump()
+            **updated_task_dict
         ).returning('*')
 
         with db.session.begin(nested=True):

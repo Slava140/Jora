@@ -21,7 +21,6 @@ from api.v1.projects.schemas import CreateTaskFromEmailS
 from config import settings
 
 
-
 def get_user(user_id: int) -> ReadUserS | None:
     return UserService.get_one_by_id_or_none(user_id=user_id)
 

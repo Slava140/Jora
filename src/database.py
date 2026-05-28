@@ -45,12 +45,3 @@ class Base(DeclarativeBase):
         d = deepcopy(self.__dict__)
         d.pop('_sa_instance_state')
         return d
-
-
-db = SQLAlchemy(
-    model_class=Base,
-    engine_options={
-        "connect_args":{"options": "-c timezone=utc"}
-    },
-    session_options={'expire_on_commit': True, 'autobegin': True}
-)

@@ -1,7 +1,8 @@
 from flask_security.models import fsqla
 from sqlalchemy.orm import Mapped
 
-from database import db, Base, pk_int, str_255_unique, created_at, updated_at, is_active
+from extentions import db
+from database import Base, pk_int, str_255_unique, created_at, updated_at, is_active
 
 fsqla.FsModels.set_db_info(db, user_table_name='users', role_table_name='roles')
 

@@ -20,6 +20,7 @@ from flask_security import current_user
 from api.v1.users.schemas import ReadUserS
 from errors import MustBePositiveError, IncorrectRequestError, ForbiddenError, WasNotFoundError, \
     ExtensionsNotAllowedError
+from extentions import security
 
 
 class ProjectService:
@@ -153,6 +154,13 @@ class TaskService:
 
         if user_id not in (task.author_id, task.assignee_id, project.owner_id):
             raise ForbiddenError()
+
+        if not body.assignee_id and body.assignee_email:
+            assignee_user = security.datastore.find_user(email=body.assignee_email)
+            if assignee_user:
+                body.assignee_id = assignee_user.id
+            else:
+                raise WasNotFoundError(f'User with email {body.assignee_email}')
 
         updated_task = TaskDAO.update_by_id(task_id, body)
 

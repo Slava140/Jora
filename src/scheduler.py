@@ -1,10 +1,7 @@
-from flask_apscheduler import APScheduler
-
+from extentions import scheduler
 from api.v1.projects.schemas import CreateTaskS, CreateCommentS
 from api.v1.projects.services import TaskService, CommentService
 from utils import Mail
-
-scheduler = APScheduler()
 
 
 @scheduler.task('interval', seconds=60)

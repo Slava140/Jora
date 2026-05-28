@@ -6,7 +6,7 @@ from sqlalchemy.orm.attributes import InstrumentedAttribute
 from api.v1.users.models import UserM
 from api.v1.users.schemas import CreateUserS, ReadUserS, BaseUserS, FullUserS
 from errors import AlreadyExistsError, WasNotFoundError
-from database import db
+from extentions import db
 from logger import get_logger
 
 logger = get_logger('UserDAO')
@@ -69,7 +69,7 @@ class UserDAO:
         return ReadUserS(**result)
 
     @staticmethod
-    def get_many(limit: int, page: int) -> list[ReadUserS, ...]:
+    def get_many(limit: int, page: int) -> list[ReadUserS]:
         query = select(
             UserM
         ).where(

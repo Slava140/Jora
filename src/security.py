@@ -3,12 +3,10 @@ from functools import wraps
 import bcrypt
 from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
 from flask_jwt_extended.view_decorators import LocationType
-from flask_security import Security, SQLAlchemyUserDatastore, login_user
+from flask_security import login_user
 
-from api.v1.users.models import UserM, RoleM
-from database import db
-from app import app
 from errors import ForbiddenError
+from extentions import security
 
 
 def get_hashed_password(plain_password: str) -> str:
@@ -22,34 +20,6 @@ def is_correct_password(plain: str, hashed: str) -> bool:
     password_bytes = plain.encode('utf-8')
     hashed_password_bytes = hashed.encode('utf-8')
     return bcrypt.checkpw(password_bytes, hashed_password_bytes)
-
-
-user_datastore = SQLAlchemyUserDatastore(db, UserM, RoleM)
-security = Security(app, user_datastore)
-
-with app.app_context():
-    security.datastore.find_or_create_role(
-        name='admin',
-        description='admin role',
-        permissions={'user-read', 'user-write',
-                     'project-read', 'project-write',
-                     'task-read', 'task-write',
-                     'comment-read', 'comment-write'}
-    )
-    security.datastore.find_or_create_role(
-        name='user',
-        description='user role',
-        permissions={'user-read',
-                     'project-read',
-                     'task-read', 'task-write',
-                     'comment-read', 'comment-write'}
-    )
-    security.datastore.find_or_create_role(
-        name='bot',
-        description='bot role',
-        permissions={'task-write', 'comment-write'}
-    )
-    security.datastore.commit()
 
 
 def jwt_required(

@@ -4,9 +4,8 @@ from smtplib import SMTPException
 
 from flask import render_template
 
-from security import security
+from extentions import security, dramatiq
 from api.v1.projects.services import TaskService, ProjectService
-from app import dramatiq
 from config import settings
 from utils import compress_text, compress_image, Mail
 

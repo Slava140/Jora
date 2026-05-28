@@ -91,6 +91,7 @@ class CreateTaskFromEmailS(CreateTaskS):
 
 class UpdateTaskS(BaseModel):
     assignee_id:    NonNegativeInt | None = None
+    assignee_email: EmailStr | None = None
     status:         StrTaskStatus
     description:    str
     due_date:       UTCDatetime | None = None

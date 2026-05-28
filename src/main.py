@@ -12,7 +12,8 @@ from media.routes import router as media_router
 
 from errors import AppError
 from logger import get_logger
-from app import app, scheduler
+from app import app
+from extentions import scheduler
 
 logger = get_logger('main')
 

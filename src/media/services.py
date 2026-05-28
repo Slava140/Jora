@@ -4,7 +4,6 @@ from pathlib import Path
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 
-from actors import postprocess_file_actor
 from api.v1.projects.services import TaskService
 from config import settings
 from errors import ExtensionsNotAllowedError
@@ -21,7 +20,8 @@ class MediaService:
         :except WasNotFoundError
         :except ExtensionsNotAllowedError
         """
-        from database import db
+        from extentions import db
+        from actors import postprocess_file_actor
 
         filename = file.filename
         if not filename:

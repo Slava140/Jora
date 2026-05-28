@@ -1,15 +1,13 @@
 from pathlib import Path
 
 from flask import make_response
-from flask_cors import CORS
-from flask_dramatiq import Dramatiq
-from flask_jwt_extended import JWTManager
 from flask_openapi3 import OpenAPI, Info
+from flask_security import SQLAlchemyUserDatastore
 from pydantic import ValidationError
 
+from api.v1.users.models import UserM, RoleM
 from config import settings
-from database import db
-from scheduler import scheduler
+from extentions import scheduler, dramatiq, jwt_manager, cors, security, db
 from global_schemas import jwt_schema, ValidationErrorS
 
 
@@ -46,10 +44,36 @@ app.config['JWT_TOKEN_LOCATION'] = ['headers']
 app.config['DRAMATIQ_BROKER'] = 'dramatiq.brokers.redis:RedisBroker'
 app.config['DRAMATIQ_BROKER_URL'] = settings.redis_url
 
-CORS(app, origins=[settings.FRONTEND_ORIGIN], supports_credentials=False)
 
+cors.init_app(app, origins=[settings.FRONTEND_ORIGIN], supports_credentials=False)
 db.init_app(app)
 scheduler.init_app(app)
+dramatiq.init_app(app)
+jwt_manager.init_app(app)
 
-dramatiq = Dramatiq(app)
-JWTManager(app)
+user_datastore = SQLAlchemyUserDatastore(db, UserM, RoleM)
+security.init_app(app, user_datastore)
+
+with app.app_context():
+    security.datastore.find_or_create_role(
+        name='admin',
+        description='admin role',
+        permissions={'user-read', 'user-write',
+                     'project-read', 'project-write',
+                     'task-read', 'task-write',
+                     'comment-read', 'comment-write'}
+    )
+    security.datastore.find_or_create_role(
+        name='user',
+        description='user role',
+        permissions={'user-read',
+                     'project-read',
+                     'task-read', 'task-write',
+                     'comment-read', 'comment-write'}
+    )
+    security.datastore.find_or_create_role(
+        name='bot',
+        description='bot role',
+        permissions={'task-write', 'comment-write'}
+    )
+    security.datastore.commit()

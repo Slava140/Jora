@@ -6,7 +6,7 @@ from media.schemas import ReadMediaS, CreateMediaS
 from api.v1.users.services import UserService
 from api.v1.projects.services import TaskService
 
-from database import db
+from extentions import db
 from errors import WasNotFoundError
 
 
