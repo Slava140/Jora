@@ -22,6 +22,7 @@ from errors import MustBePositiveError, IncorrectRequestError, ForbiddenError, W
     ExtensionsNotAllowedError
 from extentions import security
 from logger import get_logger
+from config import settings
 
 logger = get_logger(__name__)
 
@@ -187,7 +188,8 @@ class TaskService:
                 recipient_user_id=updated_task.assignee_id,
                 subject='Вы были назначены исполнителем.',
                 task_id=updated_task.id,
-                task_url=url_for('tasks.get_task_by_id', task_id=task_id, _external=True)
+                # task_url=url_for('tasks.get_task_by_id', task_id=task_id, _external=True),
+                task_url=f'{settings.FRONTEND_ORIGIN.strip("/")}/tasks/{task_id}',
             )
 
         if Status(task.status) > Status(updated_task.status):
@@ -196,7 +198,8 @@ class TaskService:
                 recipient_user_id=updated_task.author_id,
                 subject='Изменен статус задачи.',
                 task_id=updated_task.id,
-                task_url=url_for('tasks.get_task_by_id', task_id=task_id, _external=True)
+                # task_url=url_for('tasks.get_task_by_id', task_id=task_id, _external=True)
+                task_url=f'{settings.FRONTEND_ORIGIN.strip("/")}/tasks/{task_id}',
             )
 
         return updated_task
