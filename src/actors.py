@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from smtplib import SMTPException
 
+from dramatiq.brokers.redis import RedisBroker
 from flask import render_template
 
 from extentions import security, dramatiq
@@ -9,7 +10,7 @@ from api.v1.projects.services import TaskService, ProjectService
 from config import settings
 from utils import compress_text, compress_image, Mail
 
-broker = dramatiq.broker
+broker = RedisBroker(url=settings.redis_url)
 
 
 @dramatiq.actor(max_retries=0)
@@ -49,7 +50,10 @@ def send_notification_actor(
     if not recipient:
         return None
 
-    task = TaskService.get_one_by_id_or_none(task_id)
+    task = TaskService.get_one_by_id_or_none(
+        user_id=recipient_user_id,
+        task_id=task_id
+    )
     if not task:
         return None
 

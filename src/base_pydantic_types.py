@@ -54,7 +54,7 @@ def datetime_serializer(value: datetime) -> str:
 StrFrom3To255 = Annotated[str, Field(min_length=3, max_length=255)]
 Str500 = Annotated[str, Field(max_length=500)]
 
-StrTaskStatus = Annotated[Literal['open', 'in_progress', 'finished'], Field(default=Status.open)]
+StrTaskStatus = Annotated[Literal['open', 'in_progress', 'finished'], Field()]
 
 UTCDatetime = Annotated[
     datetime,

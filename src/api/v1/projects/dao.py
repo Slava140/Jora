@@ -178,6 +178,7 @@ class ProjectDAO:
 
             tasks_comments = []
             for task in schema.tasks:
+                task.author_id = owner_id
                 create_task_dicts.append(dict(
                     **task.model_dump(exclude={'media', 'comments'}),
                     project_id=inserted_project_id
