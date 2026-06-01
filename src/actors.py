@@ -2,15 +2,12 @@ import os
 from pathlib import Path
 from smtplib import SMTPException
 
-from dramatiq.brokers.redis import RedisBroker
 from flask import render_template
 
 from extentions import security, dramatiq
 from api.v1.projects.services import TaskService, ProjectService
 from config import settings
 from utils import compress_text, compress_image, Mail
-
-broker = RedisBroker(url=settings.redis_url)
 
 
 @dramatiq.actor(max_retries=0)

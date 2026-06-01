@@ -187,7 +187,8 @@ class TaskService:
                 recipient_user_id=updated_task.assignee_id,
                 subject='Вы были назначены исполнителем.',
                 task_id=updated_task.id,
-                task_url=url_for('tasks.get_task_by_id', task_id=task_id, _external=True)
+                # task_url=url_for('tasks.get_task_by_id', task_id=task_id, _external=True)
+                task_url='test'
             )
 
         if Status(task.status) > Status(updated_task.status):
@@ -267,4 +268,13 @@ if __name__ == '__main__':
     from app import app
 
     with app.app_context():
-        print(TaskService().get_one_by_id_or_none(1, 3))
+        print(TaskService().update_by_id(
+            user_id=2,
+            task_id=14,
+            body=UpdateTaskS(
+                assignee_id=None,
+                assignee_email='slava20031112@gmail.com',
+                status='open',
+                description=''
+            )
+        ))

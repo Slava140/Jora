@@ -79,3 +79,5 @@ with app.app_context():
         permissions={'task-write', 'comment-write'}
     )
     security.datastore.commit()
+
+import actors

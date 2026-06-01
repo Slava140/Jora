@@ -63,7 +63,7 @@ services:
       - media:${MEDIA_PATH}
     build:
       context: .
-    command: dramatiq actors:broker --processes=1
+    command: flask --app src.main worker --processes=1
     depends_on:
       - app
       - redis
