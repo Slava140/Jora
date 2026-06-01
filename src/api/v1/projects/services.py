@@ -187,8 +187,7 @@ class TaskService:
                 recipient_user_id=updated_task.assignee_id,
                 subject='Вы были назначены исполнителем.',
                 task_id=updated_task.id,
-                # task_url=url_for('tasks.get_task_by_id', task_id=task_id, _external=True)
-                task_url='test'
+                task_url=url_for('tasks.get_task_by_id', task_id=task_id, _external=True)
             )
 
         if Status(task.status) > Status(updated_task.status):
