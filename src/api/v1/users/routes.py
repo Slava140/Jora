@@ -22,21 +22,6 @@ auth_router = APIBlueprint(
 )
 
 
-# @users_router.post('/', responses={201: ReadUserS, 409: ErrorS})
-# @jwt_required()
-# def add_user(body: CreateUserS):
-#     created_user = UserService.add(body)
-#     return jsonify(created_user.model_dump()), 201
-
-
-# @users_router.get('/', responses={200: ReadUserS, 400: ErrorS})
-# @jwt_required()
-# def get_users(query: PaginationQS):
-#     return jsonify([]), 200
-#     # users = UserService.get_many(query.limit, query.page)
-#     # return jsonify([user.model_dump() for user in users]), 200
-
-
 @users_router.get('/<int:user_id>/', responses={200: ReadUserS, 404: ErrorS})
 @jwt_required()
 def get_user_by_id(path: UserPath):

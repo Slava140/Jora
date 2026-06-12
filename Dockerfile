@@ -9,7 +9,7 @@ ENV PYTHONUNBUFFERED=1 \
     PATH="$PATH:$POETRY_HOME/bin"
 
 
-RUN apk add curl postgresql-dev tzdata
+RUN apk add curl postgresql-dev tzdata gcc
 
 RUN ln -fs /usr/share/zoneinfo/Etc/UTC /etc/localtime
 
