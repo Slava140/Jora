@@ -9,6 +9,7 @@ import * as projectsApi from '@/api/projects'
 import * as tasksApi from '@/api/tasks'
 import { useAuthStore } from '@/stores/auth'
 import { downloadBlob } from '@/utils/blob'
+import { toApiDatetime } from '@/utils/datetime'
 import { getErrorMessage } from '@/utils/errors'
 import type { Project, TaskStatus, TaskWithMedia, User } from '@/types'
 
@@ -61,7 +62,7 @@ async function onDropTask(taskId: number, newStatus: TaskStatus) {
       status: newStatus,
       assignee_id: task.assignee_id,
       description: task.description,
-      due_date: task.due_date,
+      due_date: toApiDatetime(task.due_date),
     })
   } catch (e) {
     task.status = prevStatus

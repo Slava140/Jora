@@ -28,6 +28,11 @@ export function formatApiDatetime(date: Date): string {
   return `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}${tz}`
 }
 
+export function toApiDatetime(value: string | null): string | null {
+  if (!value) return null
+  return formatApiDatetime(parseApiDatetime(value))
+}
+
 export function formatDisplayDatetime(value: string | null): string {
   if (!value) return '—'
   try {
