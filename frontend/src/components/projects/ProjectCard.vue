@@ -82,7 +82,6 @@ function openTask(task: TaskWithMedia, e: Event) {
   line-height: 1.3;
 }
 .description {
-  flex: 1;
   margin: 0;
   font-size: 0.875rem;
   color: var(--jora-text-muted);
@@ -139,7 +138,8 @@ function openTask(task: TaskWithMedia, e: Event) {
   color: var(--jora-text);
 }
 .card-footer {
-  margin-top: 1rem;
+  margin-top: auto;
+  padding-top: 1rem;
   font-size: 0.75rem;
   color: var(--jora-text-muted);
 }
